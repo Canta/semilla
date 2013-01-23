@@ -1,11 +1,13 @@
 <?php
 
-/*
-	20120611 - Daniel Cantarín
-	Clase Proxy.
-	Redirige un request a uno o muchos servidores de destino.
-	Contempla gestión de la información mediante eventos.
-*/
+/**
+ * Proxy Class.
+ * Redirects a request to one or many destinations.
+ * 
+ * @author Daniel Cantarín <omega_canta@yahoo.com>
+ * @date 20120611
+ * 
+ **/
 
 require_once("util.class.php");
 

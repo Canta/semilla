@@ -1,6 +1,12 @@
-//Clase App.
-//requiere jQuery.
-
+/**
+ * 
+ * App class.
+ * It's used as a global namespace for common operations.
+ * 
+ * @author Daniel Cantarín <omega_canta@yahoo.com>
+ * 
+ * 
+ **/
 var App = (function() {
 	var app = {
 		version : "alfa1",
@@ -56,39 +62,29 @@ var App = (function() {
 
 
 	app.espere = function($desc, $fin){
-		
-		if ($desc === undefined){
-			$desc = "";
-		}
-		if ($fin === undefined){
-			$fin = "";
-		}
-		
 		//creo los componentes visuales de espera
-		try{
-			if ($("body > .cubre-cuerpo").length == 0){
-				$("body").append("<div class=\"cubre-cuerpo\" style=\"display:none\"></div>");
-			}
-			if ($("body > .modal").length == 0){
-				$("body").append("<div class=\"modal\" style=\"display:none\"></div>");
-			}
-
-			if (app.esperando.length == 0){
-				$(".cubre-cuerpo").fadeIn(500);
-				$("body > .modal").fadeIn(500);
-			}
-			app.esperando.push([$desc,$fin]);
-			
-			$("body > .modal .descripcion").text($("body > .modal .descripcion").text() + $desc + "...\n");
-		} catch($e){
-			console.error($e);
+		if ($("body > .cubre-cuerpo").length == 0){
+			$("body").append("<div class=\"cubre-cuerpo\" tyle=\"display:none\"></div>");
 		}
+		if ($("body > .modal").length == 0){
+			$("body").append("<div class=\"modal\" tyle=\"display:none\"></div>");
+		}
+		
+		if (app.esperando.length == 0 || $("body > .cubre-cuerpo").css("display") == "none"){
+			$("body > .cubre-cuerpo").fadeIn(500);
+			$("body > .modal").fadeIn(500);
+		}
+		app.esperando.push([$desc,$fin]);
+		$("body > .modal .descripcion").text($("body > .modal .descripcion").text() + $desc + "...\n");
+		
 	}
 
 	app.desespere = function($desc){
 		if ($desc === undefined){
-			$("body > .modal .descripcion").text($("body > .modal .descripcion").text() + "..." + app.esperando[0][1] + "\n");
-			app.esperando.splice(0,1);
+			if (app.esperando.length > 0){
+				$("body > .modal .descripcion").text($("body > .modal .descripcion").text() + "..." + app.esperando[0][1] + "\n");
+				app.esperando.splice(0,1);
+			}
 		} else {
 			for ($i in app.esperando){
 				if (app.esperando[$i][0] == $desc){

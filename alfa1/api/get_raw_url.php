@@ -4,16 +4,15 @@
  * get_raw_url
  * Dado un componente de un contenido, devuelve las url de su raw original.
  * 
+ * @author Daniel Cantarín <omega_canta@yahoo.com>
  * @requires: clase proxy.
  * 
  **/
-
+require_once("api.lib.php");
 require_once("../class/proxy.class.php");
 
 // TO DO:
 // Agregar gestión de IDs de componentes. Actualmente sólo se usa para obtener MP3s de mixcloud.
-
-$ret = Array("success" => true, "data" => Array("message"=>"ok", "url"=>""));
 
 $p = new Proxy(Array("destino"=>"http://offliberty.com/off.php"));
 

@@ -1,9 +1,9 @@
 <?php
+require_once("api.lib.php");
+
 if (!isset($_SESSION)){
 	session_start();
 }
-
-$ret = Array("success"=>true, "data"=>Array("message"=>"Content list ok."));
 
 $ret["data"]["contents"] = Array();
 
