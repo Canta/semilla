@@ -1,12 +1,9 @@
 /**
- * 
  * App class.
  * It's used as a global namespace for common operations.
  * 
  * @author Daniel Cantarín <omega_canta@yahoo.com>
- * 
- * 
- **/
+ */
 var App = (function() {
 	var app = {
 		version : "alfa1",

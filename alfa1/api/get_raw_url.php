@@ -1,13 +1,10 @@
 <?php
-
-/**
- * get_raw_url
+/** 
  * Dado un componente de un contenido, devuelve las url de su raw original.
  * 
  * @author Daniel Cantarín <omega_canta@yahoo.com>
  * @requires: clase proxy.
- * 
- **/
+ */
 require_once("api.lib.php");
 require_once("../class/proxy.class.php");
 

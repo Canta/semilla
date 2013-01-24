@@ -1,13 +1,12 @@
 <?php
+//require_once(dirname(__FILE__).str_replace("/",DIRECTORY_SEPARATOR,"/connection.class.php"));
+
 /**
  * Util class for common operations.
  * 
  * @author Daniel Cantarín <omega_canta@yahoo.com>
  * @date 20110916
- * 
- **/
-//require_once(dirname(__FILE__).str_replace("/",DIRECTORY_SEPARATOR,"/connection.class.php"));
-
+ */
 class util {
 	
 	public static function null2empty($value){

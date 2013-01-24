@@ -1,4 +1,5 @@
 <?php
+require_once("util.class.php");
 
 /**
  * Proxy Class.
@@ -6,11 +7,7 @@
  * 
  * @author Daniel Cantarín <omega_canta@yahoo.com>
  * @date 20120611
- * 
- **/
-
-require_once("util.class.php");
-
+ */
 class Proxy{
 	
 	protected $datos;

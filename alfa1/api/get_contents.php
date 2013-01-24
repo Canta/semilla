@@ -1,6 +1,12 @@
 <?php
-require_once("api.lib.php");
+/** 
+ * get_contents
+ * Devuelve una lista de contenidos
+ *
+ * @author Daniel Cantarín <omega_canta@yahoo.com>
+ */
 
+require_once("api.lib.php");
 if (!isset($_SESSION)){
 	session_start();
 }
