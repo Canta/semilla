@@ -1,0 +1,294 @@
+/** Plantilla con animaciones genéricas que se pretenden reutilizables
+ *
+ * @author Daniel Cantarín <omega_canta@yahoo.com>
+ */
+
+
+.glow{
+	animation-duration: 2s;
+	animation-name: glow;
+	animation-iteration-count: infinite;
+	-o-animation-iteration-count: infinite;
+	-webkit-animation-iteration-count: infinite;
+	box-shadow: 0px 0px 15px white;
+	-webkit-box-shadow: 0px 0px 15px white;
+	-o-box-shadow: 0px 0px 15px white;
+	-webkit-animation-duration: 2s;
+	-webkit-animation-name: glow;
+	-o-animation-duration: 2s;
+	-o-animation-name: glow;
+}
+
+.chau-izquierda {
+	animation-duration: 1s;
+	animation-name: chau_izquierda;
+	left:-100%;
+	-webkit-animation-duration: 1s;
+	-webkit-animation-name: chau_izquierda;
+	-o-animation-duration: 1s;
+	-o-animation-name: chau_izquierda;
+}
+
+.chau-derecha {
+	animation-duration: 1s;
+	animation-name: chau_derecha;
+	left:100%;
+	-webkit-animation-duration: 1s;
+	-webkit-animation-name: chau_derecha;
+	-o-animation-duration: 1s;
+	-o-animation-name: chau_derecha;
+}
+
+.chau-abajo {
+	animation-duration: 1s;
+	animation-name: chau_abajo;
+	top:100%;
+	-webkit-animation-duration: 1s;
+	-webkit-animation-name: chau_abajo;
+	-o-animation-duration: 1s;
+	-o-animation-name: chau_abajo;
+}
+
+.chau-arriba {
+	animation-duration: 1s;
+	animation-name: chau_arriba;
+	top:-100%;
+	-webkit-animation-duration: 1s;
+	-webkit-animation-name: chau_arriba;
+	-o-animation-duration: 1s;
+	-o-animation-name: chau_arriba;
+}
+
+.titulo-startup {
+	animation-duration: 2.5s;
+	animation-name: titulo_startup ;
+	transform: scale(1);
+	-webkit-animation-duration: 2.5s;
+	-webkit-animation-name: titulo_startup ;
+	-o-animation-duration: 2.5s;
+	-o-animation-name: titulo_startup ;
+}
+
+
+.flip{
+	animation-duration: 2s;
+	animation-name: flip;
+	/*animation-iteration-count: infinite;*/
+	transform: rotateY(180deg);
+}
+
+
+@keyframes flip {
+	from {
+		transform: rotateY(0deg);
+	}
+	to {
+		transform: rotateY(180deg);
+	}
+}
+
+
+@-webkit-keyframes flip {
+	from {
+		-webkit-transform: rotateY(0deg);
+	}
+	to {
+		-webkit-transform: rotateY(180deg);
+	}
+}
+
+@-o-keyframes flip {
+	from {
+		-o-transform: rotateY(0deg);
+	}
+	to {
+		-o-transform: rotateY(180deg);
+	}
+}
+
+@keyframes glow {
+	from {
+		box-shadow: 0px 0px 15px white;
+	}
+	50%{
+		box-shadow: 0px 0px 30px red;
+	}
+	to {
+		box-shadow: 0px 0px 15px white;
+	}
+}
+
+@keyframes chau_izquierda {
+	from {
+		transform: rotate(-360deg);
+		left:0;
+	}
+	to {
+		left:-100%;
+	}
+}
+
+@keyframes chau_derecha {
+	from {
+		transform: rotate(360deg);
+		left:0;
+	}
+	to {
+		left:100%;
+	}
+}
+
+@keyframes chau_abajo {
+	from {
+		transform: rotate(360deg);
+		top:0;
+	}
+	to {
+		top:100%;
+	}
+}
+
+@keyframes chau_arriba {
+	from {
+		transform: rotate(-360deg);
+		top:0;
+	}
+	to {
+		top:-100%;
+	}
+}
+
+@keyframes titulo_startup {
+	from {
+		transform: scale(5);
+	}
+	to {
+		transform: scale(1);
+	}
+}
+
+/* webkit */
+
+@-webkit-keyframes glow {
+	from {
+		-webkit-box-shadow: 0px 0px 15px white;
+	}
+	50%{
+		-webkit-box-shadow: 0px 0px 30px red;
+	}
+	to {
+		-webkit-box-shadow: 0px 0px 15px white;
+	}
+}
+
+@-webkit-keyframes chau_izquierda {
+	from {
+		-webkit-transform: rotate(-360deg);
+		left:0;
+	}
+	to {
+		left:-100%;
+	}
+}
+
+@-webkit-keyframes chau_derecha {
+	from {
+		-webkit-transform: rotate(360deg);
+		left:0;
+	}
+	to {
+		left:100%;
+	}
+}
+
+@-webkit-keyframes chau_abajo {
+	from {
+		-webkit-transform: rotate(360deg);
+		top:0;
+	}
+	to {
+		top:100%;
+	}
+}
+
+@-webkit-keyframes chau_arriba {
+	from {
+		-webkit-transform: rotate(-360deg);
+		top:0;
+	}
+	to {
+		top:-100%;
+	}
+}
+
+@-webkit-keyframes titulo_startup {
+	from {
+		-webkit-transform: scale(5);
+	}
+	to {
+		-webkit-transform: scale(1);
+	}
+}
+
+/* Opera */
+
+@-o-keyframes glow {
+	from {
+		-o-box-shadow: 0px 0px 15px white;
+	}
+	50%{
+		-o-box-shadow: 0px 0px 30px red;
+	}
+	to {
+		-o-box-shadow: 0px 0px 15px white;
+	}
+}
+
+@-o-keyframes chau_izquierda {
+	from {
+		-o-transform: rotate(-360deg);
+		left:0;
+	}
+	to {
+		left:-100%;
+	}
+}
+
+@-o-keyframes chau_derecha {
+	from {
+		-o-transform: rotate(360deg);
+		left:0;
+	}
+	to {
+		left:100%;
+	}
+}
+
+@-o-keyframes chau_abajo {
+	from {
+		-o-transform: rotate(360deg);
+		top:0;
+	}
+	to {
+		top:100%;
+	}
+}
+
+@-o-keyframes chau_arriba {
+	from {
+		-o-transform: rotate(-360deg);
+		top:0;
+	}
+	to {
+		top:-100%;
+	}
+}
+
+@-o-keyframes titulo_startup {
+	from {
+		-o-transform: scale(5);
+	}
+	to {
+		-o-transform: scale(1);
+	}
+}
