@@ -1,5 +1,5 @@
 <?php
-require_once("util.class.php");
+require_once("util/util.class.php");
 
 /**
  * Proxy Class.

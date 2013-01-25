@@ -1,52 +1,48 @@
 <?php
-	header("Access-Control-Allow-Origin:*");
+	//Detección de browser, para poder bannear a Internet Explorer.
+	$user_agent = $_SERVER['HTTP_USER_AGENT'];
+	if(preg_match('/MSIE/i',$user_agent) && !preg_match('/Opera/i',$user_agent))
+	{
+		//El usuario usa Internet Explorer.
+		//Esto es intolerable.
+		header ("Location: ./noie.html"); 
+		die("");
+	}
+	
+	session_start();
+	include_once("class/orm.class.php");
+	include_once("class/template.class.php");
+	include_once("class/util/UILib.class.php");
+	
+	if (!isset($_SESSION["app_path"])){
+		$_SESSION["app_path"] = Config::get_field("app_path");
+	}
+	
+	$template = null;
+	
+	if (isset($_REQUEST["template"])){
+		$id_template = (int)$_REQUEST["template"];
+		$template = new Template($id_template);
+	} else {
+		$template = new Template(1);
+	}
+	
+	$_SESSION["template"] = $template;
+	
 ?>
-<html lang="es">
-	<head>
-		<meta charset="utf-8" />
-		<title>Desgrabaciones Comunitarias - v. Alfa #1</title>
-		<script type="text/javascript" src="js/jquery-1.7.min.js"></script>
-		<script type="text/javascript" src="js/app.lib.js"></script>
-		<script type="text/javascript" src="js/common.js"></script>
-		<style>
-			@import url('css/app.lib.css');
-			@import url('css/default.css');
-		</style>
-	</head>
-	<body>
-		<section id="contents">
-			<div class="section-title">Desgrabaciones comunitarias - v. Alfa #1</div>
-			<div class="section-body">
-				<div id="tag-list" class="redondeadito con-sombrita">
-				</div>
-				<div id="content-list" class="redondeadito con-sombrita lista-container">
-					<div class="lista redondeadito">
-						<div class="status">
-							Resultados de la búsqueda
-						</div>
-						<div class="items">
-							<div class="item con-sombrita">
-								item 1
-							</div>
-							<div class="item con-sombrita">
-								item 2
-							</div>
-						</div>
-						<div class="botonera">
-							Página <span>1</span> de <span>1</span> 
-							<button>&lt;-Anterior</button>
-							<button>Siguiente-&gt;</button>
-						</div>
-					</div>
-				</div>
-			</div>
-		</section>
-		<section id="content-overview">
-			<audio src="" controls="true" id="player-main" preload="auto" crossdomain="true" ></audio>
-			<button onclick="app.player.toggle_play()"> play / pausa </button>
-			<input type="file" id="file-main" onchange="app.player.load_file();"/>
-		</section>
-		<section id="content-edit">
-		</section>
-	</body>
+<html>
+<head>
+	<META HTTP-EQUIV="Content-Type" CONTENT="text/html; charset=UTF-8">
+	<title>Desgrabaciones Comunitarias - v. Alfa #1</title>
+	<?php
+		echo UILib::get_common_js();
+		echo UILib::get_template_js();
+		echo UILib::get_template_css();
+	?>
+</head>
+<?php
+	//die(var_dump($template));
+	include "./templates/".$template->get("folder")."/default.php";
+?>
 </html>
+
