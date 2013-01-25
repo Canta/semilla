@@ -21,7 +21,7 @@ create table template(
 );
 
 insert into template (name, description, folder) values ('Default', 'Basic default application''s template', 'default');
-insert into config (field_name, field_value) values ('app_path', '/trabajo/desgrabados/repo/alfa1/');
+insert into config (field_name, field_value) values ('app_path', '/alfa1/');
 
 drop table if exists repos;
 create table repos(
