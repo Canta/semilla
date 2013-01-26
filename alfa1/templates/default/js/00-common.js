@@ -29,6 +29,11 @@ app.player.load_file = function(){
 
 app.contents = {};
 app.contents.all = [];
+
+/**
+ * app.contents.search
+ * Given an input, stated in the UI's search text box, searches in the servers.
+ */ 
 app.contents.search = function(){
 	app.espere("Buscando contenidos...", "listo.");
 	app.api({
@@ -124,6 +129,14 @@ app.contents.show_in_search_list = function($cs){
 	app.contents.search.list.append($tmp_html);
 }
 
+/**
+ * app.contents.new_item
+ * Starts the UI environment for content creation.
+ */ 
+app.contents.new_item = function(){
+	app.change_section("content-create");
+}
+	
 
 $(document).ready(
 	function(){

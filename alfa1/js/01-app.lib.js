@@ -1,3 +1,20 @@
+/*
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+ * MA 02110-1301, USA.
+ */
+
 /**
  * App class.
  * It's used as a global namespace for common operations.
@@ -162,12 +179,18 @@ var App = (function() {
 		if ($parms.on_success !== undefined && typeof $parms.on_success !== "function"){
 			throw "app.api: success handler must be a function.";
 		} else if ($parms.on_success === undefined){
-			$parms.on_success = function(){};
+			$parms.on_success = function($resp, $status, $xhr){
+				if (!$resp.success){
+					app.mostrar_error("El servidor respondió:\n"+$resp.data.message);
+				}
+			};
 		}
 		if ($parms.on_error !== undefined && typeof $parms.on_error !== "function"){
 			throw "app.api: error handler must be a function.";
 		} else if ($parms.on_error === undefined){
-			$parms.on_error = function(){};
+			$parms.on_error = function($xhr, $status, $error){
+				throw "app.api:\n"+this.verb+"\n"+$error;
+			};
 		}
 		
 		$resp = $.ajax({
@@ -175,6 +198,7 @@ var App = (function() {
 			type:"POST",
 			dataType:"JSON",
 			data: $parms.data,
+			varb: $parms.data.verb,
 			cache: ($parms.cache === undefined) ? false : $parms.cache,
 			async: ($parms.async === undefined) ? true : $parms.async,
 			success: $parms.on_success,
@@ -186,8 +210,44 @@ var App = (function() {
 		}
 	}
 	
+	app.change_section = function($val){
+		var $sec = null;
+		if (!isNaN($val)){
+			// section index number from the app.sections array.
+			if ($val >= app.sections.length || $val < 0){
+				throw "app.change_section: invalid section number.";
+			}
+			$sec = $(app.sections[$val]);
+		} else if (typeof $val === "string"){
+			// section DOM id
+			$sec = $("#"+$val);
+			if ($sec.length == 0){
+				throw "app.change_section: section id '"+$val+"' not found.";
+			}
+		} else if ($val instanceof jQuery) {
+			// a jQuery selected object. 
+			// index 0 is assumed to be the one selected
+			if ($val.length == 0){
+				throw "app.change_section: invalid section selection.";
+			}
+			$sec = $($val[0]);
+		} else if ($val instanceof HTMLElement){
+			// an HTML DOM element.
+			if ($val.tagName !== "SECTION"){
+				throw "app.change_section: element not a section.";
+			}
+			$sec = $($val);
+		} else {
+			throw "app.change_section: invalid argument data type.";
+		}
+		
+		app.sections.fadeOut(300);
+		setTimeout(function(){$sec.fadeIn(300);},350);
+		app.current_section = $sec;
+	}
+	
 	if (window !== undefined){
-		//optimizado para web workers
+		// check for web workers
 		window.app = app;
 	}
 	return app;

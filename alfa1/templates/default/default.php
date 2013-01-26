@@ -24,4 +24,6 @@
 		</section>
 		<section id="content-edit">
 		</section>
+		<section id="content-create">
+		</section>
 	</body>
