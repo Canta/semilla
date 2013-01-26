@@ -5,7 +5,6 @@
  * @author Daniel Cantarín <omega_canta@yahoo.com>
  * @requires: clase proxy.
  */
-require_once("api.lib.php");
 require_once("../class/proxy.class.php");
 
 // TO DO:
@@ -25,7 +24,7 @@ if (isset($_REQUEST["track"])){
 		$ret["data"]["url"] = $matches[count($matches)-1][0];
 	} else {
 		$ret["success"] = false;
-		$ret["data"]["message"] = "No se encontró la URL del RAW."
+		$ret["data"]["message"] = "No se encontró la URL del RAW.";
 	}
 }
 

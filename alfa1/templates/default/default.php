@@ -4,21 +4,14 @@
 			<div class="section-body">
 				<div id="content-list" class="lista-container">
 					<div class="lista">
-						<div class="status">
-							Resultados de la búsqueda
+						<div class="botonera">
+							Buscar: 
+							<input type="text" name="text-search-contents" id="text-search-contents" />
+							<button onclick="app.contents.search();">search contents</button>
+							<button onclick="app.contents.new_item();">add content</button>
 						</div>
 						<div class="items">
-							<div class="item con-sombrita">
-								item 1
-							</div>
-							<div class="item con-sombrita">
-								item 2
-							</div>
-						</div>
-						<div class="botonera">
-							Página <span>1</span> de <span>1</span> 
-							<button>&lt;-Anterior</button>
-							<button>Siguiente-&gt;</button>
+							
 						</div>
 					</div>
 				</div>

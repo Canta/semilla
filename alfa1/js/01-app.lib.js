@@ -9,7 +9,7 @@ var App = (function() {
 		version : "alfa1",
 		path : ".",
 		esperando : [],
-		current_section : $($("body > section")[0]),
+		current_section : $(),
 		timers : {}
 	};
 
@@ -148,7 +148,48 @@ var App = (function() {
 		$id_timer = $e.attr("id_timer_drag");
 		window.clearInterval($id_timer);
 	}
-	window.app = app;
+	
+	app.api = function($parms){
+		if ($parms === undefined || typeof $parms !== "object"){
+			throw "app.api: object expected.";
+		}
+		if (typeof $parms.data !== "object"){
+			throw "app.api: data object expected.";
+		}
+		if (typeof $parms.data.verb !== "string"){
+			throw "app.api: verb string expected in data.";
+		}
+		if ($parms.on_success !== undefined && typeof $parms.on_success !== "function"){
+			throw "app.api: success handler must be a function.";
+		} else if ($parms.on_success === undefined){
+			$parms.on_success = function(){};
+		}
+		if ($parms.on_error !== undefined && typeof $parms.on_error !== "function"){
+			throw "app.api: error handler must be a function.";
+		} else if ($parms.on_error === undefined){
+			$parms.on_error = function(){};
+		}
+		
+		$resp = $.ajax({
+			url: app.path + "/api/",
+			type:"POST",
+			dataType:"JSON",
+			data: $parms.data,
+			cache: ($parms.cache === undefined) ? false : $parms.cache,
+			async: ($parms.async === undefined) ? true : $parms.async,
+			success: $parms.on_success,
+			error: $parms.on_error
+		});
+		
+		if ($parms.async === false){
+			return JSON.parse($resp.responseText);
+		}
+	}
+	
+	if (window !== undefined){
+		//optimizado para web workers
+		window.app = app;
+	}
 	return app;
 })();
 
@@ -178,6 +219,8 @@ $(document).ready(
 			app.mouseX = e.pageX;
 			app.mouseY = e.pageY;
 		});
-	
+		
+		app.sections = $("body > section");
+		app.current_section = $(app.sections[0]);
 	}
 );

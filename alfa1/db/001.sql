@@ -6,11 +6,13 @@ create database semilla_semilla;
 
 use semilla_semilla;
 
+
 drop table if exists config;
 create table config(
 	id int not null auto_increment primary key,
 	field_name varchar(25) not null,
-	field_value varchar(1000) not null default '') default charset utf8;
+	field_value varchar(1000) not null default ''
+) default charset utf8;
 
 drop table if exists template;
 create table template(
@@ -18,10 +20,10 @@ create table template(
 	name varchar(50) not null,
 	description varchar(255) not null default 'no description',
 	folder varchar(255) not null /* template's folder name */
-);
+) default charset utf8;
 
 insert into template (name, description, folder) values ('Default', 'Basic default application''s template', 'default');
-insert into config (field_name, field_value) values ('app_path', '/alfa1/');
+insert into config (field_name, field_value) values ('app_path', '/trabajo/desgrabados/repo/alfa1/');
 
 drop table if exists repos;
 create table repos(
@@ -35,6 +37,7 @@ create table contents(
 	id int not null auto_increment primary key,
 	name varchar(255) not null,
 	kind int not null,
+	id_repo int not null,
 	created timestamp not null default current_timestamp
 ) DEFAULT CHARSET=utf8;
 
@@ -44,6 +47,11 @@ create table content_kinds(
 	name varchar(50) unique not null
 ) default charset=utf8;
 insert into content_kinds (name) values ('audio'), ('text'), ('video');
+
+ALTER TABLE contents
+ADD CONSTRAINT FK_contents_repos
+FOREIGN KEY (id_repo) REFERENCES repos(id)  
+ON DELETE CASCADE;
 
 ALTER TABLE contents
 ADD CONSTRAINT FK_contents_content_kinds
@@ -85,63 +93,29 @@ ON DELETE CASCADE;
 drop table if exists processed;
 create table processed(
 	id int not null primary key auto_increment,
+	id_content int not null,
 	ver int not null default '1',
-	created timestamp not null default current_timestamp
+	hash varchar(32) not null,
+	created timestamp not null default current_timestamp,
+	full_object text not null
 ) default charset = utf8;
 
-drop table if exists components;
-create table components(
-	id int not null primary key auto_increment,
-	parent int,
-	kind int not null
-) default charset=utf8;
-
-ALTER TABLE components
-ADD CONSTRAINT FK_components_components
-FOREIGN KEY (parent) REFERENCES components(id)  
-ON UPDATE CASCADE  
-ON DELETE CASCADE;  
-
-drop table if exists component_kinds;
-create table component_kinds(
-	id int not null primary key auto_increment,
-	name varchar(50) not null,
-	description varchar(255)
-) default charset=utf8;
-
-ALTER TABLE components
-ADD CONSTRAINT FK_components_component_kinds
-FOREIGN KEY (kind) REFERENCES component_kinds(id)  
+ALTER TABLE processed
+ADD CONSTRAINT FK_processed_contents
+FOREIGN KEY (id_content) REFERENCES contents(id)  
 ON DELETE CASCADE;
 
-insert into component_kinds(name, description) values ('page','A text''s page.');
-insert into component_kinds(name, description) values ('chapter','A content''s chapter.');
-insert into component_kinds(name, description) values ('part','A content''s part.');
-
-drop table if exists component_properties;
-create table component_properties(
+drop table if exists raws;
+create table raws(
 	id int not null primary key auto_increment,
-	name varchar(50) unique not null,
-	description varchar(255)
-) default charset = utf8;
+	url varchar(1000) not null,
+	id_content int not null
+) default charset utf8;
 
-insert into component_properties (name, description) values ('page number', 'A page number.');
-insert into component_properties (name, description) values ('chapter number', 'A chapter number.');
-
-
-drop table if exists props_x_component;
-create table props_x_component(
-	id int not null primary key auto_increment,
-	id_prop int not null,
-	id_component int not null,
-	val varchar(255)
-) default charset = utf8;
-
-ALTER TABLE props_x_component
-ADD CONSTRAINT FK_props_x_component_component
-FOREIGN KEY (id_component) REFERENCES components(id)  
+ALTER TABLE raws
+ADD CONSTRAINT FK_raws_contents
+FOREIGN KEY (id_content) REFERENCES contents(id)  
 ON DELETE CASCADE;
-
 
 drop table if exists users;
 create table users(
@@ -203,5 +177,7 @@ insert into permission_user(id_user, id_permission) select 2,id from permission;
 /*
 	usuario admin default
 */
+
 grant ALL on semilla_semilla.* to semilla_admin@localhost;
 set password for semilla_admin@localhost = password('semilla');
+

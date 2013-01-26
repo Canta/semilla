@@ -36,6 +36,7 @@
 	<title>Desgrabaciones Comunitarias - v. Alfa #1</title>
 	<?php
 		echo UILib::get_common_js();
+		echo UILib::get_common_css();
 		echo UILib::get_template_js();
 		echo UILib::get_template_css();
 	?>
