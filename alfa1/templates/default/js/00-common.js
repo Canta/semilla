@@ -29,6 +29,15 @@ app.player.load_file = function(){
 
 app.contents = {};
 app.contents.all = [];
+app.contents.creation = {};
+
+app.contents.creation.validate = function($number){
+	if (isNaN($number)){
+		throw "app.contents.creation.validate: page number expected.";
+	}
+	
+	return true;
+};
 
 /**
  * app.contents.search
@@ -132,11 +141,10 @@ app.contents.show_in_search_list = function($cs){
 /**
  * app.contents.new_item
  * Starts the UI environment for content creation.
- */ 
+ */
 app.contents.new_item = function(){
 	app.change_section("content-create");
 }
-	
 
 $(document).ready(
 	function(){

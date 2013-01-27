@@ -78,6 +78,20 @@
 }
 
 
+.wizard-page-out {
+	display:none;
+	animation-fill-mode: forwards;
+	animation-duration: 1s;
+	animation-name: chau_izquierda;
+	left:-100%;
+	-webkit-animation-fill-mode: forwards;
+	-webkit-animation-duration: 1s;
+	-webkit-animation-name: chau_izquierda;
+	-o-animation-fill-mode: forwards;
+	-o-animation-duration: 1s;
+	-o-animation-name: chau_izquierda;
+}
+
 @keyframes flip {
 	from {
 		transform: rotateY(0deg);

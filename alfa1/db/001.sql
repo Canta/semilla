@@ -32,12 +32,14 @@ create table repos(
 	url varchar(1000)
 ) DEFAULT CHARSET=utf8;
 
+insert into repos (name,url) values ('self - special repo', '.');
+
 drop table if exists contents;
 create table contents(
 	id int not null auto_increment primary key,
 	name varchar(255) not null,
 	kind int not null,
-	id_repo int not null,
+	id_repo int not null default 1,
 	created timestamp not null default current_timestamp
 ) DEFAULT CHARSET=utf8;
 

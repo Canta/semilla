@@ -29,7 +29,7 @@ var App = (function() {
 		current_section : $(),
 		timers : {}
 	};
-
+	
 	app.timers.drag = [];
 
 	app.show_modal = function($data){
@@ -123,7 +123,7 @@ var App = (function() {
 	app.mostrar_mensaje = function($msg){
 		alert($msg);
 	}
-
+	
 	app.start_drag = function($e){
 		$random = Math.round(Math.random() * 999999);
 		if ($e[0].className.indexOf("draggable") <= -1){
@@ -253,6 +253,106 @@ var App = (function() {
 	return app;
 })();
 
+/**
+ * Wizard class
+ * Handles UI wizards
+ */
+var Wizard = function($obj){
+	var self = {
+		obj : ($obj instanceof jQuery) ? $($obj[0]) : $($obj)
+	}
+	
+	self.pages = self.obj.find(".wizard-page");
+	self.current_page = -1; //at startup, it's -1. Then, uses the "next()" method.
+	self.back_button = self.obj.find(".wizard-back-button");
+	self.next_button = self.obj.find(".wizard-next-button");
+	
+	self.next = function(){
+		
+		$valid = (self.current_page > -1) ? eval($(self.pages[self.current_page]).attr("validation")) : true;
+		
+		if ($valid === undefined){
+			$valid = true;
+		}
+		
+		if ($valid === true){
+			if (self.current_page >= 0){
+				self.hide_page(self.current_page);
+				self.back_button.removeAttr("disabled");
+			} else {
+				self.back_button.attr("disabled","disabled");
+			}
+			
+			self.current_page = (self.current_page < self.pages.length -1) ? self.current_page + 1 : self.current_page;
+			self.show_page(self.current_page);
+			
+			if (self.current_page < self.pages.length - 1) {
+				self.next_button.removeAttr("disabled");
+			} else {
+				self.next_button.attr("disabled", "");
+			}
+			
+			self.obj.find(".wizard-title").html("<h1>"+$(self.pages[self.current_page]).attr("wizardtitle")+"</h1>");
+		} else {
+			app.mostrar_error("Hay datos inválidos.\nPor favor, revise los datos y vuelva a intentar.");
+		}
+	}
+	
+	self.back = function(){
+		if (self.current_page < self.pages.length) {
+			self.hide_page(self.current_page, "left");
+			self.next_button.removeAttr("disabled");
+		} else {
+			self.next_button.attr("disabled", "");
+		}
+		
+		self.current_page = (self.current_page > 0) ? self.current_page - 1 : self.current_page;
+		self.show_page(self.current_page, "right");
+		
+		if (self.current_page > 0){
+			self.back_button.removeAttr("disabled");
+		} else {
+			self.back_button.attr("disabled","disabled");
+		}
+		
+		self.obj.find(".wizard-title").html("<h1>"+$(self.pages[self.current_page]).attr("wizardtitle")+"</h1>");
+	}
+	
+	self.show_page = function($number){
+		if (isNaN($number)){
+			throw "Wizard.show_page: page number expected.";
+		}
+		
+		$(self.pages[$number]).removeClass("wizard-page-out");
+		$(self.pages[$number]).fadeIn(150);
+		
+	}
+	
+	self.hide_page = function($number){
+		if (isNaN($number)){
+			throw "Wizard.hide_page: page number expected.";
+		}
+		
+		$(self.pages[$number]).addClass("wizard-page-out");
+	}
+	
+	self.__init__ = function (){
+		
+		for (var $i = self.pages.length -1; $i > -1; $i--){
+			$(self.pages[$i]).css("z-index", (self.pages.length - $i) + 1);
+		}
+		self.current_page = -1;
+		self.back_button.bind("click",self.back);
+		self.next_button.bind("click",self.next);
+		self.next();
+	};
+	
+	self.__init__();
+	
+	return self;
+}
+
+
 $(document).ready(
 	function(){
 		$(".draggable").mousedown(function(e){
@@ -282,5 +382,11 @@ $(document).ready(
 		
 		app.sections = $("body > section");
 		app.current_section = $(app.sections[0]);
+		
+		app.wizards = [];
+		$(".wizard").each(function($i, $e){
+			app.wizards.push(new Wizard($e));
+		});
+		
 	}
 );
