@@ -39,6 +39,30 @@ app.contents.creation.validate = function($number){
 	return true;
 };
 
+app.contents.creation.save = function(){
+	var $creation_data = {};
+	
+	$creation_data.name = $("#content-create #content-create-name").val();
+	if ($creation_data.name == ""){
+		throw "app.contents.creation.save: content name required.";
+	}
+	
+	$creation_data.kind = $("#content-create #content-create-kind").val();
+	if ($creation_data.kind == "none"){
+		throw "app.contents.creation.save: content kind required.";
+	}
+	
+	var $raws = $("#content-create input[name='raws[]']");
+	$creation_data.raws = [];
+	for (var $i = 0; $i < $raws.length; $i++){
+		$creation_data.raws.push($raws[$i].value);
+	}
+	
+	$creation_data.processed = app.contents.creation.processed;
+	
+	app.ui.change_section("contents");
+}
+
 /**
  * app.contents.search
  * Given an input, stated in the UI's search text box, searches in the servers.
@@ -143,7 +167,16 @@ app.contents.show_in_search_list = function($cs){
  * Starts the UI environment for content creation.
  */
 app.contents.new_item = function(){
-	app.change_section("content-create");
+	// vars cleanup
+	app.contents.creation.processed = {};
+	$("#content-create #content-create-raw-files").html("");
+	$("#content-create #content-create-name").val("");
+	$("#content-create #content-create-kind")[0].selectedIndex=0;
+	
+	$("#content-create #content-create-process-file").replaceWith( $("#content-create #content-create-process-file")[0].outerHTML );
+	app.ui.get_object("content-create").reset();
+	
+	app.ui.change_section("content-create");
 }
 
 $(document).ready(

@@ -27,11 +27,14 @@ var App = (function() {
 		path : ".",
 		esperando : [],
 		current_section : $(),
-		timers : {}
+		timers : {},
+		ui : {
+			wizards : []
+		}
 	};
 	
 	app.timers.drag = [];
-
+	
 	app.show_modal = function($data){
 		
 		if ($data === undefined){
@@ -210,40 +213,61 @@ var App = (function() {
 		}
 	}
 	
-	app.change_section = function($val){
+	app.ui.change_section = function($val){
 		var $sec = null;
 		if (!isNaN($val)){
 			// section index number from the app.sections array.
 			if ($val >= app.sections.length || $val < 0){
-				throw "app.change_section: invalid section number.";
+				throw "app.ui.change_section: invalid section number.";
 			}
 			$sec = $(app.sections[$val]);
 		} else if (typeof $val === "string"){
 			// section DOM id
 			$sec = $("#"+$val);
 			if ($sec.length == 0){
-				throw "app.change_section: section id '"+$val+"' not found.";
+				throw "app.ui.change_section: section id '"+$val+"' not found.";
 			}
 		} else if ($val instanceof jQuery) {
 			// a jQuery selected object. 
 			// index 0 is assumed to be the one selected
 			if ($val.length == 0){
-				throw "app.change_section: invalid section selection.";
+				throw "app.ui.change_section: invalid section selection.";
 			}
 			$sec = $($val[0]);
 		} else if ($val instanceof HTMLElement){
 			// an HTML DOM element.
 			if ($val.tagName !== "SECTION"){
-				throw "app.change_section: element not a section.";
+				throw "app.ui.change_section: element not a section.";
 			}
 			$sec = $($val);
 		} else {
-			throw "app.change_section: invalid argument data type.";
+			throw "app.ui.change_section: invalid argument data type.";
 		}
 		
 		app.sections.fadeOut(300);
 		setTimeout(function(){$sec.fadeIn(300);},350);
 		app.current_section = $sec;
+	}
+	
+	app.ui.get_object = function($str){
+		if (typeof $str !== "string"){
+			throw "app.ui.get_object: object id string expected.";
+		}
+		
+		var found = false;
+		var obj = {};
+		
+		if (!found) {
+			for (var $i = 0; $i < app.ui.wizards.length; $i++){
+				if (app.ui.wizards[$i].obj.attr("id") == $str){
+					found = true;
+					obj = app.ui.wizards[$i];
+				}
+			}
+		}
+		
+		
+		return obj;
 	}
 	
 	if (window !== undefined){
@@ -347,6 +371,11 @@ var Wizard = function($obj){
 		self.next();
 	};
 	
+	self.reset = function (){
+		self.current_page = -1;
+		self.next();
+	};
+	
 	self.__init__();
 	
 	return self;
@@ -383,9 +412,8 @@ $(document).ready(
 		app.sections = $("body > section");
 		app.current_section = $(app.sections[0]);
 		
-		app.wizards = [];
 		$(".wizard").each(function($i, $e){
-			app.wizards.push(new Wizard($e));
+			app.ui.wizards.push(new Wizard($e));
 		});
 		
 	}
