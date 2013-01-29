@@ -40,7 +40,7 @@ app.contents.creation.validate = function($number){
 };
 
 app.contents.creation.save = function(){
-	var $creation_data = {};
+	var $creation_data = { verb: "new_content"};
 	
 	$creation_data.name = $("#content-create #content-create-name").val();
 	if ($creation_data.name == ""){
@@ -60,7 +60,13 @@ app.contents.creation.save = function(){
 	
 	$creation_data.processed = app.contents.creation.processed;
 	
-	app.ui.change_section("contents");
+	$creation_data.on_success = function(){
+		app.ui.change_section("contents");
+	}
+	
+	app.api({data:$creation_data});
+	
+	
 }
 
 /**
@@ -85,7 +91,7 @@ app.contents.search = function(){
 	});
 };
 app.contents.search.history = [];
-app.contents.search.list = $("#content-list > .lista > .items");
+app.contents.search.list = $();
 app.contents.load_all = function(){
 	app.espere("Cargando contenidos desde el servidor...","contenidos cargados.");
 	if (window.localStorage && window.localStorage.getItem("contents")){
@@ -155,8 +161,9 @@ app.contents.show_in_search_list = function($cs){
 	app.contents.search.list.find(".item").remove();
 	
 	var $tmp_html = "";
+	
 	for (var $i = 0; $i < $cs.length; $i++){
-		$tmp_html += "<div class=\"item con-sombrita redondeadito\" index=\""+$cs[$i].index+"\">"+$cs[$i].fields.name+"</div>";
+		$tmp_html += "<div class=\"item con-sombrita redondeadito\" index=\""+$cs[$i].index+"\">"+$cs[$i].name+"</div>";
 	}
 	
 	app.contents.search.list.append($tmp_html);
@@ -185,6 +192,7 @@ $(document).ready(
 		app.espere("Cargando sistema","sistema cargado.");
 		$(window).bind("load", function(){
 			app.current_section.fadeIn(250);
+			app.contents.search.list = $("#content-list > .lista > .items");
 			app.desespere("Cargando sistema");
 			//app.player.instance = $("#player-main")[0];
 		});

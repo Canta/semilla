@@ -5,6 +5,7 @@
  * @author Daniel Cantarín <omega_canta@yahoo.com>
  * @requires: clase proxy.
  */
+require_once("../class/api.class.php");
 require_once("../class/proxy.class.php");
 
 // TO DO:

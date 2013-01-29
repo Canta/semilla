@@ -1292,4 +1292,16 @@ class Model extends ORM{
 	
 }
 
+
+try{
+	/* Incluyo TODAS las clases de ABM que existan declaradas */
+	
+	foreach (glob(dirname(__FILE__)."/abmclasses/*.class.php") as $filename){
+		require_once($filename);
+	}
+} catch(Exception $e){
+	//nada 
+}
+
+
 ?>

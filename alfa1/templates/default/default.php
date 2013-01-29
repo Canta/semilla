@@ -34,9 +34,9 @@
 					<p>Kind: 
 						<select name="kind" id="content-create-kind">
 							<option value="none"> - - - </option>
-							<option value="audio">audio</option>
-							<option value="text">text</option>
-							<option value="video">video</option>
+							<option value="1">audio</option>
+							<option value="2">text</option>
+							<option value="3">video</option>
 						</select>
 					</p>
 				</div>

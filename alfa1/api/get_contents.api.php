@@ -1,11 +1,12 @@
 <?php
+require_once("../class/api.class.php");
+
 /** 
  * get_contents
  * API verb for content access
  *
  * @author Daniel Cantarín <omega_canta@yahoo.com>
  */
-
 class get_contents extends API{
 	
 	public function do_your_stuff($arr){
