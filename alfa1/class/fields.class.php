@@ -205,7 +205,7 @@ class Field {
 	
 	//20120810 - Daniel Cantarín 
 	//Agrego tratamiento para valores que sean arrays.
-	public function set_valores($arr){
+	public function set_valores($arr=null){
 		if (!is_array($arr)){
 			throw new Exception("<b class=\"exception_text\">Clase ".get_class($this).", método set_valores(): se esperaba un Array.</b>");
 		}
