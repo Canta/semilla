@@ -181,9 +181,171 @@ app.contents.new_item = function(){
 	$("#content-create #content-create-kind")[0].selectedIndex=0;
 	
 	$("#content-create #content-create-process-file").replaceWith( $("#content-create #content-create-process-file")[0].outerHTML );
+	$("#content-create #content-create-process-file")[0].addEventListener("change", app.contents.read_raw_data);
+	$("#content-create-process-button-placeholder").html("");
+	$("#content-create-file-details").html("");
+	
 	app.ui.get_object("content-create").reset();
 	
 	app.ui.change_section("content-create");
+}
+
+/**
+ * app.contents.read_raw_data
+ * Given a raw file (typically, a binary blob), it reads some metadata
+ * from the file in order to start the decomposition process.
+ * 
+ * It's an event handler for a file type input.
+ */
+app.contents.read_raw_data = function(evt){
+	$files = evt.target.files;
+	// evt.target.files is a FileList object.
+	// That kind of object is NOT serializable to Web Workers.
+	// However, File objects are, and Arrays too.
+	// So... i create an array of file objects then, just in case.
+	app.contents.files = [];
+	app.contents.current_kind = $("#content-create-kind")[0].options[$("#content-create-kind")[0].selectedIndex].innerHTML;
+	
+	var $kind = app.contents.current_kind;
+	var $tmp_html = "";
+	var $ok = false;
+	
+	// The File object has three useful properties: size, name, and type.
+	// "type" is the file's MIME type.
+	for (var $i = 0; $i < $files.length; $i++){
+		var $file = $files[$i];
+		if (!app.contents.is_file_type_valid($file.type) ){
+			$tmp_html += $file.name+": " + $file.type + " no es un tipo de archivo válido para el tipo de contenido " + $kind + ".<br/>";
+		} else {
+			$ok = true;
+			$tmp_html += "File: <b>\""+$file.name+"\"</b> - Size: <b>"+Math.round(($file.size / 1024 ) / 1024)+" MB</b> - Type: <i>\""+$file.type+"\"</i><br/>";
+			$file.extra_data = {};
+			
+			// Now, i try to get extra data from the file
+			if ($kind == "audio"){
+				// From audio files, i need the duration.
+				// TODO: implement a good audio library for this task.
+				$file.extra_data.duration = NaN;
+				try{
+					/*
+					var a = window.URL.createObjectURL($file);
+					var b = new Audio(a);
+					b.index = app.contents.files.length;
+					b.load();
+					b.addEventListener("durationchange", function(event) {
+						app.contents.files[this.index].extra_data.duration = event.target.duration;
+					});
+					*/
+					
+					a = FileReader();
+					a.readAsDataURL($file);
+					a.onloadend = function(evt){
+						if (evt.target.readyState == FileReader.DONE) { // DONE == 2
+							
+							b = soundManager.createSound({
+								id: 'test',
+								url: evt.target.result,
+								autoLoad: true,
+								autoPlay: false,
+								index: app.contents.files.length,
+								onload: function() {
+									alert("sasa");
+									console.log([this.duration, this.durationEstimate, this]);
+									app.contents.files[this.index].extra_data.duration = this.duration;
+									this.destruct();
+								},
+								volume: 50
+							});
+							
+							/*
+							var b = new Audio(evt.target.result);
+							b.index = app.contents.files.length;
+							b.load();
+							b.addEventListener("load", function(event) {
+								console.debug([this.duration]);
+								app.contents.files[this.index].extra_data.duration = event.target.duration;
+							});
+							*/
+						}
+					}
+					
+				} catch($e){
+					// nothing
+				}
+			} else if ($kind == "text"){
+				$file.extra_data.pages = [];
+				a = FileReader();
+				a.readAsArrayBuffer($file);
+				a.onloadend = function(evt){
+					if (evt.target.readyState == FileReader.DONE) { // DONE == 2
+						//var c = convertDataURIToBinary(evt.target.result);
+						var c = Uint8Array(evt.target.result);
+						PDFJS.getDocument(c).then(function(pdf) {
+							console.debug(pdf.pdfInfo.numPages);
+						});
+					}
+				}
+			}
+			
+			app.contents.files.push($file);
+		}
+	}
+	
+	$("#content-create-file-details").html($tmp_html);
+	if ($ok){
+		$("#content-create-process-button-placeholder").html("<button onclick=\"app.contents.process_files();\">Process</button>");
+	} else {
+		$("#content-create-process-button-placeholder").html("");
+	}
+}
+
+function convertDataURIToBinary(dataURI) {
+  var base64Index = dataURI.indexOf(BASE64_MARKER) + BASE64_MARKER.length;
+  var base64 = dataURI.substring(base64Index);
+  var raw = window.atob(base64);
+  var rawLength = raw.length;
+  var array = new Uint8Array(new ArrayBuffer(rawLength));
+
+  for(i = 0; i < rawLength; i++) {
+    array[i] = raw.charCodeAt(i);
+  }
+  return array;
+}
+
+/**
+ * app.contents.is_file_type_valid
+ * Given a file MIME type, it checks if the file is valid for the current
+ * selected content kind.
+ */
+app.contents.is_file_type_valid = function($type){
+	$kinds = ["audio", "text", "video"];
+	
+	$kinds["audio"] = ["audio/ogg", "audio/vorbis", "audio/mpeg", "video/ogg", "audio/mp3"];
+	$kinds["video"] = ["video/webm"];
+	$kinds["text"]  = ["application/pdf"];
+	
+	$k = app.contents.current_kind;
+	
+	$found = false;
+	if ($kinds[$k]){
+		for (var $i = 0; $i < $kinds[$k].length; $i++){
+			if ($type == $kinds[$k][$i]){
+				$found = true;
+				break;
+			}
+		}
+	}
+	
+	return $found;
+}
+
+/**
+ * app.contents.process_files
+ * Starts the decomposition process.
+ * It assumes that the app.contents.files array is well setted.
+ */
+app.contents.process_files = function(){
+	
 }
 
 $(document).ready(
@@ -193,8 +355,23 @@ $(document).ready(
 		$(window).bind("load", function(){
 			app.current_section.fadeIn(250);
 			app.contents.search.list = $("#content-list > .lista > .items");
+			
+			soundManager.setup({
+				url: app.path+"/js/swf/",
+				flashVersion: 9, // optional: shiny features (default = 8)
+				useFlashBlock: false, // optionally, enable when you're ready to dive in
+				useHTML5Audio : true,
+				preferFlash: false,
+				debugMode: true,
+				onready: function() {
+					// Ready to use; soundManager.createSound() etc. can now be called.
+				}
+			});
+			
+			window.URL = window.URL || window.webkitURL;
+			PDFJS.workerSrc = app.path+"/js/workers/pdf.worker.js";
 			app.desespere("Cargando sistema");
-			//app.player.instance = $("#player-main")[0];
+			
 		});
 		
 		
