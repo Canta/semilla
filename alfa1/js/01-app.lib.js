@@ -84,7 +84,7 @@ var App = (function() {
 			$("body").append("<div class=\"cubre-cuerpo\" tyle=\"display:none\"></div>");
 		}
 		if ($("body > .modal").length == 0){
-			$("body").append("<div class=\"modal\" tyle=\"display:none\"></div>");
+			$("body").append("<div class=\"modal\" tyle=\"display:none\"><div class=\"descripciones\"></div></div>");
 		}
 		
 		if (app.esperando.length == 0 || $("body > .cubre-cuerpo").css("display") == "none"){
@@ -92,20 +92,24 @@ var App = (function() {
 			$("body > .modal").fadeIn(500);
 		}
 		app.esperando.push([$desc,$fin]);
-		$("body > .modal .descripcion").text($("body > .modal .descripcion").text() + $desc + "...\n");
+		var $id = "espere-" + app._str_to_id($desc);
+		$("body > .modal .descripciones").append("<p class=\"waiting-text\" id=\""+$id+"\">" + $desc + "</p>");
 		
 	}
 
 	app.desespere = function($desc){
 		if ($desc === undefined){
 			if (app.esperando.length > 0){
-				$("body > .modal .descripcion").text($("body > .modal .descripcion").text() + "..." + app.esperando[0][1] + "\n");
+				$desc = app.esperando[0][0];
+				var $id = "espere-" + app._str_to_id($desc);
+				$("body > .modal .descripciones #"+$id).append("<span>..." + app.esperando[0][1] + "</span>");
 				app.esperando.splice(0,1);
 			}
 		} else {
 			for ($i in app.esperando){
 				if (app.esperando[$i][0] == $desc){
-					$("body > .modal .descripcion").text($("body > .modal .descripcion").text() + "..." + app.esperando[$i][1] + "\n");
+					var $id = "espere-" + app._str_to_id($desc);
+					$("body > .modal .descripciones #"+$id).append("<span>..." + app.esperando[$i][1] + "</span>");
 					app.esperando.splice($i,1);
 					break;
 				}
@@ -115,10 +119,16 @@ var App = (function() {
 		if (app.esperando.length == 0){
 			$(".cubre-cuerpo").fadeOut(500);
 			$("body > .modal").fadeOut(500);
+			window.setTimeout(function(){$("body > .modal .descripciones > p").remove();},600);
 		}
 	   
 	}
-
+	
+	app._str_to_id = function($str){
+		var $tmp = $str.toLowerCase().replace(/\ /gi,"-").replace(/\"/gi,"");
+		return $tmp;
+	}
+	
 	app.mostrar_error = function($msg){
 		alert("Error:\n"+$msg);
 	}

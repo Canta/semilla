@@ -47,6 +47,20 @@
 	padding-right: 5px;
 }
 
+.modal > .descripciones{
+	height: 90%;
+	left: 5%;
+	position: absolute;
+	top: 5%;
+	width: 90%;
+	overflow-x: hidden;
+	overflow-y: auto;
+	font-family: Sans-serif,Helvetica,Tahoma;
+	font-size: 120%;
+	text-shadow: 0 0 5px black;
+	text-align:center;
+}
+
 .modal > .modal-html{
 	position:absolute;
 	width:100%;
@@ -98,3 +112,4 @@
 .wizard-page p{
 	text-align:center;
 }
+
