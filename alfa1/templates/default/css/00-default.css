@@ -140,4 +140,15 @@ section{
 	background-color: #f0fff0;
 }
 
+#content-create-process-output{
+	width:100%; 
+	height: 80%;
+	overflow: auto;
+	text-align:center;
+}
 
+#content-create-process-output canvas{
+	border: black 2px dashed;
+	margin-bottom: 10px;
+	display:inline-block;
+}

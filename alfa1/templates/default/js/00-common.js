@@ -30,6 +30,7 @@ app.player.load_file = function(){
 app.contents = {};
 app.contents.all = [];
 app.contents.creation = {};
+app.contents.processing = {};
 
 app.contents.creation.validate = function($number){
 	if (isNaN($number)){
@@ -275,15 +276,44 @@ app.contents.read_raw_data = function(evt){
 			} else if ($kind == "text"){
 				$file.extra_data.pages = [];
 				a = FileReader();
+				app.espere("Procesando archivo...", "archivo procesado.");
 				a.readAsArrayBuffer($file);
 				a.onloadend = function(evt){
 					if (evt.target.readyState == FileReader.DONE) { // DONE == 2
 						//var c = convertDataURIToBinary(evt.target.result);
 						var c = Uint8Array(evt.target.result);
 						PDFJS.getDocument(c).then(function(pdf) {
-							console.debug(pdf.pdfInfo.numPages);
+							//console.debug(pdf.pdfInfo.numPages);
+							app.contents.processing.raw_in_process = pdf;
+							$("#content-create-process-output").html("");
+							app.contents.processing.processed_pages = [];
+							for (var $i=0; $i < pdf.pdfInfo.numPages; $i++){
+								pdf.getPage($i +1).then(function(page){
+									var scale = 1.5;
+									var viewport = page.getViewport(scale);
+									var canvas = document.createElement("canvas");
+									$("#content-create-process-output").append(canvas)
+									var context = canvas.getContext('2d');
+									canvas.height = viewport.height;
+									canvas.width = viewport.width;
+									var renderContext = {
+										canvasContext: context,
+										viewport: viewport
+									};
+									page.render(renderContext).then(
+										function(){
+											app.contents.processing.processed_pages.push(true);
+											if (app.contents.processing.raw_in_process.pdfInfo.numPages == app.contents.processing.processed_pages.length){
+												app.desespere("Procesando archivo...");
+											}
+										}
+									);
+									
+								});
+							}
 						});
 					}
+					
 				}
 			}
 			

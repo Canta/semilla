@@ -51,6 +51,9 @@
 					<p>Select a file to process: <input type="file" name="file" id="content-create-process-file" /></p>
 					<p id="content-create-file-details"></p>
 					<p id="content-create-process-button-placeholder"></p>
+					<div id="content-create-process-output">
+						
+					</div>
 				</div>
 				<div class="wizard-page" validation="app.contents.creation.validate(3);" wizardtitle="Save content ">
 					<p></p>
