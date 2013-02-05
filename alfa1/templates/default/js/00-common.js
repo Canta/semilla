@@ -306,7 +306,7 @@ app.contents.read_raw_data = function(evt){
 											app.contents.processing.processed_pages.push(true);
 											app.contents.processing.raw_in_process.getPage($curr_page).data.getTextContent().then(
 												function(text){
-													textin = $.makeArray($(text.bidiTexts).map(function(element,value){return value.str})).join(' '); 
+													textin = $.makeArray($(text.bidiTexts).map(function(element,value){return value.str})).join('\n'); 
 													app.contents.processing.pages.push({text: textin,dataURL: canvas.toDataURL("image/jpeg")}); 
 												}
 											);
