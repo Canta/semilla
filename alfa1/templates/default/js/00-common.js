@@ -304,7 +304,12 @@ app.contents.read_raw_data = function(evt){
 									page.render(renderContext).then(
 										function(){
 											app.contents.processing.processed_pages.push(true);
-											app.contents.processing.pages.push({texto: "",dataURL: canvas.toDataURL("image/jpeg")}); 
+											app.contents.processing.raw_in_process.getPage($curr_page).data.getTextContent().then(
+												function(text){
+													textin = $.makeArray($(text.bidiTexts).map(function(element,value){return value.str})).join(' '); 
+													app.contents.processing.pages.push({text: textin,dataURL: canvas.toDataURL("image/jpeg")}); 
+												}
+											);
 											if (app.contents.processing.raw_in_process.pdfInfo.numPages == app.contents.processing.processed_pages.length){
 												app.desespere("Procesando archivo...");
 											} else {
