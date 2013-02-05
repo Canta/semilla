@@ -183,7 +183,6 @@ app.contents.new_item = function(){
 	
 	$("#content-create #content-create-process-file").replaceWith( $("#content-create #content-create-process-file")[0].outerHTML );
 	$("#content-create #content-create-process-file")[0].addEventListener("change", app.contents.read_raw_data);
-	$("#content-create-process-button-placeholder").html("");
 	$("#content-create-file-details").html("");
 	
 	app.ui.get_object("content-create").reset();
@@ -275,6 +274,7 @@ app.contents.read_raw_data = function(evt){
 				}
 			} else if ($kind == "text"){
 				$file.extra_data.pages = [];
+				app.contents.processing.pages = [];
 				a = FileReader();
 				app.espere("Procesando archivo...", "archivo procesado.");
 				a.readAsArrayBuffer($file);
@@ -286,14 +286,15 @@ app.contents.read_raw_data = function(evt){
 							//console.debug(pdf.pdfInfo.numPages);
 							app.contents.processing.raw_in_process = pdf;
 							$("#content-create-process-output").html("");
+							var canvas = document.createElement("canvas");
+							$("#content-create-process-output").append(canvas)
+							var context = canvas.getContext('2d');
 							app.contents.processing.processed_pages = [];
-							for (var $i=0; $i < pdf.pdfInfo.numPages; $i++){
-								pdf.getPage($i +1).then(function(page){
+							var $curr_page = 1;
+							var fun = function($i){
+								pdf.getPage($curr_page).then(function(page){
 									var scale = 1.5;
 									var viewport = page.getViewport(scale);
-									var canvas = document.createElement("canvas");
-									$("#content-create-process-output").append(canvas)
-									var context = canvas.getContext('2d');
 									canvas.height = viewport.height;
 									canvas.width = viewport.width;
 									var renderContext = {
@@ -303,14 +304,22 @@ app.contents.read_raw_data = function(evt){
 									page.render(renderContext).then(
 										function(){
 											app.contents.processing.processed_pages.push(true);
+											app.contents.processing.pages.push({texto: "",dataURL: canvas.toDataURL()}); 
 											if (app.contents.processing.raw_in_process.pdfInfo.numPages == app.contents.processing.processed_pages.length){
 												app.desespere("Procesando archivo...");
+											} else {
+												$curr_page++;
+												fun($curr_page);
 											}
 										}
 									);
 									
 								});
 							}
+							fun($curr_page);
+							//for (var $i=0; $i < pdf.pdfInfo.numPages; $i++){
+								
+							//}
 						});
 					}
 					
@@ -322,11 +331,7 @@ app.contents.read_raw_data = function(evt){
 	}
 	
 	$("#content-create-file-details").html($tmp_html);
-	if ($ok){
-		$("#content-create-process-button-placeholder").html("<button onclick=\"app.contents.process_files();\">Process</button>");
-	} else {
-		$("#content-create-process-button-placeholder").html("");
-	}
+	
 }
 
 function convertDataURIToBinary(dataURI) {

@@ -50,7 +50,6 @@
 					<p></p>
 					<p>Select a file to process: <input type="file" name="file" id="content-create-process-file" /></p>
 					<p id="content-create-file-details"></p>
-					<p id="content-create-process-button-placeholder"></p>
 					<div id="content-create-process-output">
 						
 					</div>
