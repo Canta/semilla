@@ -428,3 +428,28 @@ $(document).ready(
 		
 	}
 );
+
+/* jQuery extension: unserializing strings. */
+jQuery.unserialize = function(str){
+		var items = str.split('&');
+		var ret = "{";
+		for (var i = 0; i < items.length; i++) {
+			var parts = items[i].split(/=/);
+			ret += "\""+parts[0] + "\": \"" + parts[1] + "\"";
+			if (i < items.length - 1){
+				ret += ", ";
+			}
+			
+		};
+		ret += "}";
+		return JSON.parse(ret);
+}
+jQuery.fn.unserialize = function(str){
+		var items = str.split('&');
+		for (var i = 0; i < items.length; i++) {
+			var parts = items[i].split(/=/);
+			this.find('[name='+ parts[0] +']').val(parts[1]);
+		};
+		return this;
+}
+
