@@ -744,6 +744,17 @@ class SiNoEnumField extends EnumField{
 	}
 }
 
+class IntSiNoEnumField extends EnumField{
+	public function __construct($id="", $rotulo="", $valor="", $items = null){
+		parent::__construct($id, $rotulo, $valor);
+		
+		$this->data["items"] = Array(Array("1", "Si"), Array("0", "No"));
+		$this->set_tipo_HTML("enum");
+		$this->set_tipo_sql("int");
+		
+	}
+}
+
 class QueryEnumField extends EnumField{
 	
 	public function __construct($id="", $rotulo="", $valor="", $query = null){
@@ -822,4 +833,103 @@ class ConditionalQueryEnumField extends QueryEnumField{
 	}
 }
 
+
+class OptionalListField extends SelectField{
+	
+	public function __construct($id="", $rotulo="", $valor="", $items = null){
+		parent::__construct($id, $rotulo, $valor, $items);
+		$this->set_separador("|");
+	}
+	
+	public function get_items(){
+		$arr = is_array($this->data["items"]) ? $this->data["items"] : Array();
+		return $arr;
+	}
+	
+	public function set_separador($val){
+		$this->data["separador"] = $val;
+	}
+	
+	public function get_separador(){
+		return $this->data["separador"];
+	}
+	
+	
+	public function render(){
+		$ret = "";
+		
+		$tmp = ($this->get_primary_key() === true) ? "hidden" : $this->get_tipo_HTML() ;
+		
+		$stily = "style=\"";
+		if ($this->data["columnas"] > 0){
+			$stily .= "width:".(100 / $this->data["columnas"] / 2)."%; ";
+		}
+		
+		if ($tmp == "hidden" ){
+			$stily .= "display: none; ";
+		}
+		
+		$stily .= "\" ";
+		
+		$ret .= "<span class=\"Field_rotulo\" ".$stily.">".(($this->get_rotulo() == "" && $this->get_primary_key() === false) ? $this->get_id() : $this->get_rotulo()) ."&nbsp;</span><span class=\"Field_input\" ".$stily.">";
+		$ret2 = "";
+		$valor = $this->get_valor(false);
+		$valores = explode($this->get_separador(),$valor);
+		
+		$autoregex = (boolean)($this->get_regex_validacion(false) == ""); 
+		$type = ($this->get_primary_key() === true) ? "hidden" : $this->get_tipo_HTML() ;
+		$type = ($type=="select") ? "hidden" : $type;
+		$type = str_replace("enum","text",$type);
+		$clase_css = $this->set_clase_CSS();
+		
+		$ret2 .= "<input separador=\"".$this->get_separador()."\"  class='".$clase_css."' id='".$this->get_id()."' name='".$this->get_HTML_name()."' type='".$type."' value='".$valor."' pattern='".$this->get_regex_validacion($autoregex)."' alt='".str_replace("'","`",$this->get_rotulo())."' ";
+		
+		foreach ($this->get_events() as $key => $value) {
+			$ret2 .= " ".$key." =\"". str_replace('"','\\"',$value)."\" ";
+		}
+		
+		if ($this->get_activado() !== TRUE && $type != "hidden"){
+			//20120523 - Se agrega chequeo de que no sea tipo hidden.
+			//Los hidden, cuando disabled, no se pasan por el formulario al postear.
+			//Típicamente, un primary key se manda como hidden, y por ser primary key se establece disabled.
+			//Pero si establezco esa combinacíon de propiedades, pierdo el campo en el próximo post.
+			//De modo que sacrifico una de las dos cuando se da la combinación: sacrifico el disabled.
+			$ret2 .= " disabled ";
+		}
+		
+		if ($this->get_largo() > 0){
+			$ret2 .= " maxlength=".$this->get_largo()." ";
+		}
+		
+		if ($this->get_requerido() === TRUE){
+			$ret2 .= " required ";
+		}
+		
+		$ret2 .= " enum /> ";
+		
+		$ret2 .=  "<div id=\"list_".$this->get_id()."\" enum_list class=\"enum_list\" >";
+		$tmp_items = $this->get_items();
+		$selected = "";
+		$found = Array();
+		foreach ($tmp_items as $item){
+			$selected = (in_array($item[$this->get_campo_indice()],$valores)) ? " checked " : "";
+			if ($selected != ""){
+				$found[] = $item[$this->get_campo_indice()];
+			}
+			$ret2 .=  "<label class=\"enum_list_item_label\"><input type=\"checkbox\" ".$selected." value=\"".$item[$this->get_campo_indice()]."\" />".$item[$this->get_campo_descriptivo()]."</label>";
+		}
+		$v = $valores[count($valores)-1];
+		if (in_array($v,$found)) {
+			$v = "";
+		}
+		$ret2 .=  "<label class=\"enum_list_item_label\">Otro: <input type=\"text\" value=\"".$v."\" /></label>";
+		$ret2 .= "</div>";
+			
+		
+		$ret .=  $ret2."</span>\n";
+		
+		return $ret;
+	}
+	
+}
 ?>

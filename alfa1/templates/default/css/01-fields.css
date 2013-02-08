@@ -1,0 +1,370 @@
+
+/* 
+  20120523 - Daniel Cantarín
+  Clases CSS para los Fields y ABMs automáticos.
+ */
+
+.Field{
+
+}
+
+.Field:focus{
+	border: black thin solid;
+}
+
+.enum{
+	position:relative; 
+	float:left; 
+	left:0px;
+	width:11.5%;
+	margin-right: 1%;
+}
+.enum_desc {
+	font-size:10px; 
+	position:relative; 
+	float:left; 
+	left:0px;
+	width: 75%;
+}
+.enum_desc option{
+	font-size:10px;
+}
+#btnGuardar {
+	font-family:Arial, Helvetica, sans-serif;
+	font-size: 12px;
+	padding: 4px;
+	background-color: #0085CF;
+	font-weight: bold;
+	text-transform: uppercase;
+	color: #FFFFFF;
+	border-top-style: none;
+	border-right-style: none;
+	border-bottom-style: none;
+	border-left-style: none;
+	width: 112px;
+	height: 27px;
+	cursor:pointer;
+}
+.mensaje_exito{
+	width: 100%;
+	position:relative;
+	display: block;
+	text-align:right;
+	font-size: 200%;
+	color: #009900;
+	display:none;
+}
+.mensaje_error{
+	width: 100%;
+	position:relative;
+	display: block;
+	text-align:right;
+	font-size: 200%;
+	color: #990000;
+	display:none;
+}
+.frmABM{
+border:solid 2px #b7ddf2;
+background:#ebf4fb;
+position: relative;
+/*float: left;*/
+/*left: 10%;*/
+min-width:100%;
+width:100%;
+text-align:center;
+padding: 0.5%;
+display: table;
+vertical-align:top;
+margin-top: 10px;
+margin-bottom: 10px;
+}
+.myform{
+margin:0 auto;
+width:600px;
+padding:14px;
+
+}
+.frmABM h1 {
+font-size:14px;
+font-weight:bold;
+margin-bottom:8px;
+}
+.frmABM p{
+font-size:11px;
+color:#666666;
+margin-bottom:20px;
+border-bottom:solid 1px #b7ddf2;
+padding-bottom:10px;
+}
+.frmABM label{
+display:inline-block;
+font-weight:bold;
+text-align:right;
+
+}
+.frmABM .small{
+color:#666666;
+display:block;
+font-size:11px;
+font-weight:normal;
+text-align:right;
+width:140px;
+}
+.frmABM input{
+font-size:12px;
+padding: 4px 2px;
+border:solid 1px #aacfe4;
+}
+.frmABM select{
+font-size:12px;
+padding:4px 2px;
+border:solid 1px #aacfe4;
+width:130px;
+}
+.frmABM textarea{
+float:left;
+font-size:12px;
+padding:4px 2px;
+border:solid 1px #aacfe4;
+
+margin:2px 0px 20px 10px;
+}
+.frmABM  .bt_plus{
+float:none;
+font-size:12px;
+padding:0px;
+
+width:20px;
+margin:5px 0 5px 3px ;
+
+}
+.frmABM .boton{
+clear:both;
+margin-left:150px;
+width:125px;
+height:31px;
+background:#666666 url(img/button.png) no-repeat;
+text-align:center;
+line-height:31px;
+color:#FFFFFF;
+font-size:11px;
+font-weight:bold;
+}
+.frmABM  .textfome{
+width:200px;
+
+}
+.frmABM  .textfomenum{
+width:40px;
+}
+.frmABM .Field_Row{
+	position:relative;
+	width:99%;
+	min-height:30px;
+	margin-bottom: 5px;
+	display:inline-block;
+	left: 0.5%;
+	/*overflow:hidden*/
+}
+.frmABM .Field_Row .Field_rotulo{
+	display: block;
+	overflow:hidden;
+	text-align: right;
+	margin: 0 auto;
+	vertical-align: middle;
+	position:relative;
+	float:left;
+	height:100%;
+}
+.frmABM .Field_Row .Field_input{
+	display: block;
+	/*overflow:hidden;*/
+	text-align: left;
+	margin: 0 auto;
+	vertical-align: middle;
+	position:relative;
+	float:left;
+	height:100%;
+}
+.frmABM .Field_RowButtons{
+	position:relative;
+	width:99%;
+	left:0.5%;
+	overflow:hidden;
+	display: block;
+	margin-top : 25px;
+}
+.frmABM .Field_RowButtons .FormButton_boton{
+	display: inline;
+	overflow:hidden;
+	position:relative;
+	
+}
+
+.frmABM .FormTitulo{
+	font-size:24px;
+	margin-bottom:20px;
+	width: 99%;
+	position: relative;
+	display:block;
+	left:0.5%;
+	
+	font-weight:bold;
+	color:#cccccc;
+	
+	text-shadow: 2px 2px 2px black;
+	-webkit-text-shadow: 2px 2px 2px black;
+	-o-text-shadow: 2px 2px 2px black;
+}
+.frmABM #rotulo{
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+.frmABM #selector-tipo-tabla{
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+/* Estilos para la sección "Parámetros" */
+.resultado-operacion, .resultado-operacion-error{
+	border-bottom: #000000 1px dashed;
+	border-top: #000000 1px dashed;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	font-size: 20px;
+	font-weight: bolder;
+	text-align:center;
+	color:#000000;
+	margin-bottom: 10px;
+}
+.resultado-operacion-error{
+	color:#ff0000;
+}
+
+.frmABM p.HRField{
+	border:0px;
+	border-bottom: 1px solid #B7DDF2;
+	min-height: 20px;
+	text-align:left;
+	font-size: 125%;
+	font-weight: bold;
+}
+
+
+/* Estilos para la clase Lista */
+.Lista{
+	width:100%;
+	overflow:hidden;
+}
+.Lista>thead>tr{
+	font-weight: bold;
+	background-color: #315C6C;
+	text-align: center;
+	color: #FFFFFF;
+	height: 25px;
+	font-size: 13px;
+	padding: 3px;
+	width: 14px;
+	font-weight:bold;
+	text-shadow: 2px 2px 2px black;
+	-webkit-text-shadow: 2px 2px 2px black;
+	-o-text-shadow: 2px 2px 2px black;
+}
+
+.Lista>tfoot>tr{
+	font-weight: bold;
+	background-color: #315C6C;
+	text-align: center;
+	color: #FFFFFF;
+	height: 25px;
+	font-size: 13px;
+	padding: 3px;
+	width: 14px;
+	text-shadow: 2px 2px 2px black;
+	-webkit-text-shadow: 2px 2px 2px black;
+	-o-text-shadow: 2px 2px 2px black;
+}
+
+.Lista>tbody>tr{
+	color: #000000;
+	height: 30px;
+}
+.Lista>tbody>.impar{
+	background-color: #F0F0F0;
+}
+.Lista>tbody>.par{
+	background-color: #FFFFFF;
+}
+.lista_item_id{
+	display:none;
+}
+.multiselect .lista_item_id{
+	display: inline-block;
+}
+
+/* Estilos para Componentes */
+
+table[componentes]{
+	display:none;
+	width:100%;
+}
+
+table[componentes] tr{
+	text-align:center;
+	width:100%;
+}
+
+
+#legajo_rotulo{
+	text-align:center;
+}
+
+.Lista .selector_pagina{
+	width: 50px;
+}
+
+.Lista .cantidad_items{
+	width: 30px;
+}
+
+
+.Field:invalid{
+	border: red 2px solid;
+	box-shadow: 0px 0px 20px red;
+	-webkit-box-shadow: 0px 0px 20px red;
+	-o-box-shadow: 0px 0px 20px red;
+}
+
+.Field:focus:invalid{
+	border: red 1px solid;
+	box-shadow: 0px 0px 0px red;
+	-webkit-box-shadow: 0px 0px 0px red;
+	-o-box-shadow: 0px 0px 0px red;
+}
+
+
+.enum_list{
+	width: calc(100% - 15px);
+	width: -webkit-calc(100% - 15px);
+	width: -o-calc(100% - 15px);
+	overflow-x: hidden;
+	overflow-y: auto;
+	border: black 1px solid;
+	padding-bottom:5px;
+	padding-left: 2px;
+	background-color:#eeeeee;
+}
+
+.enum_list label{
+	width:100%;
+	display: inline-block;
+	text-align: left;
+}
+
+.enum_list label:hover{
+	cursor:pointer;
+	text-decoration:underline;
+	text-shadow: 0px 0px 10px lime;
+	-webkit-text-shadow: 0px 0px 10px lime;
+	-o-text-shadow: 0px 0px 10px lime;
+}

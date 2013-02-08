@@ -813,7 +813,7 @@ class ABM extends ORM{
 	public function render_form($data = null){
 		$metodo = (!is_null($data) && isset($data["metodo_serializacion"]) ) ? $data["metodo_serializacion"] : $this->get_metodo_serializacion();
 		$ret = null;
-		
+		$this->setup_fields();
 		switch ($metodo){
 			case "html":
 				$ret = $this->render_form_html($data);
@@ -1246,7 +1246,7 @@ class Model extends ORM{
 			}
 		}
 		
-		//echo(var_dump($qs));
+		//die(var_dump($qs));
 		
 		$c = Conexion::get_instance();
 		$r = $c->execute($qs);
@@ -1257,7 +1257,12 @@ class Model extends ORM{
 		foreach ($r as $item){
 			$tmp_class = get_class($this);
 			
-			$ret[] = new $tmp_class($item[$this->get_campo_id()]);
+			if ($tmp_class == "Model"){
+				$ret[] = new $tmp_class($this->get_tabla());
+				$ret[count($ret)-1]->load($item[$this->get_campo_id()]);
+			} else{
+				$ret[] = new $tmp_class($item[$this->get_campo_id()]);
+			}
 		}
 		
 		return $ret;
