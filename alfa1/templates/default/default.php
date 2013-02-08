@@ -51,7 +51,12 @@
 					<p>Select a file to process: <input type="file" name="file" id="content-create-process-file" /></p>
 					<p id="content-create-file-details"></p>
 					<div id="content-create-process-output">
-						
+						<div id="ofm"></div>
+						<div id="ID3"></div>
+						<div id="playURL"></div>
+						<div id="progressbar"></div>
+						<div id="preloadbar"></div>
+						<div id="playpause">coso</div>
 					</div>
 				</div>
 				<div class="wizard-page" validation="app.contents.creation.validate(3);" wizardtitle="Save content ">

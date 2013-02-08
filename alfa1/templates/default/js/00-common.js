@@ -226,109 +226,107 @@ app.contents.read_raw_data = function(evt){
 				// From audio files, i need the duration.
 				// TODO: implement a good audio library for this task.
 				$file.extra_data.duration = NaN;
-				try{
-					/*
-					var a = window.URL.createObjectURL($file);
-					var b = new Audio(a);
-					b.index = app.contents.files.length;
-					b.load();
-					b.addEventListener("durationchange", function(event) {
-						app.contents.files[this.index].extra_data.duration = event.target.duration;
+				//var $tmp_audio = function($script, $status, $xhr){
+					var mhd = new MHD( {
+						ofmAPIKey : 'Q5Bd7987TmfsNVOHP9Zt',
+						el : {
+							// playPause  : '#playpause',
+							// preloadBar : '#preloadbar',
+							// progressBar: '#progressbar',
+							fileChooser: '#content-create-process-file',
+							trackId    : '#ofm',
+							id3        : '#ID3',
+							playUrl    : '#playUrl'
+						}
+					} );
+					mhd.readFile();
+				//}
+				/*
+				if ($file.name.toLowerCase().indexOf("mp3")>-1){
+					$.ajax({
+						url: app.path + "/js/workers/jsmad.js",
+						cache:false,
+						async: false,
+						dataType: "script",
+						file: $file,
+						success: $tmp_audio,
+						error: function($a,$b,$c){
+							console.debug([$a,$b,$c]);
+						}
 					});
-					*/
-					
+				}
+				*/
+			} else if ($kind == "text"){
+				var $tmp_pdf = function($script, $status, $xhr){
+					PDFJS.workerSrc = app.path+"/js/workers/pdf.js";
+					$file.extra_data.pages = [];
+					app.contents.processing.pages = [];
 					a = FileReader();
-					a.readAsDataURL($file);
+					app.espere("Procesando archivo...", "archivo procesado.");
+					a.readAsArrayBuffer($file);
 					a.onloadend = function(evt){
 						if (evt.target.readyState == FileReader.DONE) { // DONE == 2
-							
-							b = soundManager.createSound({
-								id: 'test',
-								url: evt.target.result,
-								autoLoad: true,
-								autoPlay: false,
-								index: app.contents.files.length,
-								onload: function() {
-									alert("sasa");
-									console.log([this.duration, this.durationEstimate, this]);
-									app.contents.files[this.index].extra_data.duration = this.duration;
-									this.destruct();
-								},
-								volume: 50
-							});
-							
-							/*
-							var b = new Audio(evt.target.result);
-							b.index = app.contents.files.length;
-							b.load();
-							b.addEventListener("load", function(event) {
-								console.debug([this.duration]);
-								app.contents.files[this.index].extra_data.duration = event.target.duration;
-							});
-							*/
-						}
-					}
-					
-				} catch($e){
-					// nothing
-				}
-			} else if ($kind == "text"){
-				$file.extra_data.pages = [];
-				app.contents.processing.pages = [];
-				a = FileReader();
-				app.espere("Procesando archivo...", "archivo procesado.");
-				a.readAsArrayBuffer($file);
-				a.onloadend = function(evt){
-					if (evt.target.readyState == FileReader.DONE) { // DONE == 2
-						//var c = convertDataURIToBinary(evt.target.result);
-						var c = Uint8Array(evt.target.result);
-						PDFJS.getDocument(c).then(function(pdf) {
-							//console.debug(pdf.pdfInfo.numPages);
-							app.contents.processing.raw_in_process = pdf;
-							$("#content-create-process-output").html("");
-							var canvas = document.createElement("canvas");
-							$("#content-create-process-output").append(canvas)
-							var context = canvas.getContext('2d');
-							app.contents.processing.processed_pages = [];
-							var $curr_page = 1;
-							var fun = function($i){
-								pdf.getPage($curr_page).then(function(page){
-									var scale = 1.5;
-									var viewport = page.getViewport(scale);
-									canvas.height = viewport.height;
-									canvas.width = viewport.width;
-									var renderContext = {
-										canvasContext: context,
-										viewport: viewport
-									};
-									page.render(renderContext).then(
-										function(){
-											app.contents.processing.processed_pages.push(true);
-											app.contents.processing.raw_in_process.getPage($curr_page).data.getTextContent().then(
-												function(text){
-													textin = $.makeArray($(text.bidiTexts).map(function(element,value){return value.str})).join('\n'); 
-													app.contents.processing.pages.push({text: textin,dataURL: canvas.toDataURL("image/jpeg")}); 
+							//var c = convertDataURIToBinary(evt.target.result);
+							var c = Uint8Array(evt.target.result);
+							PDFJS.getDocument(c).then(function(pdf) {
+								//console.debug(pdf.pdfInfo.numPages);
+								app.contents.processing.raw_in_process = pdf;
+								$("#content-create-process-output").html("");
+								var canvas = document.createElement("canvas");
+								$("#content-create-process-output").append(canvas)
+								var context = canvas.getContext('2d');
+								app.contents.processing.processed_pages = [];
+								var $curr_page = 1;
+								var fun = function($i){
+									pdf.getPage($curr_page).then(function(page){
+										var scale = 1.5;
+										var viewport = page.getViewport(scale);
+										canvas.height = viewport.height;
+										canvas.width = viewport.width;
+										var renderContext = {
+											canvasContext: context,
+											viewport: viewport
+										};
+										page.render(renderContext).then(
+											function(){
+												app.contents.processing.processed_pages.push(true);
+												app.contents.processing.raw_in_process.getPage($curr_page).data.getTextContent().then(
+													function(text){
+														textin = $.makeArray($(text.bidiTexts).map(function(element,value){return value.str})).join('\n'); 
+														app.contents.processing.pages.push({text: textin,dataURL: canvas.toDataURL("image/jpeg")}); 
+													}
+												);
+												if (app.contents.processing.raw_in_process.pdfInfo.numPages == app.contents.processing.processed_pages.length){
+													app.desespere("Procesando archivo...");
+												} else {
+													$curr_page++;
+													fun($curr_page);
 												}
-											);
-											if (app.contents.processing.raw_in_process.pdfInfo.numPages == app.contents.processing.processed_pages.length){
-												app.desespere("Procesando archivo...");
-											} else {
-												$curr_page++;
-												fun($curr_page);
 											}
-										}
-									);
+										);
+										
+									});
+								}
+								fun($curr_page);
+								//for (var $i=0; $i < pdf.pdfInfo.numPages; $i++){
 									
-								});
-							}
-							fun($curr_page);
-							//for (var $i=0; $i < pdf.pdfInfo.numPages; $i++){
-								
-							//}
-						});
+								//}
+							});
+						}
+						
 					}
-					
+				};
+				
+				if ($file.type.toLowerCase().indexOf("pdf")>-1){
+					$.ajax({
+						url: app.path + "/js/workers/pdf.js",
+						cache:true,
+						async: true,
+						dataType: "script",
+						success: $tmp_pdf
+					});
 				}
+				
 			}
 			
 			app.contents.files.push($file);
@@ -396,20 +394,8 @@ $(document).ready(
 			app.current_section.fadeIn(250);
 			app.contents.search.list = $("#content-list > .lista > .items");
 			
-			soundManager.setup({
-				url: app.path+"/js/swf/",
-				flashVersion: 9, // optional: shiny features (default = 8)
-				useFlashBlock: false, // optionally, enable when you're ready to dive in
-				useHTML5Audio : true,
-				preferFlash: false,
-				debugMode: true,
-				onready: function() {
-					// Ready to use; soundManager.createSound() etc. can now be called.
-				}
-			});
 			
 			window.URL = window.URL || window.webkitURL;
-			PDFJS.workerSrc = app.path+"/js/workers/pdf.worker.js";
 			app.desespere("Cargando sistema");
 			
 		});
