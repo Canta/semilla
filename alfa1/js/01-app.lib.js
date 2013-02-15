@@ -437,16 +437,32 @@ $(document).ready(
 jQuery.unserialize = function(str){
 		var items = str.split('&');
 		var ret = "{";
+		var arrays = [];
+		var index = "";
 		for (var i = 0; i < items.length; i++) {
 			var parts = items[i].split(/=/);
-			ret += "\""+parts[0] + "\": \"" + decodeURIComponent(parts[1]) + "\"";
-			if (i < items.length - 1){
-				ret += ", ";
+			if (parts[0].indexOf("%5B") > -1){
+				//Array serializado
+				index = parts[0].replace("%5B","").replace("%5D","");
+				if (arrays[index] === undefined){
+					arrays[index] = [];
+				}
+				arrays[index].push( decodeURIComponent(parts[1]));
+				
+			} else {
+				ret += "\""+parts[0] + "\": \"" + decodeURIComponent(parts[1]) + "\", ";
 			}
 			
 		};
-		ret += "}";
-		return JSON.parse(ret);
+		
+		ret = (ret != "{") ? ret.substr(0,ret.length-2) + "}" : ret + "}";
+		
+		var ret2 = JSON.parse(ret);
+		//proceso los arrays
+		for (arr in arrays){
+			ret2[arr] = arrays[arr];
+		}
+		return ret2;
 }
 jQuery.fn.unserialize = function(str){
 		var items = str.split('&');

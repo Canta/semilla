@@ -227,9 +227,14 @@ class Lista {
 					if (
 						trim(strtolower($this->datos["campo_id"])) != trim(strtolower($nombre)) 
 						&& isset($campos[$nombre])
-						&& trim(strtolower($this->datos["campo_id"])) != trim(strtolower($campos[$nombre]))
+						&& (
+							(
+								is_string($campos[$nombre])
+								&& trim(strtolower($this->datos["campo_id"])) != trim(strtolower($campos[$nombre]))
+							) || !is_string($campos[$nombre])
+						)
 					){
-						if ($campos[$nombre] instanceOf EnumField){
+						if ($campos[$nombre] instanceOf SelectField){
 							$ret .= "<td>".$campos[$nombre]->get_descripcion_valor($valor)."</td>\n";
 						} else {
 							$ret .= "<td>".$valor."</td>\n";

@@ -878,9 +878,10 @@ class OptionalListField extends SelectField{
 		
 		$autoregex = (boolean)($this->get_regex_validacion(false) == ""); 
 		$type = ($this->get_primary_key() === true) ? "hidden" : $this->get_tipo_HTML() ;
-		$type = ($type=="select") ? "hidden" : $type;
+		$type = ($type != "hidden") ? "text" : $type;
 		$type = str_replace("enum","text",$type);
 		$clase_css = $this->set_clase_CSS();
+		$disabled = "";
 		
 		$ret2 .= "<input separador=\"".$this->get_separador()."\"  class='".$clase_css."' id='".$this->get_id()."' name='".$this->get_HTML_name()."' type='".$type."' value='".$valor."' pattern='".$this->get_regex_validacion($autoregex)."' alt='".str_replace("'","`",$this->get_rotulo())."' ";
 		
@@ -895,6 +896,7 @@ class OptionalListField extends SelectField{
 			//Pero si establezco esa combinacíon de propiedades, pierdo el campo en el próximo post.
 			//De modo que sacrifico una de las dos cuando se da la combinación: sacrifico el disabled.
 			$ret2 .= " disabled ";
+			$disabled = " disabled ";
 		}
 		
 		if ($this->get_largo() > 0){
@@ -905,7 +907,7 @@ class OptionalListField extends SelectField{
 			$ret2 .= " required ";
 		}
 		
-		$ret2 .= " enum /> ";
+		$ret2 .= " enum  style=\"display:none;\" /> ";
 		
 		$ret2 .=  "<div id=\"list_".$this->get_id()."\" enum_list class=\"enum_list\" >";
 		$tmp_items = $this->get_items();
@@ -914,15 +916,17 @@ class OptionalListField extends SelectField{
 		foreach ($tmp_items as $item){
 			$selected = (in_array($item[$this->get_campo_indice()],$valores)) ? " checked " : "";
 			if ($selected != ""){
+				//echo(var_dump($valores));
+				//echo(var_dump($item[$this->get_campo_indice()]));
 				$found[] = $item[$this->get_campo_indice()];
 			}
-			$ret2 .=  "<label class=\"enum_list_item_label\"><input type=\"checkbox\" ".$selected." value=\"".$item[$this->get_campo_indice()]."\" />".$item[$this->get_campo_descriptivo()]."</label>";
+			$ret2 .=  "<label class=\"enum_list_item_label\"><input ".$disabled." type=\"checkbox\" ".$selected." value=\"".$item[$this->get_campo_indice()]."\" />".$item[$this->get_campo_descriptivo()]."</label>";
 		}
 		$v = $valores[count($valores)-1];
 		if (in_array($v,$found)) {
 			$v = "";
 		}
-		$ret2 .=  "<label class=\"enum_list_item_label\">Otro: <input type=\"text\" value=\"".$v."\" /></label>";
+		$ret2 .=  "<label class=\"enum_list_item_label\">Otro: <input ".$disabled." type=\"text\" value=\"".$v."\" /></label>";
 		$ret2 .= "</div>";
 			
 		
@@ -932,4 +936,81 @@ class OptionalListField extends SelectField{
 	}
 	
 }
+
+
+class FileField extends Field{
+	
+	public function render(){
+		$ret  = "";
+		
+		$tmp = ($this->get_primary_key() === true) ? "hidden" : $this->get_tipo_HTML() ;
+		
+		$stily = "style=\"";
+		if ($this->data["columnas"] > 0){
+			$stily .= "width:".(100 / $this->data["columnas"] / 2)."%; ";
+		}
+		
+		$stily .= "\" ";
+		
+		$ret .= "<span class=\"Field_rotulo\" ".$stily.">".(($this->get_rotulo() == "" && $this->get_primary_key() === false) ? $this->get_id() : $this->get_rotulo()) ."&nbsp;</span><span class=\"Field_input\" ".$stily.">";
+		
+		$ret2 = "";
+		$valor = $this->get_valor();
+		
+		$autoregex = (boolean)($this->get_regex_validacion(false) == ""); 
+		$type = ($this->get_primary_key() === true) ? "hidden" : $this->get_tipo_HTML() ;
+		$type = ($type != "hidden") ? "text" : $type;
+		$type = str_replace("enum","text",$type);
+		$clase_css = $this->set_clase_CSS();
+		
+		$ret2 .= "<input class='".$clase_css."' type='file' name='file_".$this->get_id()."' id='file_".$this->get_id()."' ";
+		if ($this->get_requerido() === TRUE){
+			$ret2 .= " required ";
+		}
+		if ($this->get_activado() !== TRUE && $type != "hidden"){
+			//20120523 - Se agrega chequeo de que no sea tipo hidden.
+			//Los hidden, cuando disabled, no se pasan por el formulario al postear.
+			//Típicamente, un primary key se manda como hidden, y por ser primary key se establece disabled.
+			//Pero si establezco esa combinacíon de propiedades, pierdo el campo en el próximo post.
+			//De modo que sacrifico una de las dos cuando se da la combinación: sacrifico el disabled.
+			$ret2 .= " disabled ";
+		}
+		foreach ($this->get_events() as $key => $value) {
+			$ret2 .= " ".$key." =\"". str_replace('"','\\"',$value)."\" ";
+		}
+		
+		
+		$ret2 .= " /><br/>\n";
+		
+		$ret2 .= "<input class='".$clase_css."' id='".$this->get_id()."' name='".$this->get_HTML_name()."' type='hidden' value='".$valor."' pattern='".$this->get_regex_validacion($autoregex)."' alt='".str_replace("'","`",$this->get_rotulo())."' ";
+		
+		if ($this->get_largo() > 0){
+			$ret2 .= " maxlength=".$this->get_largo()." ";
+		}
+		
+		if ($this->get_requerido() === TRUE){
+			$ret2 .= " required ";
+		}
+		
+		$ret2 .= " /> <input type='hidden' id='dataurl_".$this->get_id()."' name='dataurl_".$this->get_id()."' value='' /> ";
+		
+		$ret .=  $ret2."</span>\n";
+		return $ret;
+	}
+	
+}
+
+class ImageFileField extends FileField{
+	
+	public function render(){
+		$ret  = str_replace("</span>\n", "", parent::render());
+		
+		$ret .= "\n<br/>\n<img src='".$this->get_valor()."' class='".$this->set_clase_CSS()."' id='image_".$this->get_id()."' onclick=\"$('#file_".$this->get_id()."')[0].click();\" />\n<br/>\n";
+		
+		$ret .= "</span>\n";
+		return $ret;
+	}
+	
+}
+
 ?>

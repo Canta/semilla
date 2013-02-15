@@ -725,23 +725,30 @@ class ABM extends ORM{
 		return true;
 	}
 	
-	
 	public function get_rotulos_from_field_names($fns){
 		//$fns se supone que sea un Array con nombres de campos.
 		if (is_array($fns)){
 			$fs = $this->get_fields();
+			/*
 			for ($i =0; $i < count($fns); $i++){
-				if (isset($fs[strtoupper($fns[$i])]) && $fs[strtoupper($fns[$i])]->get_rotulo() != "" ){
-					$fns[$i] = $fs[strtoupper($fns[$i])]->get_rotulo();
+				if (is_string($fns[$i]) && isset($fs[strtoupper($fns[$i])]) && $fs[strtoupper($fns[$i])]->get_rotulo() != "" ){
+						$fns[$i] = $fs[strtoupper($fns[$i])]->get_rotulo();
+				}
+			}
+			*/
+			
+			foreach ($fns as $k=>$v){
+				if (is_string($v) && isset($fs[strtoupper($v)]) && $fs[strtoupper($v)]->get_rotulo() != "" ){
+						$fns[$k] = $fs[strtoupper($v)]->get_rotulo();
 				}
 			}
 			
 			return $fns;
 		} else {
-			throw new Exception("<b class=\"exception_text\">Clase ORM, método get_rotulos_from_field_names(): se esperaba un array.</b>\n");
+			throw new Exception("<b class=\"exception_text\">Clase ORM, método get_rotulos_from_field_names(): se esperaba un array.</b>b>\n");
 		}
 	}
-	
+
 	
 	public function load_fields_from_array($arr){
 		//Dado un array, típicamente $_REQUEST, carga valores en los fields.
