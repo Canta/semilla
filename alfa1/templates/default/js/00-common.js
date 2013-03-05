@@ -1,31 +1,5 @@
 
 app.player = {};
-app.player.toggle_play = function(){
-	if (app.player.instance.paused){
-		app.player.instance.play();
-	} else {
-		app.player.instance.pause();
-	}
-}
-
-app.player.load_file = function(){
-	$f = $("#file-main")[0].files[0];
-	/*
-	$fr = new FileReader();
-	app.espere("Cargando audio...");
-	$fr.onload = function (e) {
-		app.player.instance.src = e.target.result;
-		app.desespere("Cargando audio...");
-	};
-	$fr.readAsDataURL($f);
-	*/
-	/*
-	console.debug($f);
-	app.player.instance.src = "file://" + $f.fullPath;
-	*/
-	app.player.instance.src = window.URL.createObjectURL($f);
-	
-}
 
 app.contents = {};
 app.contents.all = [];
@@ -224,38 +198,13 @@ app.contents.read_raw_data = function(evt){
 			// Now, i try to get extra data from the file
 			if ($kind == "audio"){
 				// From audio files, i need the duration.
-				// TODO: implement a good audio library for this task.
 				$file.extra_data.duration = NaN;
-				//var $tmp_audio = function($script, $status, $xhr){
-					var mhd = new MHD( {
-						ofmAPIKey : 'Q5Bd7987TmfsNVOHP9Zt',
-						el : {
-							// playPause  : '#playpause',
-							// preloadBar : '#preloadbar',
-							// progressBar: '#progressbar',
-							fileChooser: '#content-create-process-file',
-							trackId    : '#ofm',
-							id3        : '#ID3',
-							playUrl    : '#playUrl'
-						}
-					} );
-					mhd.readFile();
-				//}
-				/*
-				if ($file.name.toLowerCase().indexOf("mp3")>-1){
-					$.ajax({
-						url: app.path + "/js/workers/jsmad.js",
-						cache:false,
-						async: false,
-						dataType: "script",
-						file: $file,
-						success: $tmp_audio,
-						error: function($a,$b,$c){
-							console.debug([$a,$b,$c]);
-						}
-					});
-				}
-				*/
+				app.player = Player.fromFile($file);
+				//app.player.preload();
+				$file.extra_data.duration = app.player.duration;
+				app.player.play();
+				
+				
 			} else if ($kind == "text"){
 				var $tmp_pdf = function($script, $status, $xhr){
 					PDFJS.workerSrc = app.path+"/js/workers/pdf.js";

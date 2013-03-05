@@ -56,7 +56,6 @@
 						<div id="playURL"></div>
 						<div id="progressbar"></div>
 						<div id="preloadbar"></div>
-						<div id="playpause">coso</div>
 					</div>
 				</div>
 				<div class="wizard-page" validation="app.contents.creation.validate(3);" wizardtitle="Save content ">
