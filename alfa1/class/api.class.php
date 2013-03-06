@@ -43,9 +43,8 @@ class API {
 	 * @param int $errline Line number where the error happened.
 	 */
 	function errorHandler($errno, $errstr, $errfile, $errline) {
-		$this->data["response"]["success"] = false;
-		$this->data["response"]["data"] = Array("message"=>"Error #".$errno.": ".$errstr);
-		die(json_encode($this->data["response"]));
+		var $ret = APIResponse::fail("Error #".$errno.": ".$errstr);
+		die(json_encode($ret));
 	}
 	
 	/**
@@ -54,7 +53,7 @@ class API {
 	 * API. It's the API main entry.
 	 * 
 	 * @param Array $arr An associative array of arbitrary structure.
-	 * @returns Array
+	 * @returns APIResponse
 	 */ 
 	public function do_your_stuff($arr){
 		return $this->data["response"];

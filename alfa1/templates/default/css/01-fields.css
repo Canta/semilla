@@ -37,32 +37,85 @@
 	font-weight: bold;
 	text-transform: uppercase;
 	color: #FFFFFF;
-	border-top-style: none;
-	border-right-style: none;
-	border-bottom-style: none;
-	border-left-style: none;
+	border-style: none;
 	width: 112px;
 	height: 27px;
 	cursor:pointer;
 }
-.mensaje_exito{
-	width: 100%;
+
+.mensaje{
+	width: 95%;
 	position:relative;
-	display: block;
+	left:2.5%;
+	display: inline-block;
 	text-align:right;
 	font-size: 200%;
-	color: #009900;
-	display:none;
+	border-radius: 10px;
+	-moz-border-radius: 10px;
+	-webkit-border-radius: 10px;
+	-o-border-radius: 10px;
+	-ms-border-radius: 10px;
+	background-color: #cccccc;
+	min-height: 100px;
+	box-shadow: -5px 5px 10px #000000;
+	-moz-box-shadow: -5px 5px 10px #000000;
+	-webkit-box-shadow: -5px 5px 10px #000000;
+	-o-box-shadow: -5px 5px 10px #000000;
+	-ms-box-shadow: -5px 5px 10px #000000;
+	overflow-x:hidden;
+	color: #000000;
+	margin-bottom: 20px;
 }
-.mensaje_error{
-	width: 100%;
-	position:relative;
-	display: block;
-	text-align:right;
-	font-size: 200%;
-	color: #990000;
-	display:none;
+
+.exito{
+	background-color: #009900;
 }
+
+.error{
+	background-color: #990000;
+	border: none;
+}
+
+.mensaje > .texto-mensaje{
+	width:90%;
+	height:50%;
+	vertical-align:middle;
+	position:absolute;
+	top: 25%;
+	left:5%;
+	z-index: 1;
+}
+
+.mensaje > .boton-cerrar-mensaje{
+	position:absolute;
+	width: 10px;
+	height: 10px;
+	left:10px;
+	top: 10px;
+	z-index: 2;
+	background-color:black;
+	border-radius: 5px;
+	-moz-border-radius: 5px;
+	-webkit-border-radius: 5px;
+	-o-border-radius: 5px;
+	-ms-border-radius: 5px;
+	box-shadow: 0px 0px 5px white;
+	-moz-box-shadow: 0px 0px 5px white;
+	-webkit-box-shadow: 0px 0px 5px white;
+	-o-box-shadow: 0px 0px 5px white;
+	-ms-box-shadow: 0px 0px 5px white;
+}
+
+.mensaje > .boton-cerrar-mensaje:hover{
+	cursor:pointer;
+	background-color:white;
+	box-shadow: 0px 0px 5px black;
+	-moz-box-shadow: 0px 0px 5px black;
+	-webkit-box-shadow: 0px 0px 5px black;
+	-o-box-shadow: 0px 0px 5px black;
+	-ms-box-shadow: 0px 0px 5px black;
+}
+
 .frmABM{
 border:solid 2px #b7ddf2;
 background:#ebf4fb;
@@ -215,6 +268,7 @@ width:40px;
 	text-shadow: 2px 2px 2px black;
 	-webkit-text-shadow: 2px 2px 2px black;
 	-o-text-shadow: 2px 2px 2px black;
+	-ms-text-shadow: 2px 2px 2px black;
 }
 .frmABM #rotulo{
 	margin-top: 20px;
@@ -269,6 +323,7 @@ width:40px;
 	text-shadow: 2px 2px 2px black;
 	-webkit-text-shadow: 2px 2px 2px black;
 	-o-text-shadow: 2px 2px 2px black;
+	-ms-text-shadow: 2px 2px 2px black;
 }
 
 .Lista>tfoot>tr{
@@ -283,6 +338,7 @@ width:40px;
 	text-shadow: 2px 2px 2px black;
 	-webkit-text-shadow: 2px 2px 2px black;
 	-o-text-shadow: 2px 2px 2px black;
+	-ms-text-shadow: 2px 2px 2px black;
 }
 
 .Lista>tbody>tr{
@@ -295,6 +351,20 @@ width:40px;
 .Lista>tbody>.par{
 	background-color: #FFFFFF;
 }
+
+.Lista>tbody td{
+	text-align:center;
+}
+
+.Lista>tbody tr:hover{
+	background-color: #000000;
+	color: #ffffff;
+}
+
+.frmABM button, .frmABM input[type=button] {
+	cursor:pointer;
+}
+
 .lista_item_id{
 	display:none;
 }
@@ -333,6 +403,7 @@ table[componentes] tr{
 	box-shadow: 0px 0px 20px red;
 	-webkit-box-shadow: 0px 0px 20px red;
 	-o-box-shadow: 0px 0px 20px red;
+	-ms-box-shadow: 0px 0px 20px red;
 }
 
 .Field:focus:invalid{
@@ -340,13 +411,22 @@ table[componentes] tr{
 	box-shadow: 0px 0px 0px red;
 	-webkit-box-shadow: 0px 0px 0px red;
 	-o-box-shadow: 0px 0px 0px red;
+	-ms-box-shadow: 0px 0px 0px red;
 }
 
+.invalid{
+	border: red 2px solid;
+	box-shadow: 0px 0px 20px red;
+	-webkit-box-shadow: 0px 0px 20px red;
+	-o-box-shadow: 0px 0px 20px red;
+	-ms-box-shadow: 0px 0px 20px red;
+}
 
 .enum_list{
 	width: calc(100% - 15px);
 	width: -webkit-calc(100% - 15px);
 	width: -o-calc(100% - 15px);
+	width: -ms-calc(100% - 15px);
 	overflow-x: hidden;
 	overflow-y: auto;
 	border: black 1px solid;
@@ -367,4 +447,12 @@ table[componentes] tr{
 	text-shadow: 0px 0px 10px lime;
 	-webkit-text-shadow: 0px 0px 10px lime;
 	-o-text-shadow: 0px 0px 10px lime;
+	-ms-text-shadow: 0px 0px 10px lime;
+}
+
+img.Field{
+	max-width: 99%;
+	min-width:100px;
+	border: black 2px dashed;
+	cursor:pointer;
 }

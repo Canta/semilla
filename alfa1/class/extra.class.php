@@ -127,8 +127,8 @@ class MensajeOperacion{
 	public function render(){
 		$ret  = "";
 		$clase  = "mensaje";
-		$clase .= ($this->isError()) ? "_error" : "_exito";
-		$ret .= "<div class=\"".$clase."\">".$this->mensaje."</div>\n";
+		$clase .= ($this->isError()) ? " error" : " exito";
+		$ret .= "<div class=\"".$clase."\"><span class=\"boton-cerrar-mensaje\" onclick=\"$(this).parent().fadeOut(500);\" title=\"Cerrar\"></span><span class=\"texto-mensaje\">".$this->mensaje."</span></div>\n";
 		return $ret;
 	}
 	
@@ -150,8 +150,9 @@ class Lista {
 		$this->datos["campos"] = (isset($data["campos"])) ? $data["campos"] : Array();
 		$this->datos["items"] = (isset($data["items"])) ? $data["items"] : Array();
 		$this->datos["campo_id"] = (isset($data["campo_id"])) ? $data["campo_id"] : "id";
+		$this->datos["tabla"] = (isset($data["tabla"])) ? $data["tabla"] : "";
 		$this->datos["opciones"] = (isset($data["opciones"])) ? $data["opciones"] : Array();
-		$this->datos["acciones"] = (isset($data["acciones"])) ? $data["acciones"] : Array("activar","modificar");
+		$this->datos["acciones"] = (isset($data["acciones"])) ? $data["acciones"] : Array("activar","modificar", "eliminar");
 		
 		$this->datos["paginado"] = (isset($data["paginado"])) ? $data["paginado"] : false;
 		$this->datos["pagina_actual"] = (isset($data["pagina_actual"])) ? $data["pagina_actual"] : null;
@@ -177,6 +178,10 @@ class Lista {
 		$this->datos["items"] = $arr;
 	}
 	
+	public function get_tabla(){
+		return $this->datos["tabla"];
+	}
+	
 	public function render(){
 		
 		$ret = "<table class=\"Lista";
@@ -189,7 +194,11 @@ class Lista {
 			foreach($this->datos["campos"] as $nombre => $item){
 				if ($item instanceOf Field){
 					if (trim(strtolower($this->datos["campo_id"])) != trim(strtolower($nombre)) ){
-						$ret .= "<td>".$item->get_rotulo()."</td>";
+						if ($item->get_rotulo() != ""){
+							$ret .= "<td>".$item->get_rotulo()."</td>";
+						}else {
+							$ret .= "<td>".$item->get_id()."</td>";
+						}
 					}
 				} else {
 					//Si no es un Field, se asume String
@@ -204,6 +213,13 @@ class Lista {
 				//determinado por el campo "activo".
 				if ($nombre == "activar"){
 					$renderizar = (isset($row["activo"])) ? true : false;
+				}
+				//las acciones eliminar y modificar están determinadas por los permisos del usuario
+				if ($nombre == "modificar"){
+					$nombre = (isset($_SESSION["user"]) && $_SESSION["user"]->puede($this->get_tabla(), "UPDATE")) ? "modificar" : "ver";
+				}
+				if ($nombre == "eliminar"){
+					$renderizar = (isset($_SESSION["user"]) && $_SESSION["user"]->puede($this->get_tabla(), "DELETE")) ? true : false;
 				}
 				if ($renderizar === true){
 					$ret .= "<td class=\"lista_accion\">".$nombre."</td>";
@@ -234,6 +250,7 @@ class Lista {
 							) || !is_string($campos[$nombre])
 						)
 					){
+						//echo(get_class($campos[$nombre]));
 						if ($campos[$nombre] instanceOf SelectField){
 							$ret .= "<td>".$campos[$nombre]->get_descripcion_valor($valor)."</td>\n";
 						} else {
@@ -256,9 +273,12 @@ class Lista {
 						$renderizar = (isset($row["activo"])) ? true : false;
 					}
 					
-					//La acción "modificar" tiene un comportamiento especial, determinado por el perfil de usuario.
+					//Las acciones "modificar" y "eliminar" están determinadas por los permisos del usuario.
 					if ($nombre == "modificar"){
-						$nombre = (isset($_SESSION["perfil"]) && $_SESSION["perfil"] == "Consulta") ? "ver" : "modificar";
+						$nombre = (isset($_SESSION["user"]) && $_SESSION["user"]->puede($this->get_tabla(), "UPDATE")) ? "modificar" : "ver";
+					}
+					if ($nombre == "eliminar"){
+						$renderizar = (isset($_SESSION["user"]) && $_SESSION["user"]->puede($this->get_tabla(), "DELETE")) ? true : false;
 					}
 					
 					if ($renderizar === true){
@@ -286,7 +306,7 @@ class Lista {
 			$itemsxpagina = "";
 			$select_pagina = "";
 			if ((int)$this->datos["max_pages"] > 2) {
-				$itemsxpagina = " - Items por página: <input class=\"cantidad_items\" type=\"number\" value=\"".$this->datos["itemsxpagina"]."\" name=\"itemsxpagina\" maxlength=\"3\" min=\"10\" max=\"100\" pattern=\"^[0-9]*$\"/>";
+				$itemsxpagina = " - Items por página: <input class=\"cantidad_items\" type=\"number\" value=\"".$this->datos["itemsxpagina"]."\" name=\"itemsxpagina\" maxlength=\"3\" min=\"10\" max=\"100\" pattern=\"^[0-9]*$\" onchange=\"accion_lista();\" />";
 				$select_pagina = " - Ir a página: <select class=\"selector_pagina\" onchange=\"accion_ir_a_pagina(this.value);\">\n";
 				for ($i = 1; $i <= (int)$this->datos["max_pages"]; $i++){
 					$selected = ($i == (int)$this->datos["pagina_actual"]) ? " selected " : "";

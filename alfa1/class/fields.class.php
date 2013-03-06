@@ -274,7 +274,6 @@ class Field {
 		}
 		$stily .= "\" ";
 		
-		
 		$ret .= "<span class=\"Field_rotulo\" ".$stily.">".(($this->get_rotulo() == "" && $this->get_primary_key() === false) ? $this->get_id() : $this->get_rotulo()) ."&nbsp;</span><span class=\"Field_input\" ".$stily.">";
 		$ret2 = "";
 		$valores = $this->get_valores();
@@ -299,6 +298,10 @@ class Field {
 				$clase_css = $this->set_clase_CSS();
 				
 				$ret2 .= "<input class='".$clase_css."' id='".$this->get_id()."' name='".$this->get_HTML_name()."' type='".$type."' value='".$valores[$v]."' pattern='".$this->get_regex_validacion($autoregex)."' alt='".str_replace("'","`",$this->get_rotulo())."' ";
+				
+				if ($this->get_primary_key()){
+					$ret2 .= " is_id ";
+				}
 				
 				foreach ($this->get_events() as $key => $value) {
 					$ret2 .= " ".$key." =\"". str_replace('"','\\"',$value)."\" ";
@@ -609,7 +612,7 @@ class SelectField extends Field {
 	}
 	
 	public function get_descripcion_valor($valor = null){
-		$valor = (is_null($valor)) ? $this->getValor() : $valor;
+		$valor = (is_null($valor)) ? $this->get_valor() : $valor;
 		$ret = "";
 		foreach ($this->get_items() as $item){
 			if (strtolower($item[$this->get_campo_indice()]) == strtolower($valor)){

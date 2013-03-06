@@ -18,6 +18,7 @@ class ORM {
 	
 	const ERROR_SAVE = 1;
 	const ERROR_VALIDACION = 2;
+	const ERROR_PERMISO = 3;
 	
 	public $datos; //Array con datos arbitrarios, desde Fields hasta configuraciones.
 	
@@ -254,7 +255,8 @@ class ORM {
 				} else {
 					$ret[$nombre] = new Field();
 				}
-				$ret[$nombre]->set_id($tipoHTML.$nombre); //por ejemplo: textLEGAJO, checkboxACTIVO, etc.
+				//$ret[$nombre]->set_id($tipoHTML.$nombre); //por ejemplo: textLEGAJO, checkboxACTIVO, etc.
+				$ret[$nombre]->set_id($nombre); 
 				//$ret[$nombre]->set_valor($this->datos[$i][$tmp[$x]]);
 				$ret[$nombre]->set_tipo_HTML($tipoHTML);
 				$ret[$nombre]->set_tipo_sql($tipoSQL);
@@ -263,6 +265,11 @@ class ORM {
 				//$ret[$name]->set_requerido( pg_field_is_null($this->consulta, $x) );
 				//$ret[$name]->set_primary_key( (strpos($flags, "primary_key") > -1) );
 				//$ret[$name]->set_activado( !((boolean)strpos($flags, "auto_increment")) );
+				
+				$fk_vals = $this->get_campo_fk_values($nombre);
+				if (count($fk_vals) > 0){
+					$ret[$nombre] = new SelectField($ret[$nombre]->get_id(), $ret[$nombre]->get_rotulo(), $ret[$nombre]->get_valor(), $fk_vals);
+				}
 				
 			}
 			return $ret;
@@ -352,7 +359,8 @@ class ORM {
 				} else {
 					$ret[$i][$nombre] = new Field();
 				}
-				$ret[$i][$nombre]->set_id($tipoHTML.$nombre); //por ejemplo: textLEGAJO, checkboxACTIVO, etc.
+				//$ret[$i][$nombre]->set_id($tipoHTML.$nombre); //por ejemplo: textLEGAJO, checkboxACTIVO, etc.
+				$ret[$i][$nombre]->set_id($nombre);
 				$ret[$i][$nombre]->set_valor($valor);
 				$ret[$i][$nombre]->set_tipo_HTML($tipoHTML);
 				$ret[$i][$nombre]->set_tipo_sql($tipoSQL);
@@ -365,6 +373,11 @@ class ORM {
 				if (!$pkey){
 					$ret[$i][$nombre]->set_valorDefault( $default );
 					//echo("default: "); echo(var_dump($default)); echo("<br/>");
+				}
+				
+				$fk_vals = $this->get_campo_fk_values($nombre);
+				if (count($fk_vals) > 0){
+					$ret[$i][$nombre] = new SelectField($ret[$i][$nombre]->get_id(), $ret[$i][$nombre]->get_rotulo(), $ret[$i][$nombre]->get_valor(), $fk_vals);
 				}
 				
 			}
@@ -399,7 +412,7 @@ class ABM extends ORM{
 		
 		//Botones por defecto para el formulario.
 		//$boton_ok	  = new FormButton("btnGuardar", "", " Guardar datos ", "submit");
-		$boton_cancel = new FormButton("btnCancel", "", " Cancelar ", "button", Array("onclick" => "javascript:location.href='./';"));
+		$boton_cancel = new FormButton("btnCancel", "", " Cancelar ", "button", Array("onclick" => "accion_cancelar();"));
 		$this->set_form_buttons(Array($boton_cancel));
 		
 		$this->setup_fields();
@@ -532,6 +545,13 @@ class ABM extends ORM{
 	public function baja($id, $logica = true, $data = null){
 		$data = (is_array($data)) ? $data : Array();
 		
+		//Chequeo permisos.
+		if (!isset($_SESSION["user"]) || !$_SESSION["user"]->puede($this->get_tabla(),"DELETE")){
+			$msg = new MensajeOperacion("El usuario no cuenta con permiso para borrar registros en esta tabla.", ABM::ERROR_PERMISO);
+			$this->add_mensaje($msg);
+			return;
+		}
+		
 		if ($logica === true){
 			//Baja lógica
 			$data["activo"] = "0";
@@ -559,16 +579,16 @@ class ABM extends ORM{
 			//Baja concreta
 			if (is_array($id)){
 				foreach ($id as $valor) {
-					$q		= new Query();
+					$c		= Conexion::get_instance();
 					$qs		= "delete from " . $this->get_tabla() . " where " . $this->get_campo_id() . " = " . $valor . ";";
-					$ret 	= $q->executeQuery($qs);
+					$ret 	= $c->execute($qs);
 				}
 				$msg = new MensajeOperacion("[".date('Y-m-j h:i:s')."]: Se eliminaron ".count($id)." registros de la base de datos.");
 				$this->add_mensaje($msg);
 			} else {
-				$q		= new Query();
+				$c		= Conexion::get_instance();
 				$qs		= "delete from " . $this->get_tabla() . " where " . $this->get_campo_id() . " = " . $id . ";";
-				$ret 	= $q->executeQuery($qs);
+				$ret 	= $c->execute($qs);
 				$msg = new MensajeOperacion("[".date('Y-m-j h:i:s')."]: Se eliminó de la base de datos el registro #".$id.".");
 				$this->add_mensaje($msg);
 			}
@@ -897,7 +917,7 @@ class ABM extends ORM{
 		foreach ($this->get_form_buttons() as $fb){
 			$form .= $fb->render()." &nbsp; ";
 		}
-		$form .= "</div>\n";
+		$form .= "</form>\n";
 		
 		return $form;
 	}
@@ -1017,6 +1037,11 @@ class ABM extends ORM{
 			//echo("<br/>analizar_operacion: 5<br/>");
 			$this->baja($id, true, $data);
 			$op = "lista";
+		} else if($op == "baja"){
+			//Baja física de uno o muchos items
+			//echo("<br/>analizar_operacion: 5<br/>");
+			$this->baja($id, false, $data);
+			$op = "lista";
 		} else if(isset($data['boton_activar']) && ($op == "alta")){
 			//reactivación de uno o muchos items
 			//echo("<br/>analizar_operacion: 6<br/>");
@@ -1100,7 +1125,7 @@ class ABM extends ORM{
 				$fs[] = $item;
 			}
 		}
-		
+		//die(var_dump($fs));
 		$fs = implode(",", $fs);
 		if ($fs == $campo_id . "," || $fs == $campo_id ){
 			$fs = " * ";
@@ -1120,7 +1145,7 @@ class ABM extends ORM{
 		$row = null;
 		$items = null;
 		if (is_null($paginado)){
-			$r = $c->execute($qs);
+			$r = $c->execute($qs,false);
 			$r = (is_null($r) || $r === false) ? Array(Array()) : $r;
 			$row = (count($r) > 0) ? $r[0] : Array();
 			$items = $r;
@@ -1151,6 +1176,7 @@ class ABM extends ORM{
 		$lista_parms = Array(
 			"campos"=>$campos, 
 			"items"=>$items, 
+			"tabla"=>$this->get_tabla(),
 			"paginado" => (is_null($paginado)) ? false : true,
 			"pagina_actual" => (is_null($paginado)) ? null : $r["metadata"]["pagina_actual"],
 			"max_pages" => (is_null($paginado)) ? null : $r["metadata"]["max_pages"],

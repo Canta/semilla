@@ -50,12 +50,40 @@ class Conexion
 		return Conexion::$instance;
 	}
 	
-	public function execute($query){
-		$rs = $this->con->Execute($query);
-		$ret = Array();
-		while ($array = $rs->FetchRow()) {
-			$ret[] = $array;
+	public function execute($query, $cache = true){
+		$ret  = Array();
+		$hash = md5(dirname(__FILE__));
+		if ( 
+			$cache
+			&& isset($_SESSION) 
+			&& isset($_SESSION[$hash."-ORM-CACHE"])
+			&& is_array($_SESSION[$hash."-ORM-CACHE"]) 
+			&& isset($_SESSION[$hash."-ORM-CACHE"][md5($query)]) 
+		){
+			$ret = $_SESSION[$hash."-ORM-CACHE"][md5($query)];
+		} else {
+			$rs = $this->con->Execute($query);
+			while ($array = $rs->FetchRow()) {
+				$ret[] = $array;
+			}
+			if ($cache){
+				if (!isset($_SESSION)){
+					@session_start();
+				}
+				if (!isset($_SESSION[$hash."-ORM-CACHE"]) || !is_array($_SESSION[$hash."-ORM-CACHE"]) ){
+					$_SESSION[$hash."-ORM-CACHE"] = Array();
+				}
+				
+				if (
+					strpos(strtolower($query),"insert into") === false
+					&& strpos(strtolower($query),"update ") === false
+					&& strpos(strtolower($query),"delete from") === false
+				){
+					$_SESSION[$hash."-ORM-CACHE"][md5($query)] = $ret;
+				}
+			}
 		}
+		
 		return $ret;
 	}
 	
