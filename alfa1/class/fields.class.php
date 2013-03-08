@@ -1016,4 +1016,19 @@ class ImageFileField extends FileField{
 	
 }
 
+
+class HRField extends Field{
+	
+	public function render(){
+		return "<p class=\"HRField\">".$this->get_valor()."</p>";
+	}
+}
+
+class NullField extends Field{
+	
+	public function render(){
+		return "&nbsp;";
+	}
+}
+
 ?>

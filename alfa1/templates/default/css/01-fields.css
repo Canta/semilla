@@ -269,7 +269,35 @@ width:40px;
 	-webkit-text-shadow: 2px 2px 2px black;
 	-o-text-shadow: 2px 2px 2px black;
 	-ms-text-shadow: 2px 2px 2px black;
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=8, Direction=120, Color='#000000')";
+	/* IE 5.5 - 7 */
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=8, Direction=120, Color='#000000');
+	filter:DropShadow(Color=#000000, OffX=2, OffY=2);
+	zoom: 1;
 }
+
+.frmABM .FormDescripcion{
+	font-size:18px;
+	margin-bottom:10px;
+	width: 99%;
+	position: relative;
+	display:block;
+	left:0.5%;
+	
+	font-weight:bold;
+	color:#dddddd;
+	
+	text-shadow: 2px 2px 2px black;
+	-webkit-text-shadow: 2px 2px 2px black;
+	-o-text-shadow: 2px 2px 2px black;
+	-ms-text-shadow: 2px 2px 2px black;
+	-ms-filter: "progid:DXImageTransform.Microsoft.Shadow(Strength=8, Direction=120, Color='#000000')";
+	/* IE 5.5 - 7 */
+	filter: progid:DXImageTransform.Microsoft.Shadow(Strength=8, Direction=120, Color='#000000');
+	filter:DropShadow(Color=#000000, OffX=2, OffY=2);
+	zoom: 1;
+}
+
 .frmABM #rotulo{
 	margin-top: 20px;
 	margin-bottom: 20px;

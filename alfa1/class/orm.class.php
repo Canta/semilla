@@ -247,6 +247,8 @@ class ORM {
 				$largo = (isset($campo["CHARACTER_MAXIMUM_LENGTH"]) && (int)$campo["CHARACTER_MAXIMUM_LENGTH"] > 0) ? (int)$campo["CHARACTER_MAXIMUM_LENGTH"] : 0;
 				$largo = ($largo <= 0 && isset($campo["character_maximum_length"]) ) ? (int)$campo["character_maximum_length"] : $largo;
 				
+				$comentario = (isset($campo["COLUMN_COMMENT"])) ? $campo["COLUMN_COMMENT"] : $campo["column_comment"];
+				
 				$tipoSQL = (isset($campo["data_type"])) ? $campo["data_type"] : $campo["DATA_TYPE"];;
 				$tipoHTML = Field::sqltype2htmltype($tipoSQL);
 				
@@ -261,6 +263,7 @@ class ORM {
 				$ret[$nombre]->set_tipo_HTML($tipoHTML);
 				$ret[$nombre]->set_tipo_sql($tipoSQL);
 				$ret[$nombre]->set_largo( $largo );
+				$ret[$nombre]->set_rotulo( $comentario );
 				
 				//$ret[$name]->set_requerido( pg_field_is_null($this->consulta, $x) );
 				//$ret[$name]->set_primary_key( (strpos($flags, "primary_key") > -1) );
@@ -288,9 +291,12 @@ class ORM {
 			
 			$tipoSQL = (isset($campo["data_type"])) ? $campo["data_type"] : $campo["DATA_TYPE"];;
 			
+			$comentario = (isset($campo["COLUMN_COMMENT"])) ? $campo["COLUMN_COMMENT"] : $campo["column_comment"];
+			
 			if (isset($this->datos["fields"][$nombre])){
 				$this->datos["fields"][$nombre]->set_tipo_sql($tipoSQL);
 				$this->datos["fields"][$nombre]->set_largo( $largo );
+				$this->datos["fields"][$nombre]->set_rotulo( $comentario );
 			}
 		}
 	}
@@ -327,6 +333,8 @@ class ORM {
 				//echo("Campo:".$nombre."<br/>");
 				$largo = (isset($campo["CHARACTER_MAXIMUM_LENGTH"]) && (int)$campo["CHARACTER_MAXIMUM_LENGTH"] > 0) ? (int)$campo["CHARACTER_MAXIMUM_LENGTH"] : 0;
 				$largo = ($largo <= 0 && isset($campo["character_maximum_length"])) ? (int)$campo["character_maximum_length"] : $largo;
+				
+				$comentario = (isset($campo["COLUMN_COMMENT"])) ? $campo["COLUMN_COMMENT"] : $campo["column_comment"];
 				
 				$tipoSQL = (isset($campo["data_type"])) ? $campo["data_type"] : $campo["DATA_TYPE"];
 				$tipoHTML = Field::sqltype2htmltype($tipoSQL);
@@ -365,6 +373,7 @@ class ORM {
 				$ret[$i][$nombre]->set_tipo_HTML($tipoHTML);
 				$ret[$i][$nombre]->set_tipo_sql($tipoSQL);
 				$ret[$i][$nombre]->set_largo($largo);
+				$ret[$i][$nombre]->set_rotulo($comentario);
 				
 				$ret[$i][$nombre]->set_requerido( (trim($nullable) === "NO") );
 				//echo(var_dump($pkey)); echo("<br>");
@@ -398,7 +407,8 @@ class ABM extends ORM{
 		$this->datos["form_columnas"] = 2;
 		$this->datos["form_extra_code_arriba"] = Array();
 		$this->datos["form_extra_code_abajo"] = Array();
-		$this->datos["form_titulo"] = "ABM - ". ucfirst(strtolower($tabla));;
+		$this->datos["form_titulo"] = "ABM - ". ucfirst(strtolower($tabla));
+		$this->datos["form_descripcion"] = "";
 		$this->datos["form_operacion"] = "lista";
 		$this->datos["form_operacion_default"] = "lista";
 		$this->datos["metodo_serializacion"] = "html";
@@ -862,6 +872,7 @@ class ABM extends ORM{
 		$this->datos["form_extra_code_arriba"] = (isset($this->datos["form_extra_code_arriba"])) ? $this->datos["form_extra_code_arriba"] : Array();
 		$this->datos["form_extra_code_abajo"] = (isset($this->datos["form_extra_code_abajo"])) ? $this->datos["form_extra_code_abajo"] : Array();
 		$this->datos["form_titulo"] = (isset($this->datos["form_titulo"])) ? $this->datos["form_titulo"] : "";
+		$this->datos["form_descripcion"] = (isset($this->datos["form_descripcion"])) ? $this->datos["form_descripcion"] : "";
 		
 		$solo_con_rotulo = (!is_null($data) && isset($data["solo_con_rotulo"]) ) ? $data["solo_con_rotulo"] : True;
 		
@@ -869,6 +880,7 @@ class ABM extends ORM{
 		
 		$form .= "<input type=\"hidden\" name=\"form_operacion\" value=\"".$this->get_operacion()."\" />\n";
 		$form .= "<div class=\"FormTitulo\">".$this->datos["form_titulo"]."</div>\n";
+		$form .= "<div class=\"FormDescripcion\">".$this->datos["form_descripcion"]."</div>\n";
 		
 		foreach ($this->get_mensajes() as $m){
 			$form .= $m->render()." &nbsp; ";
