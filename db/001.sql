@@ -23,7 +23,7 @@ create table template(
 ) default charset utf8;
 
 insert into template (name, description, folder) values ('Default', 'Basic default application''s template', 'default');
-insert into config (field_name, field_value) values ('app_path', '/trabajo/desgrabados/repo/alfa1/');
+insert into config (field_name, field_value) values ('app_path', '/semilla/');
 
 drop table if exists repos;
 create table repos(
