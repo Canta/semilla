@@ -22,15 +22,14 @@
  * @author Daniel Cantarín <omega_canta@yahoo.com>
  */
 var App = (function() {
-	var app = {
-		version : "alfa1",
-		path : ".",
-		esperando : [],
-		current_section : $(),
-		timers : {},
-		ui : {
-			wizards : []
-		}
+	var app = function(){};
+	app.version = "alfa";
+	app.path = ".";
+	app.esperando = [];
+	app.current_section = $();
+	app.timers = {};
+	app.ui = {
+		wizards : []
 	};
 	
 	app.timers.drag = [];

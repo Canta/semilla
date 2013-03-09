@@ -11,16 +11,12 @@ class UIlib {
 		
 		$dir = dirname(__FILE__)."/../../js";
 		
-		$handler = opendir($dir);
-		$files = Array();
-		while ($file = readdir($handler)) {
-			if ($file != "." && $file != ".." && strpos(strtolower($file), ".js") !== false ) {
-				$files[] = $file;
-			}
-		}
+		$files = scandir($dir);
 		
 		foreach ($files as $file){
-			$ret .= "<script type=\"text/javascript\" src=\"".$app_path."/js/".$file."?r=".$random."\"></script>\n";
+			if ($file != "." && $file != ".." && strpos(strtolower($file),".js") !== false ){
+				$ret .= "<script type=\"text/javascript\" src=\"".$app_path."/js/".$file."?r=".$random."\"></script>\n";
+			}
 		}
 		
 		return $ret;
@@ -34,16 +30,12 @@ class UIlib {
 		
 		$dir = dirname(__FILE__)."/../../css";
 		
-		$handler = opendir($dir);
-		$files = Array();
-		while ($file = readdir($handler)) {
-			if ($file != "." && $file != ".." && strpos(strtolower($file), ".css") !== false ) {
-				$files[] = $file;
-			}
-		}
+		$files = scandir($dir);
 		
 		foreach ($files as $file){
-			$ret .= "<link rel=\"stylesheet\" href=\"".$app_path."/css/".$file."?r=".$random."\" type=\"text/css\" />";
+			if ($file != "." && $file != ".." && strpos(strtolower($file),".css") !== false ){
+				$ret .= "<link rel=\"stylesheet\" href=\"".$app_path."/css/".$file."?r=".$random."\" type=\"text/css\" />";
+			}
 		}
 		
 		return $ret;
@@ -57,16 +49,11 @@ class UIlib {
 		
 		$dir = dirname(__FILE__)."/../../templates/".$_SESSION["template"]->get("folder")."/js";
 		
-		$handler = opendir($dir);
-		$files = Array();
-		while ($file = readdir($handler)) {
-			if ($file != "." && $file != ".." && strpos(strtolower($file), ".js") !== false ) {
-				$files[] = $file;
-			}
-		}
-		
+		$files = scandir($dir);
 		foreach ($files as $file){
-			$ret .= "<script type=\"text/javascript\" src=\"".$app_path."templates/".$_SESSION["template"]->get("folder")."/js/".$file."?r=".$random."\"></script>\n";
+			if ($file != "." && $file != ".." && strpos(strtolower($file),".js") !== false ){
+				$ret .= "<script type=\"text/javascript\" src=\"".$app_path."templates/".$_SESSION["template"]->get("folder")."/js/".$file."?r=".$random."\"></script>\n";
+			}
 		}
 		
 		return $ret;
@@ -79,16 +66,11 @@ class UIlib {
 		
 		$dir = dirname(__FILE__)."/../../templates/".$_SESSION["template"]->get("folder")."/css";
 		
-		$handler = opendir($dir);
-		$files = Array();
-		while ($file = readdir($handler)) {
-			if ($file != "." && $file != ".." && strpos(strtolower($file), ".css") !== false ) {
-				$files[] = $file;
-			}
-		}
-		
+		$files = scandir($dir);
 		foreach ($files as $file){
-			$ret .= "<link rel=\"stylesheet\" href=\"".$app_path."templates/".$_SESSION["template"]->get("folder")."/css/".$file."?r=".$random."\" type=\"text/css\" />";
+			if ($file != "." && $file != ".." && strpos(strtolower($file),".css") !== false ){
+				$ret .= "<link rel=\"stylesheet\" href=\"".$app_path."templates/".$_SESSION["template"]->get("folder")."/css/".$file."?r=".$random."\" type=\"text/css\" />";
+			}
 		}
 		
 		return $ret;
