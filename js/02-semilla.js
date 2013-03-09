@@ -28,6 +28,8 @@ var Semilla = (function($fn){
 
 	/**
 	 * Importer class.
+	 * Each importer must know how to create contents from different
+	 * files in different formats.
 	 *
 	 * @author Daniel Cantarín <omega_canta@yahoo.com>
 	 * @constructor
@@ -47,6 +49,7 @@ var Semilla = (function($fn){
 	
 	/**
 	 * Exporter class.
+	 * Each exporter must know how to convert a content to different formats.
 	 *
 	 * @author Daniel Cantarín <omega_canta@yahoo.com>
 	 * @constructor
@@ -65,6 +68,9 @@ var Semilla = (function($fn){
 
 	/**
 	 * Advertiser class.
+	 * It's a class for advertise contents. 
+	 * For example, posting on forums, facebook, twitter, and so on, when
+	 * a new content is added to a repo.
 	 *
 	 * @author Daniel Cantarín <omega_canta@yahoo.com>
 	 * @constructor
@@ -81,9 +87,33 @@ var Semilla = (function($fn){
 		
 		return advertiser;
 	}
+	
+	/**
+	 * Repo class.
+	 * Handles repositories of contents.
+	 *
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 * @constructor
+	 * @this {Repo}
+	 */
+	$fn.Repo = function(){
+		function repo(){
+			
+		}
+		
+		repo.kind = "Abstract repo";
+		repo.description = "This is a repo that actually does nothing.\nIt's used as definition for other repos to overload.";
+		repo.contents = [];
+		repo.users = [];
+		
+		
+		return repo;
+	}
 
+	
 	/**
 	 * Propagator class.
+	 * It deals with the task of sending contents to other repos.
 	 *
 	 * @author Daniel Cantarín <omega_canta@yahoo.com>
 	 * @constructor
@@ -137,7 +167,7 @@ var Semilla = (function($fn){
 		
 		return fragment;
 	}
-
+	
 	/**
 	 * Content class.
 	 * The main object for Semilla to handle.
