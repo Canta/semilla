@@ -1,7 +1,5 @@
 /*
- * Semilla main namespace
- * @require jQuery
- * @require Canta's app class
+ * Semilla Framework.
  * 
  * Copyright 2013 Daniel Cantarín <omega_canta@yahoo.com>
  * 
@@ -21,159 +19,151 @@
  * MA 02110-1301, USA.
  */
 
-if (window !== undefined){
-	window.Semilla = (window.app) ? window.app : App();
-} else {
-	Semilla = (app) ? app : App();
-}
+var Semilla = (function($fn){
+	
+	$fn.importers   = [];
+	$fn.exporter    = [];
+	$fn.advertisers = [];
+	$fn.propagators = [];
 
-Semilla.importers   = [];
-Semilla.exporter    = [];
-Semilla.advertisers = [];
-Semilla.propagators = [];
-
-/**
- * Importer class.
- *
- * @author Daniel Cantarín <omega_canta@yahoo.com>
- * @constructor
- * @this {Importer}
- */
-Semilla.Importer = function(){
-	function importer(){
+	/**
+	 * Importer class.
+	 *
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 * @constructor
+	 * @this {Importer}
+	 */
+	$fn.Importer = function(){
+		function importer(){
+			
+		}
 		
-	}
-	
-	importer.kind = "Abstract importer";
-	importer.description = "This is an importer that actually does nothing.\n\
-It's used as definition for other importers to overload.";
-	importer.mime_types = [];
-	
-	return importer;
-}
-
-/**
- * Exporter class.
- *
- * @author Daniel Cantarín <omega_canta@yahoo.com>
- * @constructor
- * @this {Exporter}
- */
-Semilla.Exporter = function(){
-	function exporter(){
+		importer.kind = "Abstract importer";
+		importer.description = "This is an importer that actually does nothing.\nIt's used as definition for other importers to overload.";
+		importer.mime_types = [];
 		
+		return importer;
 	}
 	
-	exporter.kind = "Abstract exporter";
-	exporter.description = "This is an exporter that actually does nothing.\n\
-It's used as definition for other exporters to overload.";
-	
-	return exporter;
-}
-
-
-/**
- * Advertiser class.
- *
- * @author Daniel Cantarín <omega_canta@yahoo.com>
- * @constructor
- * @this {Advertiser}
- */
-Semilla.Advertiser = function(){
-	function advertiser(){
+	/**
+	 * Exporter class.
+	 *
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 * @constructor
+	 * @this {Exporter}
+	 */
+	$fn.Exporter = function() {
+		function exporter(){
+			
+		}
 		
-	}
-	
-	advertiser.kind = "Abstract advertiser";
-	advertiser.description = "This is an advertiser that actually does nothing.\n\
-It's used as definition for other advertisers to overload.";
-	
-	return advertiser;
-}
-
-
-/**
- * Propagator class.
- *
- * @author Daniel Cantarín <omega_canta@yahoo.com>
- * @constructor
- * @this {Propagator}
- */
-Semilla.Propagator = function(){
-	function propagator(){
+		exporter.kind = "Abstract exporter";
+		exporter.description = "This is an exporter that actually does nothing.\nIt's used as definition for other exporters to overload.";
 		
+		return exporter;
 	}
-	
-	propagator.kind = "Abstract propagator";
-	propagator.description = "This is a propagator that actually does nothing.\n\
-It's used as definition for other propagators to overload.";
-	
-	return propagator;
-}
 
-
-/**
- * Fragment class.
- * The abstraction behind the collaboration.
- * It's supposed to enable multiple users to work on different parts of 
- * a content in different places and different times, without losing any
- * of their works, and without being forced to complete a whole content
- * processing in order to save a content.
- * 
- * It can handle strings, as well as arbitrary binary data.
- *
- * @author Daniel Cantarín <omega_canta@yahoo.com>
- * @constructor
- * @this {Fragment}
- */
-Semilla.Fragment = function(){
-	var fragment = {
-		id : Math.round(Math.random() * 999999999),
-		content : new Blob(),
-		text : "",
-		text_ready : true
-	}
-	
-	fragment.set_content = function($val){
-		this.text_ready = false;
-		this.content = new Blob([$val]);
-		var fr = new FileReader();
-		fr.addEventListener("load" ,function(e){
-			this.text = e.target.result;
-			this.text_ready = true;
-		});
-		fr.readAsText(this.content);
-		return this;
-	}
-	
-	
-	return fragment;
-}
-
-
-/**
- * Content class.
- * The main object for Semilla to handle.
- *
- * @author Daniel Cantarín <omega_canta@yahoo.com>
- * @constructor
- * @this {Content}
- */
-Semilla.Content = function(){
-	function content(){
+	/**
+	 * Advertiser class.
+	 *
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 * @constructor
+	 * @this {Advertiser}
+	 */
+	$fn.Advertiser = function(){
+		function advertiser(){
+			
+		}
 		
+		advertiser.kind = "Abstract advertiser";
+		advertiser.description = "This is an advertiser that actually does nothing.\n\
+	It's used as definition for other advertisers to overload.";
+		
+		return advertiser;
+	}
+
+	/**
+	 * Propagator class.
+	 *
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 * @constructor
+	 * @this {Propagator}
+	 */
+	$fn.Propagator = function(){
+		function propagator(){
+			
+		}
+		
+		propagator.kind = "Abstract propagator";
+		propagator.description = "This is a propagator that actually does nothing.\nIt's used as definition for other propagators to overload.";
+		
+		return propagator;
+	}
+
+	/**
+	 * Fragment class.
+	 * The abstraction behind the collaboration.
+	 * It's supposed to enable multiple users to work on different parts of 
+	 * a content in different places and different times, without losing any
+	 * of their works, and without being forced to complete a whole content
+	 * processing in order to save a content.
+	 * 
+	 * It can handle strings, as well as arbitrary binary data.
+	 *
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 * @constructor
+	 * @this {Fragment}
+	 */
+	$fn.Fragment = function(){
+		var fragment = {
+			id : Math.round(Math.random() * 999999999),
+			content : new Blob(),
+			text : "",
+			text_ready : true
+		}
+		
+		fragment.set_content = function($val){
+			this.text_ready = false;
+			this.content = new Blob([$val]);
+			var fr = new FileReader();
+			fr.addEventListener("load" ,function(e){
+				this.text = e.target.result;
+				this.text_ready = true;
+			});
+			fr.readAsText(this.content);
+			return this;
+		}
+		
+		
+		return fragment;
+	}
+
+	/**
+	 * Content class.
+	 * The main object for Semilla to handle.
+	 *
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 * @constructor
+	 * @this {Content}
+	 */
+	$fn.Content = function(){
+		function content(){
+			
+		}
+		
+		content.properties = {
+			name : "Content's name",
+			description : "Content's description"
+		};
+		
+		content.origin = new Blob();
+		content.external_links = [];
+		content.references = [];
+		content.fragments = [];
+		content.corrections = [];
+		
+		return content;
 	}
 	
-	content.properties = {
-		name : "Content's name",
-		description : "Content's description"
-	};
-	
-	content.origin = new Blob();
-	content.external_links = [];
-	content.references = [];
-	content.fragments = [];
-	content.corrections = [];
-	
-	return content;
-}
+	return $fn;
+}(function(){}));
