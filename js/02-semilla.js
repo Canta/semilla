@@ -36,15 +36,15 @@ var Semilla = (function($fn){
 	 * @this {Importer}
 	 */
 	$fn.Importer = function(){
-		function importer(){
-			
+		function Importer(){
+			console.debug(this);
 		}
 		
-		importer.kind = "Abstract importer";
-		importer.description = "This is an importer that actually does nothing.\nIt's used as definition for other importers to overload.";
-		importer.mime_types = [];
+		Importer.kind = "Abstract importer";
+		Importer.description = "This is an importer that actually does nothing.\nIt's used as definition for other importers to overload.";
+		Importer.mime_types = [];
 		
-		return importer;
+		return Importer;
 	}
 	
 	/**
@@ -56,14 +56,14 @@ var Semilla = (function($fn){
 	 * @this {Exporter}
 	 */
 	$fn.Exporter = function() {
-		function exporter(){
+		function Exporter(){
 			
 		}
 		
-		exporter.kind = "Abstract exporter";
-		exporter.description = "This is an exporter that actually does nothing.\nIt's used as definition for other exporters to overload.";
+		Exporter.kind = "Abstract exporter";
+		Exporter.description = "This is an exporter that actually does nothing.\nIt's used as definition for other exporters to overload.";
 		
-		return exporter;
+		return Exporter;
 	}
 
 	/**
@@ -77,15 +77,14 @@ var Semilla = (function($fn){
 	 * @this {Advertiser}
 	 */
 	$fn.Advertiser = function(){
-		function advertiser(){
+		function Advertiser(){
 			
 		}
 		
-		advertiser.kind = "Abstract advertiser";
-		advertiser.description = "This is an advertiser that actually does nothing.\n\
-	It's used as definition for other advertisers to overload.";
+		Advertiser.kind = "Abstract advertiser";
+		Advertiser.description = "This is an advertiser that actually does nothing.\nIt's used as definition for other advertisers to overload.";
 		
-		return advertiser;
+		return Advertiser;
 	}
 	
 	/**
@@ -97,17 +96,17 @@ var Semilla = (function($fn){
 	 * @this {Repo}
 	 */
 	$fn.Repo = function(){
-		function repo(){
+		function Repo(){
 			
 		}
 		
-		repo.kind = "Abstract repo";
-		repo.description = "This is a repo that actually does nothing.\nIt's used as definition for other repos to overload.";
-		repo.contents = [];
-		repo.users = [];
+		Repo.kind = "Abstract repo";
+		Repo.description = "This is a repo that actually does nothing.\nIt's used as definition for other repos to overload.";
+		Repo.contents = [];
+		Repo.users = [];
 		
 		
-		return repo;
+		return Repo;
 	}
 
 	
@@ -120,14 +119,14 @@ var Semilla = (function($fn){
 	 * @this {Propagator}
 	 */
 	$fn.Propagator = function(){
-		function propagator(){
+		function Propagator(){
 			
 		}
 		
-		propagator.kind = "Abstract propagator";
-		propagator.description = "This is a propagator that actually does nothing.\nIt's used as definition for other propagators to overload.";
+		Propagator.kind = "Abstract propagator";
+		Propagator.description = "This is a propagator that actually does nothing.\nIt's used as definition for other propagators to overload.";
 		
-		return propagator;
+		return Propagator;
 	}
 
 	/**
@@ -145,14 +144,14 @@ var Semilla = (function($fn){
 	 * @this {Fragment}
 	 */
 	$fn.Fragment = function(){
-		var fragment = {
+		var Fragment = {
 			id : Math.round(Math.random() * 999999999),
 			content : new Blob(),
 			text : "",
 			text_ready : true
 		}
 		
-		fragment.set_content = function($val){
+		Fragment.set_content = function($val){
 			this.text_ready = false;
 			this.content = new Blob([$val]);
 			var fr = new FileReader();
@@ -165,7 +164,7 @@ var Semilla = (function($fn){
 		}
 		
 		
-		return fragment;
+		return Fragment;
 	}
 	
 	/**
@@ -177,23 +176,63 @@ var Semilla = (function($fn){
 	 * @this {Content}
 	 */
 	$fn.Content = function(){
-		function content(){
+		function Content(){
 			
 		}
 		
-		content.properties = {
+		Content.properties = {
 			name : "Content's name",
 			description : "Content's description"
 		};
 		
-		content.origin = new Blob();
-		content.external_links = [];
-		content.references = [];
-		content.fragments = [];
-		content.corrections = [];
+		Content.origin = new Blob();
+		Content.external_links = [];
+		Content.references = [];
+		Content.fragments = [];
+		Content.corrections = [];
 		
-		return content;
+		return Content;
 	}
+	
+	
+	/**
+	 * import_content class.
+	 * Given a File object, this method checks for a compatible importer
+	 * for that File and, if found, returns a fully parsed Content 
+	 * object. If not, returns the boolean false value.
+	 *
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 * @param {File} $f
+	 * @return {Content}
+	 */
+	$fn.import_content = function($f){
+		if (! $f instanceof File){
+			throw "Semilla.import_content: File object expected";
+		}
+		
+		var imp = null, found = false;
+		
+		for (var i = 0; i < this.importers.length && found == false; i++){
+			for (var i2 = 0; i2 < this.importers[i].mime_types; i2++){
+				if ($f.type.toLowerCase() == this.importers[i].mime_types[i2].toLowerCase()){
+					imp = importer[i];
+					found = true;
+				}
+			}
+		}
+		
+		var ret = false;
+		if (imp !== null){
+			ret = imp.parse($f);
+		}
+		
+		return ret;
+	}
+	
 	
 	return $fn;
 }(function(){}));
+
+
+
+
