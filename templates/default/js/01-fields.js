@@ -3,6 +3,7 @@ app.ui.setup_fields = function($id_container) {
 	
 	$container = ($id_container === undefined) ? $(document) : $("#"+$id_container);
 	
+	
 	//establezco los eventos de todo item enum
 	$container.find("[enum]").each(
 		function($indice, $elemento){
@@ -41,11 +42,10 @@ app.ui.setup_fields = function($id_container) {
 		}
 	);
 	
-	set_valores_defecto_enum();
+	set_valores_defecto_enum($id_container);
 	
 	//establezco tabindexs a los campos de los formularios
 	$container.find(':input:visible:enabled, :radio:visible:enabled, :checkbox:visible:enabled').each(function($i,$e){ $($e).attr('tabindex',$i+1);});
-	
 	
 	
 	//controlo que las teclas ENTER en los inputs funcionen como TAB
@@ -103,6 +103,14 @@ app.ui.setup_fields = function($id_container) {
 			return true;
 		}
 	});
+	
+	//FIX: algunos input en Firefox tienen establecido el atributo value,
+	//pero así y todo no se puede acceder a él. Lo arreglo con esto.
+	$container.find("[old_value]").each(
+		function(i,e){
+			$(e).val($(e).attr("old_value"));
+		}
+	);
 	
 };
 
@@ -174,9 +182,12 @@ function enumdesc_onchange($e){
 	}
 }
 
-function set_valores_defecto_enum(){
+function set_valores_defecto_enum($id_container){
 	//establezco el valor por defecto de todo item enum
-	$("[enum]").each(
+	
+	$container = ($id_container === undefined) ? $(document) : $("#"+$id_container);
+	
+	$container.find("[enum]").each(
 		function($indice, $elemento){
 			$id 	=	$elemento.id;
 			$valor	=	$($elemento).val();
@@ -309,13 +320,13 @@ function accion_eliminar($obj){
 function accion_alta(){
 	$("input[name='form_operacion']").val("alta");
 	$("form.frmABM").attr("novalidate","novalidate").find("input").attr("novalidate","novalidate");
-	$("form.frmABM")[0].submit();
+	//$("form.frmABM")[0].submit();
 }
 
 function accion_lista(){
 	$("input[name='form_operacion']").val("lista");
 	$("form.frmABM").attr("novalidate","novalidate").find("input").attr("novalidate","novalidate");
-	$("form.frmABM")[0].submit();
+	//$("form.frmABM")[0].submit();
 }
 
 function accion_desactivar($obj){

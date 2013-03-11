@@ -886,7 +886,7 @@ class OptionalListField extends SelectField{
 		$clase_css = $this->set_clase_CSS();
 		$disabled = "";
 		
-		$ret2 .= "<input separador=\"".$this->get_separador()."\"  class='".$clase_css."' id='".$this->get_id()."' name='".$this->get_HTML_name()."' type='".$type."' value='".$valor."' pattern='".$this->get_regex_validacion($autoregex)."' alt='".str_replace("'","`",$this->get_rotulo())."' ";
+		$ret2 .= "<input separador=\"".$this->get_separador()."\"  class='".$clase_css."' id='".$this->get_id()."' name='".$this->get_HTML_name()."' type='".$type."' value='".$valor."' old_value='".$valor."' pattern='".$this->get_regex_validacion($autoregex)."' alt='".str_replace("'","`",$this->get_rotulo())."' ";
 		
 		foreach ($this->get_events() as $key => $value) {
 			$ret2 .= " ".$key." =\"". str_replace('"','\\"',$value)."\" ";
@@ -923,13 +923,13 @@ class OptionalListField extends SelectField{
 				//echo(var_dump($item[$this->get_campo_indice()]));
 				$found[] = $item[$this->get_campo_indice()];
 			}
-			$ret2 .=  "<label class=\"enum_list_item_label\"><input ".$disabled." type=\"checkbox\" ".$selected." value=\"".$item[$this->get_campo_indice()]."\" />".$item[$this->get_campo_descriptivo()]."</label>";
+			$ret2 .=  "<label class=\"enum_list_item_label\"><input ".$disabled." id=\"".$this->get_id()."_".$item[$this->get_campo_indice()]."\" type=\"checkbox\" ".$selected." value=\"".$item[$this->get_campo_indice()]."\" />".$item[$this->get_campo_descriptivo()]."</label>";
 		}
 		$v = $valores[count($valores)-1];
 		if (in_array($v,$found)) {
 			$v = "";
 		}
-		$ret2 .=  "<label class=\"enum_list_item_label\">Otro: <input ".$disabled." type=\"text\" value=\"".$v."\" /></label>";
+		$ret2 .=  "<label class=\"enum_list_item_label\">Otro: <input id=\"".$this->get_id()."_VALOR_TEXTO_LIBRE\" ".$disabled." type=\"text\" value=\"".$v."\" /></label>";
 		$ret2 .= "</div>";
 			
 		

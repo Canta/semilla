@@ -23,13 +23,13 @@
  */
 var App = (function() {
 	var app = function(){};
-	app.version = "alfa";
+	app.version = "1.1";
 	app.path = ".";
 	app.esperando = [];
 	app.current_section = $();
 	app.timers = {};
 	app.ui = {
-		wizards : []
+			wizards : []
 	};
 	
 	app.timers.drag = [];
@@ -253,7 +253,17 @@ var App = (function() {
 			throw "app.ui.change_section: invalid argument data type.";
 		}
 		
+		if (app.current_section.attr("onclose") != undefined){
+			try{
+				eval(app.current_section.attr("onclose"));
+			}catch(e){
+				app.mostrar_error(e);
+				return false;
+			}
+		}
+		
 		app.sections.fadeOut(300);
+		
 		if ($sec.attr("onshow") != undefined){
 			eval($sec.attr("onshow"));
 		}
@@ -421,8 +431,19 @@ $(document).ready(
 			app.mouseY = e.pageY;
 		});
 		
-		app.sections = $("body > section");
+		app.sections = $("body > section, body > .section");
 		app.current_section = $(app.sections[0]);
+		
+		window.onbeforeunload = function() { 
+			if (app.current_section.attr("onclose") != undefined){
+				try{
+					eval(app.current_section.attr("onclose"));
+				}catch(e){
+					app.mostrar_error(e);
+					return false;
+				}
+			}
+		}
 		
 		$(".wizard").each(function($i, $e){
 			app.ui.wizards.push(new Wizard($e));
@@ -446,10 +467,12 @@ jQuery.unserialize = function(str){
 				if (arrays[index] === undefined){
 					arrays[index] = [];
 				}
-				arrays[index].push( decodeURIComponent(parts[1]));
+				arrays[index].push( decodeURIComponent(parts[1].replace(/\+/g," ")));
 				
 			} else {
-				ret += "\""+parts[0] + "\": \"" + decodeURIComponent(parts[1]) + "\", ";
+				if (parts.length > 1){
+					ret += "\""+parts[0] + "\": \"" + decodeURIComponent(parts[1].replace(/\+/g," ")) + "\", ";
+				}
 			}
 			
 		};
@@ -467,7 +490,7 @@ jQuery.fn.unserialize = function(str){
 		var items = str.split('&');
 		for (var i = 0; i < items.length; i++) {
 			var parts = items[i].split(/=/);
-			this.find('[name='+ parts[0] +']').val(decodeURIComponent(parts[1]));
+			this.find('[name='+ parts[0] +']').val(decodeURIComponent(parts[1].replace(/\+/g," ")));
 		};
 		return this;
 }
