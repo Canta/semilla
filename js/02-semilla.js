@@ -19,7 +19,7 @@
  * MA 02110-1301, USA.
  */
 
-var Semilla = (function($fn){
+Semilla = function($fn){
 	
 	$fn.importers   = [];
 	$fn.exporter    = [];
@@ -35,17 +35,13 @@ var Semilla = (function($fn){
 	 * @constructor
 	 * @this {Importer}
 	 */
-	$fn.Importer = function(){
-		function Importer(){
-			console.debug(this);
-		}
-		
-		Importer.kind = "Abstract importer";
-		Importer.description = "This is an importer that actually does nothing.\nIt's used as definition for other importers to overload.";
-		Importer.mime_types = [];
-		
-		return Importer;
-	}
+	Importer = function(){};
+	Importer.prototype = {
+		kind : "Abstract importer",
+		description : "This is an importer that actually does nothing.\nIt's used as definition for other importers to overload.",
+		mime_types : []
+	};
+	$fn.Importer = Importer;
 	
 	/**
 	 * Exporter class.
@@ -55,17 +51,13 @@ var Semilla = (function($fn){
 	 * @constructor
 	 * @this {Exporter}
 	 */
-	$fn.Exporter = function() {
-		function Exporter(){
-			
-		}
-		
-		Exporter.kind = "Abstract exporter";
-		Exporter.description = "This is an exporter that actually does nothing.\nIt's used as definition for other exporters to overload.";
-		
-		return Exporter;
-	}
-
+	Exporter = function() {};
+	Exporter.prototype = {
+		kind : "Abstract exporter",
+		description : "This is an exporter that actually does nothing.\nIt's used as definition for other exporters to overload."
+	};
+	$fn.Exporter = Exporter;
+	
 	/**
 	 * Advertiser class.
 	 * It's a class for advertise contents. 
@@ -76,16 +68,12 @@ var Semilla = (function($fn){
 	 * @constructor
 	 * @this {Advertiser}
 	 */
-	$fn.Advertiser = function(){
-		function Advertiser(){
-			
-		}
-		
-		Advertiser.kind = "Abstract advertiser";
-		Advertiser.description = "This is an advertiser that actually does nothing.\nIt's used as definition for other advertisers to overload.";
-		
-		return Advertiser;
+	Advertiser = function(){};
+	Advertiser.prototype = {
+		kind : "Abstract advertiser",
+		description : "This is an advertiser that actually does nothing.\nIt's used as definition for other advertisers to overload."
 	}
+	$fn.Advertiser = Advertiser;
 	
 	/**
 	 * Repo class.
@@ -95,20 +83,14 @@ var Semilla = (function($fn){
 	 * @constructor
 	 * @this {Repo}
 	 */
-	$fn.Repo = function(){
-		function Repo(){
-			
-		}
-		
-		Repo.kind = "Abstract repo";
-		Repo.description = "This is a repo that actually does nothing.\nIt's used as definition for other repos to overload.";
-		Repo.contents = [];
-		Repo.users = [];
-		
-		
-		return Repo;
+	Repo = function(){};
+	Repo.prototype = {
+		kind : "Abstract repo",
+		description : "This is a repo that actually does nothing.\nIt's used as definition for other repos to overload.",
+		contents : [],
+		users : []
 	}
-
+	$fn.Repo = Repo;
 	
 	/**
 	 * Propagator class.
@@ -118,17 +100,13 @@ var Semilla = (function($fn){
 	 * @constructor
 	 * @this {Propagator}
 	 */
-	$fn.Propagator = function(){
-		function Propagator(){
-			
-		}
-		
-		Propagator.kind = "Abstract propagator";
-		Propagator.description = "This is a propagator that actually does nothing.\nIt's used as definition for other propagators to overload.";
-		
-		return Propagator;
+	Propagator = function(){};
+	Propagator.prototype = {
+		kind : "Abstract propagator",
+		description : "This is a propagator that actually does nothing.\nIt's used as definition for other propagators to overload."
 	}
-
+	$fn.Propagator = Propagator;
+	
 	/**
 	 * Fragment class.
 	 * The abstraction behind the collaboration.
@@ -143,15 +121,13 @@ var Semilla = (function($fn){
 	 * @constructor
 	 * @this {Fragment}
 	 */
-	$fn.Fragment = function(){
-		var Fragment = {
-			id : Math.round(Math.random() * 999999999),
-			content : new Blob(),
-			text : "",
-			text_ready : true
-		}
-		
-		Fragment.set_content = function($val){
+	Fragment = function(){};
+	Fragment.prototype = {
+		id : Math.round(Math.random() * 999999999),
+		content : new Blob(),
+		text : "",
+		text_ready : true,
+		set_content : function($val){
 			this.text_ready = false;
 			this.content = new Blob([$val]);
 			var fr = new FileReader();
@@ -162,10 +138,8 @@ var Semilla = (function($fn){
 			fr.readAsText(this.content);
 			return this;
 		}
-		
-		
-		return Fragment;
-	}
+	};
+	$fn.Fragment = Fragment;
 	
 	/**
 	 * Content class.
@@ -175,25 +149,19 @@ var Semilla = (function($fn){
 	 * @constructor
 	 * @this {Content}
 	 */
-	$fn.Content = function(){
-		function Content(){
-			
-		}
-		
-		Content.properties = {
+	Content = function(){};
+	Content.prototype = {
+		properties : {
 			name : "Content's name",
 			description : "Content's description"
-		};
-		
-		Content.origin = new Blob();
-		Content.external_links = [];
-		Content.references = [];
-		Content.fragments = [];
-		Content.corrections = [];
-		
-		return Content;
+		},
+		origin : new Blob(),
+		external_links : [],
+		references : [],
+		fragments : [],
+		corrections : []
 	}
-	
+	$fn.Content = Content;
 	
 	/**
 	 * import_content class.
@@ -231,7 +199,7 @@ var Semilla = (function($fn){
 	
 	
 	return $fn;
-}(function(){}));
+}(function Semilla(){});
 
 
 
