@@ -19,6 +19,12 @@
  * MA 02110-1301, USA.
  */
 
+Function.prototype.def = function(obj){
+	for (var k in obj){
+		this.prototype[k] = obj[k];
+	}
+}
+
 Semilla = function($fn){
 	
 	$fn.importers   = [];
@@ -35,6 +41,7 @@ Semilla = function($fn){
 	 * @constructor
 	 * @this {Importer}
 	 */
+	
 	Importer = function(){};
 	Importer.prototype = {
 		kind : "Abstract importer",
@@ -159,12 +166,34 @@ Semilla = function($fn){
 		external_links : [],
 		references : [],
 		fragments : [],
-		corrections : []
+		corrections : [],
+		
+		/**
+		 * method add_fragment.
+		 * Given a Fragment, adds it to the content's fragments list.
+		 * It's redundant given that one can just push the fragment into
+		 * the fragments list (it's public), but this function is
+		 * intended to also validate the fragment, as custom contents 
+		 * may need specific fragment types.
+		 *
+		 * @author Daniel Cantarín <omega_canta@yahoo.com>
+		 * @this {Content}
+		 * @param {Fragment} f
+		 * @return {void}
+		 */
+		add_fragment : function(f){
+			if (!( f instanceof Semilla.Fragment)){
+				throw "Content.add_fragment: Fragment expected.";
+			}
+			
+			this.fragments.push(f);
+		}
+		
 	}
 	$fn.Content = Content;
 	
 	/**
-	 * import_content class.
+	 * method import_content.
 	 * Given a File object, this method checks for a compatible importer
 	 * for that File and, if found, returns a fully parsed Content 
 	 * object. If not, returns the boolean false value.
@@ -174,16 +203,15 @@ Semilla = function($fn){
 	 * @return {Content}
 	 */
 	$fn.import_content = function($f){
-		if (! $f instanceof File){
+		if (! ($f instanceof File)){
 			throw "Semilla.import_content: File object expected";
 		}
 		
 		var imp = null, found = false;
-		
 		for (var i = 0; i < this.importers.length && found == false; i++){
-			for (var i2 = 0; i2 < this.importers[i].mime_types; i2++){
+			for (var i2 = 0; i2 < this.importers[i].mime_types.length; i2++){
 				if ($f.type.toLowerCase() == this.importers[i].mime_types[i2].toLowerCase()){
-					imp = importer[i];
+					imp = this.importers[i];
 					found = true;
 				}
 			}
@@ -201,6 +229,27 @@ Semilla = function($fn){
 	return $fn;
 }(function Semilla(){});
 
+/**
+ * MP3Importer class.
+ * Translates from MP3 files into Content classes.
+ *
+ * It uses the FANTASTIC Aurora.js framework for JS audio handling.
+ * https://github.com/ofmlabs/aurora.js
+ *
+ * @author Daniel Cantarín <omega_canta@yahoo.com>
+ * @constructor
+ * @this {MP3Importer}
+ */
+Semilla.MP3Importer = function(){};
+Semilla.MP3Importer.prototype = new Semilla.Importer();
+Semilla.MP3Importer.def({
+	kind        : "MP3 File importer",
+	description : "An importer for Mp3 files. It takes an MP3, and creates a Semilla content.",
+	mime_types  : ["audio/mp3", "audio/mpeg"],
+	parse       : function(f){
+		//the magic goes here
+		return true;
+	}
+});
 
-
-
+Semilla.importers.push(new Semilla.MP3Importer());
