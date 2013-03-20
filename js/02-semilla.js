@@ -247,8 +247,44 @@ Semilla.MP3Importer.def({
 	description : "An importer for Mp3 files. It takes an MP3, and creates a Semilla content.",
 	mime_types  : ["audio/mp3", "audio/mpeg"],
 	parse       : function(f){
-		//the magic goes here
-		return true;
+		//REQUIRES:
+		//aurora.js and mp3.js (aurora's mp3 decoder)
+		if (typeof Player == "undefined"){
+			if (typeof jQuery != "undefined"){
+				jQuery.ajax({
+					async:false,
+					type:'GET',
+					url: "./js/libs/aurora.js",
+					data:null,
+					dataType:'script'
+				});
+			} else if(typeof window == "undefined"){
+				//No window object. It must be a web worker.
+				importScripts("./libs/aurora.js");
+			}
+		}
+		if (typeof MP3Stream == "undefined"){
+			if (typeof jQuery != "undefined"){
+				jQuery.ajax({
+					async:false,
+					type:'GET',
+					url: "./js/libs/mp3.js",
+					data:null,
+					dataType:'script'
+				});
+			} else if(typeof window == "undefined"){
+				//No window object. It must be a web worker.
+				importScripts("./libs/aurora.js");
+			}
+		}
+		
+		try{
+			var p = new Player.fromFile(f);
+			p.play();
+			return true;
+		} catch (e){
+			return false;
+		}
 	}
 });
 

@@ -198,12 +198,12 @@ app.contents.read_raw_data = function(evt){
 			// Now, i try to get extra data from the file
 			if ($kind == "audio"){
 				// From audio files, i need the duration.
-				$file.extra_data.duration = NaN;
-				app.player = Player.fromFile($file);
+				//$file.extra_data.duration = NaN;
+				//app.player = Player.fromFile($file);
 				//app.player.preload();
-				$file.extra_data.duration = app.player.duration;
-				app.player.play();
-				
+				//$file.extra_data.duration = app.player.duration;
+				//app.player.play();
+				Semilla.import_content($("#content-create-process-file")[0].files[0]);
 				
 			} else if ($kind == "text"){
 				var $tmp_pdf = function($script, $status, $xhr){
