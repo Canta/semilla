@@ -1,0 +1,128 @@
+
+
+La gestión de textos es una tarea compleja y costosa. Conlleva una serie 
+de problemas de diferente índole. Son costosos los materiales, exige
+mucha fuerza de trabajo, tiene dificultades legales, y requiere un nivel
+de organización tal que no puede tomarse a la ligera.
+
+El ejemplo más inmediato para analizar estos problemas nuestra comunidad
+lo tiene en el funcionamiento de la Secretaría de Publicaciones del CEFyL.
+
+En este texto hago algunas lecturas sobre esos problemas, y trato de 
+contextualizarlos, para que a partir de esas notas se pueda contemplar 
+la situación en su magnitud más amplia y se puedan empezar a especular 
+soluciones a los diferentes estratos de tareas involucradas. Es decir,
+este texto pretende ser una forma inicial de relevamiento.
+
+- Un pequeño apartado sobre el CEFyL
+
+El CEFyL es el órgano gremial de los estudiantes de la facultad de
+Filosofía y Letras. En tanto que órgano gremial, se lo entiende como la
+organización formal e institucionalmente reconocida del estudiantado en 
+general. Estimo que, matices mediante, esa ha de ser una lectura unánime.
+
+No está en los intereses de este documento elucubrar qué debe hacer o 
+dejar de hacer el CEFyL. Sabemos que esas lecturas cambian dramáticamente
+de interlocutor en interlocutor, haciendo que cualquier afirmación sea
+muy fácilmente nulificada desde otra perspectiva. Pero en términos de 
+función, dado su caracter de organización gremial e institucional, el 
+CEFyL tiene necesariamente un problema y una responsabilidad de acción a
+la hora de garantizar (¿es garantizar la palabra?) los derechos de los
+estudiantes absolutamente ineludible, estimo, en cualquier lectura: sea
+reclamando, sea autogestionando, o de otra manera. 
+
+Y entre los derechos de los estudiantes está el acceso a los materiales
+de estudio, entre los cuales se encuentran los textos universitarios, 
+cuales sean. 
+
+Entonces, este documento da por sentado que la gestión de esos textos
+es de alguna manera un problema para el CEFyL: ya sea desde la decisión
+básica de hacerse cargo de la tarea o no hacerlo, el CEFyL es un mediador
+legítimo en la cuestión y tiene la potestad para tomar decisiones al 
+respecto. 
+En adelante, la gestión de los textos es un problema del CEFyL.
+
+
+- Acerca de los problemas de la Secretaría de Publicaciones del CEFyL.
+
+Publicaciones imprime textos y los vende. 
+Publicaciones copia textos. 
+Publicaciones genera textos. 
+Publicaciones distribuye textos. 
+Publicaciones obtiene textos. 
+
+Todas esas afirmaciones son válidas y están sostenidas en 
+diferentes perspectivas, tanto técnicas como políticas, de los problemas 
+de la gestión de los textos y la acción del CEFyL en tanto que órgano 
+gremial. 
+
+La primer observación es que cada una de esas afirmaciones conlleva 
+diferentes grados de complejidad específica vinculada a las tareas 
+involucradas. Y cada tarea está mediada, a su vez, por condiciones 
+sociales, culturales, históricas.
+
+La segunda observación es que cada una de esas afirmaciones es 
+interdependiente de las demás. Se dan en conjunto, el CEFyL las enfrenta
+o absorbe en su conjunto. Y se organiza para el caso: no se organiza para
+trabajar sólo una o la otra tarea, sino todas. Parte del problema de 
+Publicaciones, hoy, es lidiar con todo eso en su conjunto.
+
+Hoy, 2013, el CEFyL, en un contexto económico determinado, y de acuerdo 
+a los modos en los que enfrenta esas tareas de gestión de textos, se 
+encuentra con un estado de crisis en Publicaciones, llevando a fenómenos 
+como el crecimiento de los espacios privados que lucran con esos mismos 
+textos en detrimento de las posibilidades de acción del CEFyL, siendo la
+reducción de materias a desgrabar el caso paradigmático: SIM, un privado
+con fines de lucro y ajeno al órgano gremial, desgraba aquello que el 
+CEFyL no puede por cuestiones económicas, llevando el acceso a esos 
+materiales al plano comercial y al mercado.
+Pero es un sólo caso el recién mencionado. Históricamente Publicaciones 
+se enfrentó con muchos otros problemas (y desarrolló soluciones al caso)
+vinculados en aquello que a nivel macro puede llamarse "gestión de 
+textos", pero que en su detalle se trata de varias y diferentes tareas 
+coordinadas; diferentes tareas, diferentes problemas, diferentes soluciones.
+
+
+
+
+
+
+La desgrabación de texto (o transcripción) es un trabajo que requiere 
+mucho tiempo y dedicación, en todos sus diferentes casos: transcribir 
+grabaciones de audio, transcribir texto desde imágenes, traducir, y otros.
+
+Típicamente en cualquier ámbito de la praxis esto se solventa con 
+herramientas que automatizan las tareas repetitivas, llevando la 
+intervención humana al mínimo y permitiendo trabajar los objetos en
+cuestión en masa. Es el caso desde una pequeña oficina hasta una fábrica 
+automatizada de nivel industrial mundial. 
+Pero en el caso de la gestión de textos, las tecnologías requieren una 
+infraestructura técnica (desde pericia técnica hasta calidad de los 
+contenidos a desgrabar, pasando por requisitos de hardware) difícil 
+de sustentar, razón por la cuál se convierte en un rubro donde todas las 
+tareas suelen recaer en personas que las ejecutan manualmente.
+
+Entonces, en ese contexto, la estrategia es desarrollar herramientas que
+faciliten ese trabajo manual, llevándolo al mínimo esfuerzo posible.
+
+Esas herramientas existen, de acuerdo a la diferente naturaleza de 
+aquello que se pretende trabajar (una imagen, un audio, un video). Y cada
+herramienta, cada objeto en cuestión, tiene su propia complejidad técnica.
+
+Los OCR (software de reconocimiento óptico de caracteres) requieren X 
+grado de estandarización, tanto de los objetos a trabajar como de las 
+configuraciones particulares para la detección de texto.
+Los ASR (software de reconocimiento del habla) se enfrentan con problemas
+similares, más complejos aún en términos de configuraciones para las 
+detecciones (gestión de lenguajes, léxicos, y modos de comprensión).
+En todo caso, el software típicamente requiere que los objetos contemplen
+un grado de calidad tal que, usualmente, de no cumplirse, la tarea es 
+imposible de automatizar. Y de cumplirse, surgen otros problemas, como la
+gestión del espacio, la capacidad objetiva del hardware para manipularlos,
+o la posibilidad de copiarlos. Todo esto siempre teniendo en cuenta que
+exista la posibilidad de utilizar software que no sea privativo. Y todo
+esto, en cualquier organización que pretenda encarar la tarea de 
+desgrabación en medianas o grandes cantidades, implica un costo: en tiempo,
+y en dinero.
+
+

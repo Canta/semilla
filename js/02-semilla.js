@@ -131,7 +131,7 @@ Semilla = function($fn){
 	Fragment = function(){};
 	Fragment.prototype = {
 		id : Math.round(Math.random() * 999999999),
-		content : new Blob(),
+		content : (typeof Blob !== "undefined") ? new Blob() : "",
 		text : "",
 		text_ready : true,
 		set_content : function($val){
@@ -162,7 +162,7 @@ Semilla = function($fn){
 			name : "Content's name",
 			description : "Content's description"
 		},
-		origin : new Blob(),
+		origin : (typeof Blob !== "undefined") ? new Blob() : "",
 		external_links : [],
 		references : [],
 		fragments : [],
@@ -234,7 +234,7 @@ Semilla = function($fn){
  * Translates from MP3 files into Content classes.
  *
  * It uses the FANTASTIC Aurora.js framework for JS audio handling.
- * https://github.com/ofmlabs/aurora.js
+ * https://github.com/audiocogs/aurora.js
  *
  * @author Daniel Cantarín <omega_canta@yahoo.com>
  * @constructor
@@ -258,8 +258,9 @@ Semilla.MP3Importer.def({
 					data:null,
 					dataType:'script'
 				});
-			} else if(typeof window == "undefined"){
-				//No window object. It must be a web worker.
+			} else if(typeof window == "undefined" && typeof importScripts !== "undefined"){
+				//No window object, and importScripts defined. 
+				//WebWorker assumed.
 				importScripts("./libs/aurora.js");
 			}
 		}
@@ -272,8 +273,9 @@ Semilla.MP3Importer.def({
 					data:null,
 					dataType:'script'
 				});
-			} else if(typeof window == "undefined"){
-				//No window object. It must be a web worker.
+			} else if(typeof window == "undefined" && typeof importScripts !== "undefined"){
+				//No window object, and importScripts defined. 
+				//WebWorker assumed.
 				importScripts("./libs/aurora.js");
 			}
 		}
