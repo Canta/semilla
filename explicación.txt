@@ -1,4 +1,13 @@
+- Acerca de este texto.
 
+Mi nombre es Daniel Cantarín, tengo 30 años de edad a la fecha, y soy 
+programador. También soy estudiante de la Facultad de Filosofía y Letras
+de la Universidad de Buenos Aires.
+
+Escribo este texto de acuerdo a un desarrollo de software que estoy 
+llevando adelante de manera personal, de cara a algunos problemas que se 
+viven hoy en día en mi facultad. Esos problemas los puedo generalizar 
+bajo el rótulo "gestión de textos".
 
 La gestión de textos es una tarea compleja y costosa. Conlleva una serie 
 de problemas de diferente índole. Son costosos los materiales, exige
@@ -29,18 +38,78 @@ función, dado su caracter de organización gremial e institucional, el
 CEFyL tiene necesariamente un problema y una responsabilidad de acción a
 la hora de garantizar (¿es garantizar la palabra?) los derechos de los
 estudiantes absolutamente ineludible, estimo, en cualquier lectura: sea
-reclamando, sea autogestionando, o de otra manera. 
+reclamando al Estado, sea autogestionando, o de otras maneras. 
 
 Y entre los derechos de los estudiantes está el acceso a los materiales
-de estudio, entre los cuales se encuentran los textos universitarios, 
-cuales sean. 
+de estudio, de los que forman parte los textos universitarios, cuales 
+sean. 
 
 Entonces, este documento da por sentado que la gestión de esos textos
 es de alguna manera un problema para el CEFyL: ya sea desde la decisión
 básica de hacerse cargo de la tarea o no hacerlo, el CEFyL es un mediador
-legítimo en la cuestión y tiene la potestad para tomar decisiones al 
-respecto. 
-En adelante, la gestión de los textos es un problema del CEFyL.
+legítimo en la cuestión y tiene la potestad para intervenir y tomar 
+decisiones al respecto. 
+Insisto, afirmo que la gestión de los textos es un problema del CEFyL.
+
+
+- Acerca de la idea de soluciones mediante desarrollo de Software 
+
+La gestión de textos es un trabajo que requiere mucho tiempo y dedicación.
+
+Típicamente en cualquier ámbito de la praxis el software viene al caso
+de automatizar las tareas repetitivas, llevando la intervención humana 
+al mínimo y permitiendo trabajar los objetos en cuestión en masa. Es el 
+caso desde una pequeña oficina hasta una fábrica automatizada de nivel 
+industrial mundial. 
+Pero en el caso de la gestión de textos, las tecnologías requieren una 
+infraestructura técnica (desde pericia técnica hasta calidad de los 
+contenidos, pasando por requisitos de hardware) difícil de sustentar, 
+razón por la cuál se convierte en un rubro donde todas las tareas suelen 
+recaer en personas que las ejecutan manualmente.
+
+Entonces, en ese contexto, la estrategia es desarrollar herramientas que
+faciliten ese trabajo manual, llevándolo al mínimo esfuerzo posible.
+
+Esas herramientas existen, de acuerdo a la diferente naturaleza de 
+aquello que se pretende trabajar. Y cada herramienta, cada objeto en 
+cuestión, tiene su propia complejidad técnica. Veamos un segundo un
+ejemplo de eso en uno de los problemas de la gestión de textos: la 
+transcripción.
+
+En el caso de transcripciones de textos, ya sea desde audios o desde 
+imágenes, existen softwares denominados ASR y OCR, respectivamente. 
+Los OCR (software de reconocimiento óptico de caracteres) requieren X 
+grado de estandarización, tanto de los objetos a trabajar como de las 
+configuraciones particulares para la detección de texto.
+Los ASR (software de reconocimiento del habla) se enfrentan con problemas
+similares, más complejos aún en términos de configuraciones para las 
+detecciones (gestión de lenguajes, léxicos, y modos de comprensión).
+En todo caso, el software típicamente requiere que los objetos contemplen
+un grado de calidad tal que, usualmente, de no cumplirse, la tarea es 
+imposible de automatizar. Y de cumplirse, surgen otros problemas, como la
+gestión del espacio, la capacidad objetiva del hardware para manipularlos,
+o la posibilidad de copiarlos. Y todo esto, en cualquier organización 
+que pretenda encarar la gestión de textos en medianas o grandes 
+cantidades, implica un costo: en tiempo, y en dinero. Tiempos de 
+laboratorio, tiempos de implementación, dinero para personal 
+especializado, dinero para hardware...
+
+Eso es solamente la transcripción de los textos; un caso de la gestión 
+de textos muy en boga, dados algunos problemas actuales con las 
+desgrabaciones de las clases. Y es uno solo de los problemas de la 
+gestión de textos: también hay problemas de auditoría, problemas de 
+acceso, problemas de distribución, etc, todos siempre en última instancia 
+vinculados directamente a los textos.
+
+No existe ni se supone que existe UN sólo software que solucione todos
+los problemas de todas las tareas de la gestión de textos. Lo que existe 
+es muchos softwares diferentes, para facilitar diferentes tareas, que 
+luego cada organización debe lograr hacer funcionar coordinados. Para 
+eso, la elección de los diferentes softwares para las diferentes tareas 
+es crucial.
+
+Al caso, personalmente trabajo en un desarrollo de software que permita
+facilitar la integración entre las diferentes tareas.
 
 
 - Acerca de los problemas de la Secretaría de Publicaciones del CEFyL.
@@ -76,53 +145,78 @@ reducción de materias a desgrabar el caso paradigmático: SIM, un privado
 con fines de lucro y ajeno al órgano gremial, desgraba aquello que el 
 CEFyL no puede por cuestiones económicas, llevando el acceso a esos 
 materiales al plano comercial y al mercado.
-Pero es un sólo caso el recién mencionado. Históricamente Publicaciones 
-se enfrentó con muchos otros problemas (y desarrolló soluciones al caso)
-vinculados en aquello que a nivel macro puede llamarse "gestión de 
-textos", pero que en su detalle se trata de varias y diferentes tareas 
-coordinadas; diferentes tareas, diferentes problemas, diferentes soluciones.
+Ante esto, desde la comunidad surgen planteos y reclamos al CEFyL; acerca
+de los precios de los desgrabados o las fotocopias, acerca de la política
+frente al acceso, acerca de los recortes en los puestos de trabajo, entre 
+otros. Pero en su detalle gestionar desgrabaciones se trata de varias y 
+diferentes tareas coordinadas; diferentes tareas, diferentes problemas, 
+diferentes soluciones. Y esto es algo que no se tiene típicamente en 
+cuenta desde los reclamos: se pretenden soluciones inmediatas a fenómenos
+que se perciben también en lo inmediato, muchas veces ignorando la 
+complejidad de las tareas y la historia de las soluciones al caso.
+
+Es un sólo caso el recién mencionado. Históricamente Publicaciones se 
+enfrentó con muchos otros problemas (y desarrolló soluciones) vinculados 
+en aquello que a nivel macro puede llamarse "gestión de textos".
+Siempre los textos son en última instancia el problema. Pero el cómo se 
+manejan depende, y mucho, de cada caso de uso.
 
 
+- Acerca del acceso a los textos.
 
+De la modernidad para acá, "acceder a un texto" está mediado por una 
+abstracción que se llama "publicación", que está mediada por abstracciones 
+como ser "formato" o "autor" entre otras. Y esas publicaciones circulan 
+por diferentes "canales" de distribución, a los que las personas acceden.
 
+Por ejemplo, una organización con fines de lucro publica un "libro", que 
+contiene uno o varios textos vinculados a uno o varios autores, y se 
+distribuyen en formato de papel impreso con tinta hacia puntos de venta 
+que se denominaron "librerías". Una persona va a una librería, compra un
+libro con dinero, y así accede a un texto. La condición de acceso es que 
+la persona tenga a su disposición ese dinero para la compra y ese libro 
+en el punto de venta. Sin dinero, o sin libro impreso en la librería, no
+hay acceso. 
 
+El progreso de la tecnología informática llevó al desarrollo de otros 
+canales de distribución de textos, con otras condiciones de acceso. 
+Esto es todavía novedoso, si bien se tratan de tecnologías que ya tienen 
+sus décadas. Y en tanto que novedoso, todavía se entiende como estandar 
+de facto aquel paradigma brevemente mencionado de acceso a los textos.
+En tanto que estandar, la gente cuando necesita un texto lo busca por 
+ese canal. 
+Esto impacta en el CEFyL cuando se le pide un texto: se le pide un texto 
+impreso en papel con tinta, y en buena medida también con cierto grado 
+de precisión respecto de las demás abstracciones mediadoras con esa 
+"publicación": tal editorial, tal año, tal traducción, tal capítulo...
 
-La desgrabación de texto (o transcripción) es un trabajo que requiere 
-mucho tiempo y dedicación, en todos sus diferentes casos: transcribir 
-grabaciones de audio, transcribir texto desde imágenes, traducir, y otros.
+Son muchos los problemas detrás de poder responder a ese pedido. Es 
+necesario tener la capacidad de disponer siempre de material impreso, es
+necesario obtener diferentes publicaciones distintas de textos que se 
+pretenden tengan la misma función, es necesario disponer de textos a los 
+cuales no se tiene acceso por librerías, es necesario disponer de textos 
+que los privados con fines de lucro ya no imprimen, es necesario disponer
+de textos que los privados con fines de lucro no están dispuestos a 
+imprimir, es necesario disponer de textos cuyos autores pretenden 
+condicionar su distribución, es necesario contar con una base de textos 
+considerable ordenada para poder distribuirlos, es necesario mantener 
+esa base de textos con el paso de los años... 
 
-Típicamente en cualquier ámbito de la praxis esto se solventa con 
-herramientas que automatizan las tareas repetitivas, llevando la 
-intervención humana al mínimo y permitiendo trabajar los objetos en
-cuestión en masa. Es el caso desde una pequeña oficina hasta una fábrica 
-automatizada de nivel industrial mundial. 
-Pero en el caso de la gestión de textos, las tecnologías requieren una 
-infraestructura técnica (desde pericia técnica hasta calidad de los 
-contenidos a desgrabar, pasando por requisitos de hardware) difícil 
-de sustentar, razón por la cuál se convierte en un rubro donde todas las 
-tareas suelen recaer en personas que las ejecutan manualmente.
+El CEFyL históricamente se organizó y desarrolló soluciones para ese 
+montón de problemas. Consta en su historia que siempre hizo lo que pudo,
+y que los problemas son muchos. Pero hoy está en crisis, fundamentalmente 
+en términos económicos, y se encuentra frente a la urgencia de 
+desarrollar nuevas y/o mejores soluciones.
 
-Entonces, en ese contexto, la estrategia es desarrollar herramientas que
-faciliten ese trabajo manual, llevándolo al mínimo esfuerzo posible.
-
-Esas herramientas existen, de acuerdo a la diferente naturaleza de 
-aquello que se pretende trabajar (una imagen, un audio, un video). Y cada
-herramienta, cada objeto en cuestión, tiene su propia complejidad técnica.
-
-Los OCR (software de reconocimiento óptico de caracteres) requieren X 
-grado de estandarización, tanto de los objetos a trabajar como de las 
-configuraciones particulares para la detección de texto.
-Los ASR (software de reconocimiento del habla) se enfrentan con problemas
-similares, más complejos aún en términos de configuraciones para las 
-detecciones (gestión de lenguajes, léxicos, y modos de comprensión).
-En todo caso, el software típicamente requiere que los objetos contemplen
-un grado de calidad tal que, usualmente, de no cumplirse, la tarea es 
-imposible de automatizar. Y de cumplirse, surgen otros problemas, como la
-gestión del espacio, la capacidad objetiva del hardware para manipularlos,
-o la posibilidad de copiarlos. Todo esto siempre teniendo en cuenta que
-exista la posibilidad de utilizar software que no sea privativo. Y todo
-esto, en cualquier organización que pretenda encarar la tarea de 
-desgrabación en medianas o grandes cantidades, implica un costo: en tiempo,
-y en dinero.
+Al caso, los canales de distribución todavía alternativos se muestran 
+como una opción potencialmente superadora. Tienen como punto a favor el 
+hecho se pretenden un enorme ahorro de dinero. Pero, por otro lado, 
+exigen una organización y pericia técnica diferente a las que requiere 
+el canal de los libros impresos; se hacen algunas cosas que antes no se 
+hacían, se cambia el planteo del acceso a los textos hacia la propia 
+comunidad, y se debe lidiar con un proceso de migración que va más allá 
+de "imprimir o no imprimir" sino que recae en condiciones culturales 
+estructurales de la comunidad universitaria en su conjunto. Y esto, es 
+también muy costoso, aunque tal vez puediera requerir menos dinero.
 
 
