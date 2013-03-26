@@ -205,6 +205,7 @@ app.contents.read_raw_data = function(evt){
 				//app.player.play();
 				Semilla.import_content($("#content-create-process-file")[0].files[0]);
 				
+				
 			} else if ($kind == "text"){
 				var $tmp_pdf = function($script, $status, $xhr){
 					PDFJS.workerSrc = app.path+"/js/workers/pdf.js";

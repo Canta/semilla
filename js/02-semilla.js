@@ -25,7 +25,7 @@ Function.prototype.def = function(obj){
 	}
 }
 
-Semilla = function($fn){
+Semilla = (function($fn){
 	
 	$fn.importers   = [];
 	$fn.exporter    = [];
@@ -134,6 +134,8 @@ Semilla = function($fn){
 		content : (typeof Blob !== "undefined") ? new Blob() : "",
 		text : "",
 		text_ready : true,
+		from : null,
+		to   : null,
 		set_content : function($val){
 			this.text_ready = false;
 			this.content = new Blob([$val]);
@@ -222,12 +224,64 @@ Semilla = function($fn){
 			ret = imp.parse($f);
 		}
 		
+		//console.debug("Semilla.import_content: " + ret);
 		return ret;
 	}
 	
 	
+	/**
+	 * Util namespace.
+	 * A placeholder for common util functions.
+	 *
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 */
+	
+	$fn.Util = {};
+	
+	/**
+	 * is_numeric function.
+	 * Checks for a value to be a number.
+	 * 
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 * @param {mixed} var
+	 * @return {boolean}
+	 */
+	$fn.Util.is_numeric = function(val){
+		return !isNaN(parseFloat(val)) && isFinite(val);
+	}
+	
+	/**
+	 * ms2s function.
+	 * Translates milliseconds to seconds.
+	 * 
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 * @param {long} ms
+	 * @return {float}
+	 */
+	$fn.Util.ms2s = function (ms){
+		if (Semilla.Util.is_numeric(ms)){
+			return ms / 1000;
+		}
+		throw "Semilla.Util.ms2s: '" + ms +"' is not a number";
+	}
+	
+	/**
+	 * ms2m function.
+	 * Translates milliseconds to minutes.
+	 * 
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 * @param {long} ms
+	 * @return {float}
+	 */
+	$fn.Util.ms2m = function (ms){
+		if (Semilla.Util.is_numeric(ms)){
+			return Semilla.Util.ms2s(ms) / 60;
+		}
+		throw "Semilla.Util.ms2m: '" + ms +"' is not a number";
+	}
+	
 	return $fn;
-}(function Semilla(){});
+})(function Semilla(){});
 
 /**
  * MP3Importer class.
@@ -281,13 +335,29 @@ Semilla.MP3Importer.def({
 		}
 		
 		try{
-			var p = new Player.fromFile(f);
-			p.play();
+			//console.debug("MP3Importer.parse: creating asset.");
+			var a = new Asset.fromFile(f);
+			//console.debug("MP3Importer.parse: setting 'duration' event.");
+			a.on('duration', function(duration) {
+				//console.debug("MP3Importer.parse: asset duration: " + duration);
+				//Once with the audio duration, we can create the Content.
+				c = new Semilla.Content();
+				for (var i = 0; i < duration; i=i+5000){
+					var fr = new Semilla.Fragment();
+					//TODO:
+					//set every fragments content.
+					fr.from = i;
+					fr.to   = ((i + 5000) < duration) ? (i + 5000) : duration;
+					c.add_fragment(fr);
+				}
+				window.c = c;
+			});
+			//console.debug("MP3Importer.parse: starting asset loading process.");
+			a.start();
 			return true;
 		} catch (e){
 			return false;
 		}
 	}
 });
-
 Semilla.importers.push(new Semilla.MP3Importer());
