@@ -42,11 +42,10 @@ Semilla = (function($fn){
 	 * @this {Importer}
 	 */
 	
-	Importer = function(){};
-	Importer.prototype = {
-		kind : "Abstract importer",
-		description : "This is an importer that actually does nothing.\nIt's used as definition for other importers to overload.",
-		mime_types : []
+	Importer = function(){
+		this.kind = "Abstract importer";
+		this.description = "This is an importer that actually does nothing.\nIt's used as definition for other importers to overload.";
+		this.mime_types = [];
 	};
 	$fn.Importer = Importer;
 	
@@ -58,10 +57,9 @@ Semilla = (function($fn){
 	 * @constructor
 	 * @this {Exporter}
 	 */
-	Exporter = function() {};
-	Exporter.prototype = {
-		kind : "Abstract exporter",
-		description : "This is an exporter that actually does nothing.\nIt's used as definition for other exporters to overload."
+	Exporter = function() {
+		this.kind = "Abstract exporter";
+		this.description = "This is an exporter that actually does nothing.\nIt's used as definition for other exporters to overload.";
 	};
 	$fn.Exporter = Exporter;
 	
@@ -75,10 +73,9 @@ Semilla = (function($fn){
 	 * @constructor
 	 * @this {Advertiser}
 	 */
-	Advertiser = function(){};
-	Advertiser.prototype = {
-		kind : "Abstract advertiser",
-		description : "This is an advertiser that actually does nothing.\nIt's used as definition for other advertisers to overload."
+	Advertiser = function(){
+		this.kind = "Abstract advertiser";
+		this.description = "This is an advertiser that actually does nothing.\nIt's used as definition for other advertisers to overload.";
 	}
 	$fn.Advertiser = Advertiser;
 	
@@ -90,12 +87,11 @@ Semilla = (function($fn){
 	 * @constructor
 	 * @this {Repo}
 	 */
-	Repo = function(){};
-	Repo.prototype = {
-		kind : "Abstract repo",
-		description : "This is a repo that actually does nothing.\nIt's used as definition for other repos to overload.",
-		contents : [],
-		users : []
+	Repo = function(){
+		this.kind = "Abstract repo";
+		this.description = "This is a repo that actually does nothing.\nIt's used as definition for other repos to overload.";
+		this.contents = [];
+		this.users = [];
 	}
 	$fn.Repo = Repo;
 	
@@ -107,10 +103,9 @@ Semilla = (function($fn){
 	 * @constructor
 	 * @this {Propagator}
 	 */
-	Propagator = function(){};
-	Propagator.prototype = {
-		kind : "Abstract propagator",
-		description : "This is a propagator that actually does nothing.\nIt's used as definition for other propagators to overload."
+	Propagator = function(){
+		kind = "Abstract propagator";
+		description = "This is a propagator that actually does nothing.\nIt's used as definition for other propagators to overload.";
 	}
 	$fn.Propagator = Propagator;
 	
@@ -157,17 +152,16 @@ Semilla = (function($fn){
 	 * @constructor
 	 * @this {Content}
 	 */
-	Content = function(){};
-	Content.prototype = {
-		properties : {
+	Content = function(){
+		this.properties = {
 			name : "Content's name",
 			description : "Content's description"
-		},
-		origin : (typeof Blob !== "undefined") ? new Blob() : "",
-		external_links : [],
-		references : [],
-		fragments : [],
-		corrections : [],
+		};
+		this.origin = (typeof Blob !== "undefined") ? new Blob() : "";
+		this.external_links = [];
+		this.references = [];
+		this.fragments = [];
+		this.corrections = [];
 		
 		/**
 		 * method add_fragment.
@@ -182,13 +176,13 @@ Semilla = (function($fn){
 		 * @param {Fragment} f
 		 * @return {void}
 		 */
-		add_fragment : function(f){
+		this.add_fragment = function(f){
 			if (!( f instanceof Semilla.Fragment)){
 				throw "Content.add_fragment: Fragment expected.";
 			}
 			
 			this.fragments.push(f);
-		}
+		};
 		
 	}
 	$fn.Content = Content;
