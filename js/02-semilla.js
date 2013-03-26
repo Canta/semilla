@@ -128,15 +128,14 @@ Semilla = (function($fn){
 	 * @constructor
 	 * @this {Fragment}
 	 */
-	Fragment = function(){};
-	Fragment.prototype = {
-		id : Math.round(Math.random() * 999999999),
-		content : (typeof Blob !== "undefined") ? new Blob() : "",
-		text : "",
-		text_ready : true,
-		from : null,
-		to   : null,
-		set_content : function($val){
+	function Fragment(){
+		this.id = Math.round(Math.random() * 999999999);
+		this.content = (typeof Blob !== "undefined") ? new Blob() : "";
+		this.text = "";
+		this.text_ready = true;
+		this.from = null;
+		this.to   = null;
+		this.set_content = function($val){
 			this.text_ready = false;
 			this.content = new Blob([$val]);
 			var fr = new FileReader();
@@ -146,8 +145,8 @@ Semilla = (function($fn){
 			});
 			fr.readAsText(this.content);
 			return this;
-		}
-	};
+		};
+	}
 	$fn.Fragment = Fragment;
 	
 	/**
