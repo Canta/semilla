@@ -203,7 +203,7 @@ app.contents.read_raw_data = function(evt){
 				//app.player.preload();
 				//$file.extra_data.duration = app.player.duration;
 				//app.player.play();
-				Semilla.import_content($("#content-create-process-file")[0].files[0]);
+				Semilla.repos[0].import_content($("#content-create-process-file")[0].files[0]);
 				
 				
 			} else if ($kind == "text"){

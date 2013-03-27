@@ -19,6 +19,16 @@
  * MA 02110-1301, USA.
  */
 
+/**
+ * def function.
+ * Helper function for easy and clean class definitions.
+ * It lets me define properties an methods in a class implementing 
+ * prototype inheritance in a not so verbose way. 
+ * 
+ * @author Daniel Cantarín <omega_canta@yahoo.com>
+ * @param {Object} obj
+ * @this {Function}
+ */
 Function.prototype.def = function(obj){
 	for (var k in obj){
 		this.prototype[k] = obj[k];
@@ -31,6 +41,7 @@ Semilla = (function($fn){
 	$fn.exporter    = [];
 	$fn.advertisers = [];
 	$fn.propagators = [];
+	$fn.repos       = [];
 
 	/**
 	 * Importer class.
@@ -46,6 +57,26 @@ Semilla = (function($fn){
 		this.kind = "Abstract importer";
 		this.description = "This is an importer that actually does nothing.\nIt's used as definition for other importers to overload.";
 		this.mime_types = [];
+		/**
+		 * method parse.
+		 * Given a File object, and a Repo object, this method generates
+		 * a Content object, and then adds it to the repo.
+		 *
+		 * @author Daniel Cantarín <omega_canta@yahoo.com>
+		 * @param {File} f
+		 * @param {Repo} r
+		 * @return {Boolean}
+		 */
+		this.parse = function(f, r){
+			if (typeof f === "undefined" || ! (f instanceof File) ){
+				throw "Semilla.Importer: File expected.";
+			}
+			if (typeof r === "undefined" || ! (r instanceof Semilla.Repo) ){
+				throw "Semilla.Importer: Repo expected.";
+			}
+			
+			return this.__parse(f,r);
+		};
 	};
 	$fn.Importer = Importer;
 	
@@ -88,10 +119,73 @@ Semilla = (function($fn){
 	 * @this {Repo}
 	 */
 	Repo = function(){
-		this.kind = "Abstract repo";
+		this.kind = "Abstract base repo class";
 		this.description = "This is a repo that actually does nothing.\nIt's used as definition for other repos to overload.";
 		this.contents = [];
 		this.users = [];
+		this.events = {
+			new_content : []
+		};
+		/**
+		 * method import_content.
+		 * Given a File object, this method checks for a compatible 
+		 * importer for that File and, if found, generates a fully 
+		 * parsed Content object. 
+		 * The Content object is then stored in the repo.
+		 *
+		 * @author Daniel Cantarín <omega_canta@yahoo.com>
+		 * @param {File} $f
+		 * @return {Boolean}
+		 */
+		this.import_content = function($f){
+			if (! ($f instanceof File)){
+				throw "Semilla.Repo.import_content: File object expected";
+			}
+			
+			var imp = null, found = false;
+			for (var i = 0; i < Semilla.importers.length && found == false; i++){
+				for (var i2 = 0; i2 < Semilla.importers[i].mime_types.length; i2++){
+					if ($f.type.toLowerCase() == Semilla.importers[i].mime_types[i2].toLowerCase()){
+						imp = Semilla.importers[i];
+						found = true;
+					}
+				}
+			}
+			
+			var ret = false;
+			if (imp !== null){
+				ret = imp.parse($f, this);
+			}
+			
+			//console.debug("Semilla.Repo.import_content: " + ret);
+			return ret;
+		}
+		
+		/**
+		 * method add_content.
+		 * Given a Content object, this method adds it to the repo's 
+		 * contents collection. 
+		 * It fires the "new_content" event.
+		 *
+		 * @author Daniel Cantarín <omega_canta@yahoo.com>
+		 * @param {Content} c
+		 * @this {Repo}
+		 */
+		this.add_content = function(c){
+			if ( typeof c === "undefined" || ! (c instanceof Semilla.Content) ){
+				throw "Semilla.Repo: Content expected.";
+			}
+			
+			this.contents.push(c);
+			
+			for (var i = 0; i < this.events.new_content.length; i++){
+				try{
+					this.events.new_content[i]();
+				} catch(e){
+					console.debug("Semilla.Repo: problem calling index "+ i +" in new_content event handlers list:\n"+e);
+				}
+			}
+		}
 	}
 	$fn.Repo = Repo;
 	
@@ -188,41 +282,6 @@ Semilla = (function($fn){
 	$fn.Content = Content;
 	
 	/**
-	 * method import_content.
-	 * Given a File object, this method checks for a compatible importer
-	 * for that File and, if found, returns a fully parsed Content 
-	 * object. If not, returns the boolean false value.
-	 *
-	 * @author Daniel Cantarín <omega_canta@yahoo.com>
-	 * @param {File} $f
-	 * @return {Content}
-	 */
-	$fn.import_content = function($f){
-		if (! ($f instanceof File)){
-			throw "Semilla.import_content: File object expected";
-		}
-		
-		var imp = null, found = false;
-		for (var i = 0; i < this.importers.length && found == false; i++){
-			for (var i2 = 0; i2 < this.importers[i].mime_types.length; i2++){
-				if ($f.type.toLowerCase() == this.importers[i].mime_types[i2].toLowerCase()){
-					imp = this.importers[i];
-					found = true;
-				}
-			}
-		}
-		
-		var ret = false;
-		if (imp !== null){
-			ret = imp.parse($f);
-		}
-		
-		//console.debug("Semilla.import_content: " + ret);
-		return ret;
-	}
-	
-	
-	/**
 	 * Util namespace.
 	 * A placeholder for common util functions.
 	 *
@@ -276,6 +335,24 @@ Semilla = (function($fn){
 	return $fn;
 })(function Semilla(){});
 
+
+/**
+ * MemoryRepo class.
+ * Basic repo for in-memory content handling.
+ * It's the Semilla's default repo.
+ *
+ * @author Daniel Cantarín <omega_canta@yahoo.com>
+ * @constructor
+ * @this {MP3Importer}
+ */
+Semilla.MemoryRepo = function(){};
+Semilla.MemoryRepo.prototype = new Semilla.Repo();
+Semilla.MemoryRepo.def({
+	kind : "In-memory volatile repo",
+	description : "This repo kind is the default Semilla's repo, and is used for in-memory content storing."
+});
+Semilla.repos.push( new Semilla.MemoryRepo() );
+
 /**
  * MP3Importer class.
  * Translates from MP3 files into Content classes.
@@ -293,7 +370,7 @@ Semilla.MP3Importer.def({
 	kind        : "MP3 File importer",
 	description : "An importer for Mp3 files. It takes an MP3, and creates a Semilla content.",
 	mime_types  : ["audio/mp3", "audio/mpeg"],
-	parse       : function(f){
+	__parse       : function(f, r){
 		//REQUIRES:
 		//aurora.js and mp3.js (aurora's mp3 decoder)
 		if (typeof Player == "undefined"){
@@ -343,7 +420,8 @@ Semilla.MP3Importer.def({
 					fr.to   = ((i + 5000) < duration) ? (i + 5000) : duration;
 					c.add_fragment(fr);
 				}
-				window.c = c;
+				
+				r.add_content(c);
 			});
 			//console.debug("MP3Importer.parse: starting asset loading process.");
 			a.start();
