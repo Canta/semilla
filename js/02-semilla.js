@@ -33,7 +33,33 @@ Function.prototype.def = function(obj){
 	for (var k in obj){
 		this.prototype[k] = obj[k];
 	}
+	
+	/**
+	 * set_event_handler function.
+	 * Its name is quite self descriptive :P
+	 * 
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 * @param {String} en 
+	 * Event Handler name
+	 * @param {Function} f 
+	 * A function to execute when the event happens.
+	 * @this {Function}
+	 */
+	this.prototype["set_event_handler"] = function(en, f){
+		if (typeof f === "undefined" || ! (f instanceof Function) ){
+			throw "set_event_handler: Function expected.";
+		}
+		
+		if ( 
+			this.events !== undefined 
+			&& this.events[en] !== undefined 
+			&& this.events[en] instanceof Array
+			){
+			this.events[en].push(f);
+		}
+	}
 }
+
 
 Semilla = (function($fn){
 	
