@@ -394,7 +394,7 @@ Semilla.MP3Importer = function(){};
 Semilla.MP3Importer.prototype = new Semilla.Importer();
 Semilla.MP3Importer.def({
 	kind        : "MP3 File importer",
-	description : "An importer for Mp3 files. It takes an MP3, and creates a Semilla content.",
+	description : "An importer for Mp3 files. It takes a MP3 file, and creates a Semilla content.",
 	mime_types  : ["audio/mp3", "audio/mpeg"],
 	__parse       : function(f, r){
 		//REQUIRES:
@@ -458,3 +458,112 @@ Semilla.MP3Importer.def({
 	}
 });
 Semilla.importers.push(new Semilla.MP3Importer());
+
+
+
+/**
+ * PDFImporter class.
+ * Translates from PDF files into Content classes.
+ *
+ * It uses the great Mozilla's pdf.js library for pdf handling via JS.
+ * https://github.com/mozilla/pdf.js
+ *
+ * @author Daniel Cantarín <omega_canta@yahoo.com>
+ * @constructor
+ * @this {PDFImporter}
+ */
+Semilla.PDFImporter = function(){};
+Semilla.PDFImporter.prototype = new Semilla.Importer();
+Semilla.PDFImporter.def({
+	kind        : "PDF File importer",
+	description : "An importer for PDF files. It takes a PDF, and creates a Semilla content.",
+	mime_types  : ["application/pdf", "application/x-pdf", "application/vnd.pdf", "text/pdf"],
+	__parse       : function(f, r){
+		//REQUIRES:
+		//pdf.js
+		
+		//TODO:
+		//try to get the text position somehow, not just raw text, as
+		//discussed here: 
+		//https://groups.google.com/forum/?fromgroups=#!topic/mozilla.dev.pdf-js/Qzq-xA2MHjs
+		
+		if (typeof PDFJS == "undefined"){
+			if (typeof jQuery != "undefined"){
+				jQuery.ajax({
+					async:false,
+					type:'GET',
+					url: "./js/libs/pdf.js",
+					data:null,
+					dataType:'script'
+				});
+			} else if(typeof window == "undefined" && typeof importScripts !== "undefined"){
+				//No window object, and importScripts defined. 
+				//WebWorker assumed.
+				importScripts("./libs/pdf.js");
+			}
+		}
+		r = Semilla.repos[Semilla.repos.length-1];
+		try{
+			PDFJS.workerSrc = app.path+"/js/libs/pdf.js";
+			a = FileReader();
+			c = new Semilla.Content();
+			a.readAsArrayBuffer(f);
+			a.onloadend = function(evt){
+				if (evt.target.readyState == FileReader.DONE) { // DONE == 2
+					var p = Uint8Array(evt.target.result);
+					PDFJS.getDocument(p).then(function(pdf) {
+						var canvas = document.createElement("canvas");
+						$("#content-create-process-output").append(canvas)
+						var context = canvas.getContext('2d');
+						var $curr_page = 1;
+						var fun = function($i){
+							pdf.getPage($curr_page).then(function(page){
+								var scale = 1.5;
+								var viewport = page.getViewport(scale);
+								canvas.height = viewport.height;
+								canvas.width = viewport.width;
+								var renderContext = {
+									canvasContext: context,
+									viewport: viewport
+								};
+								page.render(renderContext).then(
+									function(){
+										var fr = new Semilla.Fragment();
+										var b = new Blob([canvas.toDataURL("image/jpeg")]);
+										fr.set_content(b);
+										
+										pdf.getPage($curr_page).data.getTextContent().then(
+											function(text){
+												textin = $.makeArray($(text.bidiTexts).map(function(element,value){return value.str})).join('\n'); 
+												fr.text = textin;
+												fr.text_ready = true;
+												c.add_fragment(fr);
+											}
+										);
+										
+										if (pdf.pdfInfo.numPages == $curr_page){
+											console.debug("PDF importado");
+											c.origin = f;
+											r.add_content(c);
+										} else {
+											$curr_page++;
+											fun($curr_page);
+										}
+									}
+								);
+								
+							});
+						}
+						fun($curr_page);
+					});
+				}
+				
+			}
+			return true;
+		} catch (e){
+			console.debug(e);
+			return false;
+		}
+	}
+});
+Semilla.importers.push(new Semilla.PDFImporter());

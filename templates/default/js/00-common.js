@@ -153,7 +153,7 @@ app.contents.new_item = function(){
 	app.contents.creation.processed = {};
 	$("#content-create #content-create-raw-files").html("");
 	$("#content-create #content-create-name").val("");
-	$("#content-create #content-create-kind")[0].selectedIndex=0;
+	//$("#content-create #content-create-kind")[0].selectedIndex=0;
 	
 	$("#content-create #content-create-process-file").replaceWith( $("#content-create #content-create-process-file")[0].outerHTML );
 	$("#content-create #content-create-process-file")[0].addEventListener("change", app.contents.read_raw_data);
@@ -169,122 +169,22 @@ app.contents.new_item = function(){
  * Given a raw file (typically, a binary blob), it reads some metadata
  * from the file in order to start the decomposition process.
  * 
- * It's an event handler for a file type input.
+ * It's an event handler function for a file type input.
  */
 app.contents.read_raw_data = function(evt){
 	$files = evt.target.files;
-	// evt.target.files is a FileList object.
-	// That kind of object is NOT serializable to Web Workers.
-	// However, File objects are, and Arrays too.
-	// So... i create an array of file objects then, just in case.
-	app.contents.files = [];
-	app.contents.current_kind = $("#content-create-kind")[0].options[$("#content-create-kind")[0].selectedIndex].innerHTML;
 	
-	var $kind = app.contents.current_kind;
+	var $file = $files[0];
 	var $tmp_html = "";
-	var $ok = false;
+	var imported = Semilla.repos[0].import_content($file);
 	
-	// The File object has three useful properties: size, name, and type.
-	// "type" is the file's MIME type.
-	for (var $i = 0; $i < $files.length; $i++){
-		var $file = $files[$i];
-		if (!app.contents.is_file_type_valid($file.type) ){
-			$tmp_html += $file.name+": " + $file.type + " no es un tipo de archivo válido para el tipo de contenido " + $kind + ".<br/>";
-		} else {
-			$ok = true;
-			$tmp_html += "File: <b>\""+$file.name+"\"</b> - Size: <b>"+Math.round(($file.size / 1024 ) / 1024)+" MB</b> - Type: <i>\""+$file.type+"\"</i><br/>";
-			$file.extra_data = {};
-			
-			// Now, i try to get extra data from the file
-			if ($kind == "audio"){
-				// From audio files, i need the duration.
-				//$file.extra_data.duration = NaN;
-				//app.player = Player.fromFile($file);
-				//app.player.preload();
-				//$file.extra_data.duration = app.player.duration;
-				//app.player.play();
-				Semilla.repos[0].import_content($("#content-create-process-file")[0].files[0]);
-				
-				
-			} else if ($kind == "text"){
-				var $tmp_pdf = function($script, $status, $xhr){
-					PDFJS.workerSrc = app.path+"/js/workers/pdf.js";
-					$file.extra_data.pages = [];
-					app.contents.processing.pages = [];
-					a = FileReader();
-					app.espere("Procesando archivo...", "archivo procesado.");
-					a.readAsArrayBuffer($file);
-					a.onloadend = function(evt){
-						if (evt.target.readyState == FileReader.DONE) { // DONE == 2
-							//var c = convertDataURIToBinary(evt.target.result);
-							var c = Uint8Array(evt.target.result);
-							PDFJS.getDocument(c).then(function(pdf) {
-								//console.debug(pdf.pdfInfo.numPages);
-								app.contents.processing.raw_in_process = pdf;
-								$("#content-create-process-output").html("");
-								var canvas = document.createElement("canvas");
-								$("#content-create-process-output").append(canvas)
-								var context = canvas.getContext('2d');
-								app.contents.processing.processed_pages = [];
-								var $curr_page = 1;
-								var fun = function($i){
-									pdf.getPage($curr_page).then(function(page){
-										var scale = 1.5;
-										var viewport = page.getViewport(scale);
-										canvas.height = viewport.height;
-										canvas.width = viewport.width;
-										var renderContext = {
-											canvasContext: context,
-											viewport: viewport
-										};
-										page.render(renderContext).then(
-											function(){
-												app.contents.processing.processed_pages.push(true);
-												app.contents.processing.raw_in_process.getPage($curr_page).data.getTextContent().then(
-													function(text){
-														textin = $.makeArray($(text.bidiTexts).map(function(element,value){return value.str})).join('\n'); 
-														app.contents.processing.pages.push({text: textin,dataURL: canvas.toDataURL("image/jpeg")}); 
-													}
-												);
-												if (app.contents.processing.raw_in_process.pdfInfo.numPages == app.contents.processing.processed_pages.length){
-													app.desespere("Procesando archivo...");
-												} else {
-													$curr_page++;
-													fun($curr_page);
-												}
-											}
-										);
-										
-									});
-								}
-								fun($curr_page);
-								//for (var $i=0; $i < pdf.pdfInfo.numPages; $i++){
-									
-								//}
-							});
-						}
-						
-					}
-				};
-				
-				if ($file.type.toLowerCase().indexOf("pdf")>-1){
-					$.ajax({
-						url: app.path + "/js/workers/pdf.js",
-						cache:true,
-						async: true,
-						dataType: "script",
-						success: $tmp_pdf
-					});
-				}
-				
-			}
-			
-			app.contents.files.push($file);
-		}
+	if (imported){
+		$tmp_html += "<span class='exito' style='color:#ffffff;'>File: <b>\""+$file.name+"\"</b> - Size: <b>"+Math.round(($file.size / 1024 ) / 1024)+" MB</b> - Type: <i>\""+$file.type+"\"</i></span>";
+	} else {
+		$tmp_html += "<span class='error' style='color:#ffffff;font-weight:bold;'>" + $file.name+": I can't import <i>" + $file.type + "</i> file type yet :(</span>";
 	}
-	
 	$("#content-create-file-details").html($tmp_html);
-	
+	return imported;
 }
 
 function convertDataURIToBinary(dataURI) {

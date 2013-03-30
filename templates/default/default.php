@@ -1,5 +1,5 @@
 ﻿	<body>
-		<section id="contents" class="redondeadito con-sombrita">
+		<section id="contents" >
 			<div class="section-title">Desgrabaciones comunitarias - v. Alfa #1</div>
 			<div class="section-body">
 				<div id="content-list" class="lista-container">
@@ -24,25 +24,23 @@
 		</section>
 		<section id="content-edit">
 		</section>
-		<section id="content-create" class="wizard redondeadito con-sombrita">
+		<section id="content-create" class="wizard">
 			<form id="content-create-form" onsubmit="return false;">
 				<div class="wizard-title">
 				</div>
 				<div class="wizard-page" validation="app.contents.creation.validate(0);" wizardtitle="New content creation ">
 					<p>Enter new content's basic data:</p>
-					<p>Name: <input type="text" name="name" id="content-create-name" placeholder="Content's name" /></p>
-					<p>Kind: 
-						<select name="kind" id="content-create-kind">
-							<option value="none"> - - - </option>
-							<option value="1">audio</option>
-							<option value="2">text</option>
-							<option value="3">video</option>
-						</select>
+					<div id="content-create-properties">
+						<p>Name: <input type="text" name="name" id="content-create-name" placeholder="Content's name" required /></p>
+						<p>Description: <input type="text" name="name" id="content-create-description" placeholder="Content's description" required /></p>
+					</div>
+					<p>
+						<button type="button">add custom property</button>
 					</p>
 				</div>
 				<div class="wizard-page" validation="app.contents.creation.validate(1);" wizardtitle="Add links to online raw files? ">
 					<p>You can add as many links as you want:</p>
-					<p><button onclick="$('#content-create-raw-files').append('<p>raw file url: <input placeholder=\'Enter raw file url here\' type=text name=\'raws[]\' /></p>');" > add raw file </button></p>
+					<p><button type="button" onclick="$('#content-create-raw-files').append('<p>raw file url: <input placeholder=\'Enter raw file url here\' type=text name=\'raws[]\' /></p>');" > add link to raw file </button></p>
 					<div id="content-create-raw-files">
 					</div>
 				</div>
@@ -50,13 +48,7 @@
 					<p></p>
 					<p>Select a file to process: <input type="file" name="file" id="content-create-process-file" /></p>
 					<p id="content-create-file-details"></p>
-					<div id="content-create-process-output">
-						<div id="ofm"></div>
-						<div id="ID3"></div>
-						<div id="playURL"></div>
-						<div id="progressbar"></div>
-						<div id="preloadbar"></div>
-					</div>
+					
 				</div>
 				<div class="wizard-page" validation="app.contents.creation.validate(3);" wizardtitle="Save content ">
 					<p></p>

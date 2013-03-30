@@ -43,7 +43,7 @@ class API {
 	 * @param int $errline Line number where the error happened.
 	 */
 	function errorHandler($errno, $errstr, $errfile, $errline) {
-		var $ret = APIResponse::fail("Error #".$errno.": ".$errstr);
+		$ret = APIResponse::fail("Error #".$errno.": ".$errstr);
 		die(json_encode($ret));
 	}
 	
