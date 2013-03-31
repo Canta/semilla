@@ -399,7 +399,7 @@ Semilla.MP3Importer.def({
 	__parse       : function(f, r){
 		//REQUIRES:
 		//aurora.js and mp3.js (aurora's mp3 decoder)
-		if (typeof Player == "undefined"){
+		if (typeof AV == "undefined"){
 			if (typeof jQuery != "undefined"){
 				jQuery.ajax({
 					async:false,
@@ -414,7 +414,7 @@ Semilla.MP3Importer.def({
 				importScripts("./libs/aurora.js");
 			}
 		}
-		if (typeof MP3Stream == "undefined"){
+		if (AV.Decoder.find("mp3") === null){
 			if (typeof jQuery != "undefined"){
 				jQuery.ajax({
 					async:false,
@@ -426,15 +426,16 @@ Semilla.MP3Importer.def({
 			} else if(typeof window == "undefined" && typeof importScripts !== "undefined"){
 				//No window object, and importScripts defined. 
 				//WebWorker assumed.
-				importScripts("./libs/aurora.js");
+				importScripts("./libs/mp3.js");
 			}
 		}
 		
 		try{
 			//console.debug("MP3Importer.parse: creating asset.");
-			var a = new Asset.fromFile(f);
+			var p = new AV.Player.fromFile(f);
+			//var a = p.asset;
 			//console.debug("MP3Importer.parse: setting 'duration' event.");
-			a.on('duration', function(duration) {
+			p.on('duration', function(duration) {
 				//console.debug("MP3Importer.parse: asset duration: " + duration);
 				//Once with the audio duration, we can create the Content.
 				c = new Semilla.Content();
@@ -450,7 +451,8 @@ Semilla.MP3Importer.def({
 				r.add_content(c);
 			});
 			//console.debug("MP3Importer.parse: starting asset loading process.");
-			a.start();
+			//a.start();
+			p.preload();
 			return true;
 		} catch (e){
 			return false;
@@ -529,7 +531,7 @@ Semilla.PDFImporter.def({
 								page.render(renderContext).then(
 									function(){
 										var fr = new Semilla.Fragment();
-										var b = new Blob([canvas.toDataURL("image/jpeg")]);
+										var b = new Blob([canvas.toDataURL("image/png")]);
 										fr.set_content(b);
 										
 										pdf.getPage($curr_page).data.getTextContent().then(
