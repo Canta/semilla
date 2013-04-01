@@ -6,6 +6,8 @@ app.contents.all = [];
 app.contents.creation = {};
 app.contents.processing = {};
 
+Semilla.repos.push(new Semilla.HTTPRepo());
+
 app.contents.creation.validate = function($number){
 	if (isNaN($number)){
 		throw "app.contents.creation.validate: page number expected.";
@@ -22,9 +24,9 @@ app.contents.creation.save = function(){
 		throw "app.contents.creation.save: content name required.";
 	}
 	
-	$creation_data.kind = $("#content-create #content-create-kind").val();
-	if ($creation_data.kind == "none"){
-		throw "app.contents.creation.save: content kind required.";
+	$creation_data.description = $("#content-create #content-create-description").val();
+	if ($creation_data.description == ""){
+		throw "app.contents.creation.save: content description required.";
 	}
 	
 	var $raws = $("#content-create input[name='raws[]']");
@@ -176,7 +178,7 @@ app.contents.read_raw_data = function(evt){
 	
 	var $file = $files[0];
 	var $tmp_html = "";
-	var imported = Semilla.repos[0].import_content($file);
+	var imported = Semilla.repos[Semilla.repos.length-1].import_content($file);
 	
 	if (imported){
 		$tmp_html += "<span class='exito' style='color:#ffffff;'>File: <b>\""+$file.name+"\"</b> - Size: <b>"+Math.round(($file.size / 1024 ) / 1024)+" MB</b> - Type: <i>\""+$file.type+"\"</i></span>";

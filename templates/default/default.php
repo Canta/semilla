@@ -48,13 +48,10 @@
 					<p></p>
 					<p>Select a file to process: <input type="file" name="file" id="content-create-process-file" /></p>
 					<p id="content-create-file-details"></p>
-					<p>
-						<img id="imgtest" style="width:250px;" />
-					</p>
 				</div>
 				<div class="wizard-page" validation="app.contents.creation.validate(3);" wizardtitle="Save content ">
 					<p></p>
-					<p><button onclick="app.contents.creation.save();">Save content and close wizard</button></p>
+					<p><button type="button" onclick="app.contents.creation.save();">Save content and close wizard</button></p>
 				</div>
 				<div class="wizard-buttons">
 					<p>

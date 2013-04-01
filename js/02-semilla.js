@@ -35,7 +35,7 @@ Function.prototype.def = function(obj){
 	}
 	
 	/**
-	 * set_event_handler function.
+	 * add_event_handler function.
 	 * Its name is quite self descriptive :P
 	 * 
 	 * @author Daniel Cantarín <omega_canta@yahoo.com>
@@ -45,9 +45,9 @@ Function.prototype.def = function(obj){
 	 * A function to execute when the event happens.
 	 * @this {Function}
 	 */
-	this.prototype["set_event_handler"] = function(en, f){
+	this.prototype["add_event_handler"] = function(en, f){
 		if (typeof f === "undefined" || ! (f instanceof Function) ){
-			throw "set_event_handler: Function expected.";
+			throw "[Semilla] add_event_handler: Function expected.";
 		}
 		
 		if ( 
@@ -56,6 +56,39 @@ Function.prototype.def = function(obj){
 			&& this.events[en] instanceof Array
 			){
 			this.events[en].push(f);
+		}
+	}
+	
+	/**
+	 * fire_event function.
+	 * Common function for event handlers.
+	 * Given an event name, it checks for its existance, and in case 
+	 * it's there, this function fires all its handler functions.
+	 * 
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 * @param {String} en 
+	 * Event Handler name
+	 * @param {Object} data 
+	 * Arbitrary data for the handlers. Every handler must know the data
+	 * structure it's going to receive given the event.
+	 * @this {Function}
+	 */
+	this.prototype["fire_event"] = function(en, data){
+		
+		if ( 
+			this.events === undefined 
+			|| this.events[en] === undefined 
+			|| !(this.events[en] instanceof Array)
+			){
+			return;
+		}
+		
+		for (var i = 0; i < this.events[en].length; i++){
+			try{
+				this.events[en][i](data);
+			} catch(e){
+				console.debug("[Semilla] fire_event: problem calling index "+ i +" in '"+en+"' event handlers list:\n"+e);
+			}
 		}
 	}
 }
@@ -150,7 +183,8 @@ Semilla = (function($fn){
 		this.contents = [];
 		this.users = [];
 		this.events = {
-			new_content : []
+			new_content : [],
+			add_progress : []
 		};
 		/**
 		 * method import_content.
@@ -191,7 +225,11 @@ Semilla = (function($fn){
 		 * method add_content.
 		 * Given a Content object, this method adds it to the repo's 
 		 * contents collection. 
-		 * It fires the "new_content" event.
+		 * It's in fact a public validations function for inheritance,
+		 * as internally calls for a private function once the input is
+		 * validated. 
+		 * That private function fires the "new_content" event when 
+		 * complete, and is supposed to be overloaded by custom repos.
 		 *
 		 * @author Daniel Cantarín <omega_canta@yahoo.com>
 		 * @param {Content} c
@@ -202,16 +240,14 @@ Semilla = (function($fn){
 				throw "Semilla.Repo: Content expected.";
 			}
 			
-			this.contents.push(c);
-			
-			for (var i = 0; i < this.events.new_content.length; i++){
-				try{
-					this.events.new_content[i]();
-				} catch(e){
-					console.debug("Semilla.Repo: problem calling index "+ i +" in new_content event handlers list:\n"+e);
-				}
-			}
+			this.__add_content(c);
 		}
+		
+		this.__add_content = function(c){
+			this.contents.push(c);
+			this.fire_event("new_content", {content:c});
+		}
+		
 	}
 	$fn.Repo = Repo;
 	
@@ -245,12 +281,13 @@ Semilla = (function($fn){
 	 */
 	function Fragment(){
 		this.id = Math.round(Math.random() * 999999999);
-		this.content = (typeof Blob !== "undefined") ? new Blob() : "";
+		this.content = "";
 		this.text = "";
 		this.text_ready = true;
 		this.from = null;
 		this.to   = null;
 		this.set_content = function($val){
+			/*
 			this.text_ready = false;
 			this.content = new Blob([$val]);
 			var fr = new FileReader();
@@ -259,6 +296,9 @@ Semilla = (function($fn){
 				this.text_ready = true;
 			});
 			fr.readAsText(this.content);
+			*/
+			this.content = $val;
+			this.text = $val;
 			return this;
 		};
 	}
@@ -277,7 +317,7 @@ Semilla = (function($fn){
 			name : "Content's name",
 			description : "Content's description"
 		};
-		this.origin = (typeof Blob !== "undefined") ? new Blob() : "";
+		this.origin = "";
 		this.external_links = [];
 		this.references = [];
 		this.fragments = [];
@@ -369,7 +409,7 @@ Semilla = (function($fn){
  *
  * @author Daniel Cantarín <omega_canta@yahoo.com>
  * @constructor
- * @this {MP3Importer}
+ * @this {MemoryRepo}
  */
 Semilla.MemoryRepo = function(){};
 Semilla.MemoryRepo.prototype = new Semilla.Repo();
@@ -378,6 +418,61 @@ Semilla.MemoryRepo.def({
 	description : "This repo kind is the default Semilla's repo, and is used for in-memory content storing."
 });
 Semilla.repos.push( new Semilla.MemoryRepo() );
+
+
+/**
+ * HTTPRepo class.
+ * Repo for HTTP distribution, via POST requests.
+ * It's useful for building Semilla compatible web sites. 
+ * On server's side, it just requires a handler for the repo calls, and
+ * that should be enough for sending and searching contents.
+ *
+ * @author Daniel Cantarín <omega_canta@yahoo.com>
+ * @constructor
+ * @this {HTTPRepo}
+ */
+Semilla.HTTPRepo = function(){};
+Semilla.HTTPRepo.prototype = new Semilla.Repo();
+Semilla.HTTPRepo.def({
+	kind : "HTTP Repo",
+	description : "A repo for HTTP POST content handling.",
+	endpoint : "./api/",
+	// __add_content is called by the public inherited add_content.
+	__add_content: function(c){
+		var data = new FormData();
+		var xhr = new XMLHttpRequest();
+		xhr.repo = this;
+		xhr.upload.repo = this;
+		xhr.content = c;
+		
+		xhr.onreadystatechange = function(evt){
+			if (evt.target.readyState == 4){
+				var r = JSON.parse(evt.target.responseText);
+				if (r.success){
+					this.repo.fire_event("new_content", {content:this.content});
+				} else {
+					alert("Error! :S\n"+r.data.message);
+				}
+			}
+		}
+		
+		xhr.upload.onprogress = function(evt) {
+			var loaded = (evt.loaded / evt.total);
+			if (loaded < 1) {
+				this.repo.fire_event("add_progress", {progress:loaded});
+			}
+		};
+		
+		data.append("verb", "new_content");
+		data.append("name", "Test");
+		data.append("kind", "text");
+		data.append("data", JSON.stringify(c));
+		xhr.open("POST", this.endpoint);
+		xhr.send(data);
+	}
+});
+
+
 
 /**
  * MP3Importer class.
@@ -531,7 +626,7 @@ Semilla.PDFImporter.def({
 								page.render(renderContext).then(
 									function(){
 										var fr = new Semilla.Fragment();
-										var b = new Blob([canvas.toDataURL("image/png")]);
+										var b = canvas.toDataURL("image/png");
 										fr.set_content(b);
 										
 										pdf.getPage($curr_page).data.getTextContent().then(
