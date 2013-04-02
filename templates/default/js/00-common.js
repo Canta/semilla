@@ -178,7 +178,7 @@ app.contents.read_raw_data = function(evt){
 	
 	var $file = $files[0];
 	var $tmp_html = "";
-	var imported = Semilla.repos[Semilla.repos.length-1].import_content($file);
+	var imported = Semilla.repos[0].import_content($file);
 	
 	if (imported){
 		$tmp_html += "<span class='exito' style='color:#ffffff;'>File: <b>\""+$file.name+"\"</b> - Size: <b>"+Math.round(($file.size / 1024 ) / 1024)+" MB</b> - Type: <i>\""+$file.type+"\"</i></span>";
@@ -240,6 +240,14 @@ app.contents.process_files = function(){
 
 $(document).ready(
 	function(){
+		
+		for (var i in Semilla.importers){
+			Semilla.importers[i].add_event_handler("parse_progress",
+				function(data){
+					$("#content-create-import-progress").val(data.progress);
+				}
+			);
+		}
 		
 		app.espere("Cargando sistema","sistema cargado.");
 		$(window).bind("load", function(){

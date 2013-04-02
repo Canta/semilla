@@ -116,6 +116,11 @@ Semilla = (function($fn){
 		this.kind = "Abstract importer";
 		this.description = "This is an importer that actually does nothing.\nIt's used as definition for other importers to overload.";
 		this.mime_types = [];
+		this.output_quality = 0.1;
+		this.events = {
+			file_parsed : [],
+			parse_progress : []
+		}
 		/**
 		 * method parse.
 		 * Given a File object, and a Repo object, this method generates
@@ -136,6 +141,13 @@ Semilla = (function($fn){
 			
 			return this.__parse(f,r);
 		};
+		
+		this.__parse = function(f,r){
+			
+			this.fire_event("file_parsed",{});
+			return this;
+		}
+		
 	};
 	$fn.Importer = Importer;
 	
@@ -449,6 +461,7 @@ Semilla.HTTPRepo.def({
 			if (evt.target.readyState == 4){
 				var r = JSON.parse(evt.target.responseText);
 				if (r.success){
+					this.repo.contents.push(this.content);
 					this.repo.fire_event("new_content", {content:this.content});
 				} else {
 					alert("Error! :S\n"+r.data.message);
@@ -459,7 +472,7 @@ Semilla.HTTPRepo.def({
 		xhr.upload.onprogress = function(evt) {
 			var loaded = (evt.loaded / evt.total);
 			if (loaded < 1) {
-				this.repo.fire_event("add_progress", {progress:loaded});
+				this.repo.fire_event("add_progress", {progress:(loaded * 100)});
 			}
 		};
 		
@@ -529,6 +542,7 @@ Semilla.MP3Importer.def({
 		
 		try{
 			//console.debug("MP3Importer.parse: creating asset.");
+			var imp = this;
 			var p = new AV.Player.fromFile(f);
 			//var a = p.asset;
 			//console.debug("MP3Importer.parse: setting 'duration' event.");
@@ -536,16 +550,25 @@ Semilla.MP3Importer.def({
 				//console.debug("MP3Importer.parse: asset duration: " + duration);
 				//Once with the audio duration, we can create the Content.
 				c = new Semilla.Content();
-				for (var i = 0; i < duration; i=i+5000){
+				imp.fire_event("parse_progress", {progress: 0});
+				var $tmp = function(i, duration){
+					
 					var fr = new Semilla.Fragment();
 					//TODO:
 					//set every fragments content.
 					fr.from = i;
 					fr.to   = ((i + 5000) < duration) ? (i + 5000) : duration;
 					c.add_fragment(fr);
+					imp.fire_event("parse_progress", {progress: (i * 100 / duration)});
+					
+					if ((i + 5000) < duration) {
+						setTimeout(function(){$tmp(i + 5000,duration);},10);
+					} else {
+						imp.fire_event("parse_progress", {progress: 100});
+						r.add_content(c);
+					}
 				}
-				
-				r.add_content(c);
+				$tmp(0,duration);
 			});
 			//console.debug("MP3Importer.parse: starting asset loading process.");
 			//a.start();
@@ -601,26 +624,29 @@ Semilla.PDFImporter.def({
 				importScripts("./libs/pdf.js");
 			}
 		}
-		r = Semilla.repos[Semilla.repos.length-1];
 		try{
 			PDFJS.workerSrc = app.path+"/js/libs/pdf.js";
 			a = FileReader();
 			c = new Semilla.Content();
+			var imp = this;
 			a.readAsArrayBuffer(f);
 			a.onloadend = function(evt){
 				if (evt.target.readyState == FileReader.DONE) { // DONE == 2
 					var p = Uint8Array(evt.target.result);
 					PDFJS.getDocument(p).then(function(pdf) {
+						imp.fire_event("parse_progress", {progress: 0});
 						var canvas = document.createElement("canvas");
-						$("#content-create-process-output").append(canvas)
+						//$("#content-create-process-output").append(canvas)
 						var context = canvas.getContext('2d');
 						var $curr_page = 1;
 						var fun = function($i){
 							pdf.getPage($curr_page).then(function(page){
 								var scale = 1.5;
 								var viewport = page.getViewport(scale);
+								context.fillStyle = "white";
 								canvas.height = viewport.height;
 								canvas.width = viewport.width;
+								context.fillRect(0, 0, viewport.width, viewport.height);
 								var renderContext = {
 									canvasContext: context,
 									viewport: viewport
@@ -628,7 +654,7 @@ Semilla.PDFImporter.def({
 								page.render(renderContext).then(
 									function(){
 										var fr = new Semilla.Fragment();
-										var b = canvas.toDataURL("image/png");
+										var b = canvas.toDataURL("image/jpeg",imp.quality);
 										fr.set_content(b);
 										
 										pdf.getPage($curr_page).data.getTextContent().then(
@@ -641,10 +667,11 @@ Semilla.PDFImporter.def({
 										);
 										
 										if (pdf.pdfInfo.numPages == $curr_page){
-											console.debug("PDF importado");
 											c.origin = f;
+											imp.fire_event("parse_progress", {progress: 100});
 											r.add_content(c);
 										} else {
+											imp.fire_event("parse_progress", {progress: ($curr_page * 100 / pdf.pdfInfo.numPages)});
 											$curr_page++;
 											fun($curr_page);
 										}

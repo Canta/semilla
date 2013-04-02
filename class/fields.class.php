@@ -142,7 +142,7 @@ class Field {
 			//Idem con el valor NULL
 		} else {
 			//Para cualquier otro caso, el valor va entre comillas.
-			$ret = "'".$ret."'";
+			$ret = "'".mysql_real_escape_string($ret)."'";
 		}
 		
 		return $ret;
