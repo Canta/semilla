@@ -464,8 +464,10 @@ Semilla.HTTPRepo.def({
 		};
 		
 		data.append("verb", "new_content");
-		data.append("name", "Test");
-		data.append("kind", "text");
+		for (var i in c.properties){
+			data.append(i, c.properties[i]);
+		}
+		data.append("kind", "2");
 		data.append("data", JSON.stringify(c));
 		xhr.open("POST", this.endpoint);
 		xhr.send(data);

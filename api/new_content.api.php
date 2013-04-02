@@ -27,9 +27,6 @@ class new_content extends API{
 		$newc->save();
 		$newc->set_metodo_serializacion("json");
 		
-		$this->data["response"]->data["abm"] = $newc->render_form();
-				
-		$this->data["response"]->data["sasa"] = $arr;
 		return $this->data["response"];
 	}
 	
