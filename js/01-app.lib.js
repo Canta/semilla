@@ -77,7 +77,12 @@ var App = (function() {
 	}
 
 
-	app.espere = function($desc, $fin){
+	app.espere = function($desc, $fin, $html){
+		
+		if ($html === undefined){
+			$html = "";
+		}
+		
 		//creo los componentes visuales de espera
 		if ($("body > .cubre-cuerpo").length == 0){
 			$("body").append("<div class=\"cubre-cuerpo\" tyle=\"display:none\"></div>");
@@ -92,7 +97,7 @@ var App = (function() {
 		}
 		app.esperando.push([$desc,$fin]);
 		var $id = "espere-" + app._str_to_id($desc);
-		$("body > .modal .descripciones").append("<p class=\"waiting-text\" id=\""+$id+"\">" + $desc + "</p>");
+		$("body > .modal .descripciones").append("<p class=\"waiting-text\" id=\""+$id+"\">" + $desc + $html + "</p>");
 		
 	}
 

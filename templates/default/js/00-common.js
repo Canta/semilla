@@ -282,13 +282,14 @@ $(document).ready(
 			Semilla.repos[i].add_event_handler("add_progress",
 				function(data, repo){
 					if (data.progress == 0){
-						var $tmp_html = "Compartiendo en " + repo.name + "...<p><progress id=\"progress-"+repo.name.replace(" ","-")+"\" value=0 max=100/></p>" ;
-						repo.espere_text = $tmp_html;
-						app.espere($tmp_html, "");
+						var $desc = "Compartiendo en " + repo.name + "...";
+						var $html = "<br/><progress id=\"progress-"+repo.name.replace(" ","-")+"\" value=0 max=100/>";
+						repo.espere_text = $desc;
+						app.espere($desc, "", $html);
 					} else if (data.progress < 100){
 						$("#progress-" + repo.name.replace(" ", "-")).val(data.progress);
 					} else {
-						app.desespere();
+						app.desespere(repo.espere_text);
 					}
 				}
 			);
