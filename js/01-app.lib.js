@@ -73,7 +73,7 @@ var App = (function() {
 		$(".modal").fadeOut(250);
 		window.setTimeout(function(){
 			$(".cubre-cuerpo, .modal").remove();
-		},1000);
+		},100);
 	}
 
 

@@ -85,7 +85,7 @@ Function.prototype.def = function(obj){
 		
 		for (var i = 0; i < this.events[en].length; i++){
 			try{
-				this.events[en][i](data);
+				this.events[en][i](data, this);
 			} catch(e){
 				console.debug("[Semilla] fire_event: problem calling index "+ i +" in '"+en+"' event handlers list:\n"+e);
 			}
@@ -191,6 +191,7 @@ Semilla = (function($fn){
 	 */
 	Repo = function(){
 		this.kind = "Abstract base repo class";
+		this.name = "Base Repo";
 		this.description = "This is a repo that actually does nothing.\nIt's used as definition for other repos to overload.";
 		this.contents = [];
 		this.users = [];
@@ -427,6 +428,7 @@ Semilla.MemoryRepo = function(){};
 Semilla.MemoryRepo.prototype = new Semilla.Repo();
 Semilla.MemoryRepo.def({
 	kind : "In-memory volatile repo",
+	name : "In-memory volatile repo",
 	description : "This repo kind is the default Semilla's repo, and is used for in-memory content storing."
 });
 Semilla.repos.push( new Semilla.MemoryRepo() );
@@ -447,6 +449,7 @@ Semilla.HTTPRepo = function(){};
 Semilla.HTTPRepo.prototype = new Semilla.Repo();
 Semilla.HTTPRepo.def({
 	kind : "HTTP Repo",
+	name : "Web site",
 	description : "A repo for HTTP POST content handling.",
 	endpoint : "./api/",
 	// __add_content is called by the public inherited add_content.
@@ -460,6 +463,7 @@ Semilla.HTTPRepo.def({
 		xhr.onreadystatechange = function(evt){
 			if (evt.target.readyState == 4){
 				var r = JSON.parse(evt.target.responseText);
+				this.repo.fire_event("add_progress", {progress:100});
 				if (r.success){
 					this.repo.contents.push(this.content);
 					this.repo.fire_event("new_content", {content:this.content});
@@ -483,7 +487,8 @@ Semilla.HTTPRepo.def({
 		data.append("kind", "2");
 		data.append("data", JSON.stringify(c));
 		xhr.open("POST", this.endpoint);
-		xhr.send(data);
+		this.fire_event("add_progress", {progress:0});
+		setTimeout(function(){xhr.send(data);},100);
 	}
 });
 
@@ -626,13 +631,13 @@ Semilla.PDFImporter.def({
 		}
 		try{
 			PDFJS.workerSrc = app.path+"/js/libs/pdf.js";
-			a = FileReader();
+			a = new FileReader();
 			c = new Semilla.Content();
 			var imp = this;
 			a.readAsArrayBuffer(f);
 			a.onloadend = function(evt){
 				if (evt.target.readyState == FileReader.DONE) { // DONE == 2
-					var p = Uint8Array(evt.target.result);
+					var p = new Uint8Array(evt.target.result);
 					PDFJS.getDocument(p).then(function(pdf) {
 						imp.fire_event("parse_progress", {progress: 0});
 						var canvas = document.createElement("canvas");

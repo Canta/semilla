@@ -24,7 +24,40 @@
 		</section>
 		<section id="content-edit">
 		</section>
-		<section id="content-create" class="wizard">
+		<section id="content-create">
+			<div id="file-import">
+				<p>Seleccione un archivo para procesar: <input type="file" name="file" id="content-create-process-file" /></p>
+				<p id="content-create-file-details">
+				</p>
+				<p>
+					<progress id="content-create-import-progress" value="0" max="100" />
+				</p>
+				<p id="content-create-process-output">
+				</p>
+			</div>
+			<div id="basic-data">
+				<p>Datos básicos del contenido:</p>
+				<div id="content-create-properties">
+					<p>Nombre: <input type="text" name="name" id="content-create-name" placeholder="Nombre del contenido" required /></p>
+					<p>Descripción: <input type="text" name="name" id="content-create-description" placeholder="Descripción del contenido" required /></p>
+				</div>
+				<p>
+					<button type="button">Agregar propiedad...</button>
+				</p>
+			</div>
+			<div id="links">
+				<p>Links al archivo original:</p>
+				<p><button type="button" onclick="$('#content-create-raw-files').append('<p>URL del archivo: <input placeholder=\'Ingrese la URL aquí\' type=text name=\'raws[]\' /></p>');" > Agregar link al archivo </button></p>
+				<div id="content-create-raw-files">
+				</div>
+			</div>
+			<div id="botones">
+				<p>
+					<button type="button" onclick="app.contents.creation.save();">Compartir Contenido</button>
+				</p>
+			</div>
+		</section>
+		<!--section id="content-create" class="wizard">
 			<form id="content-create-form" onsubmit="return false;">
 				<div class="wizard-title">
 				</div>
@@ -67,5 +100,5 @@
 					</p>
 				</div>
 			</form>
-		</section>
+		</section-->
 	</body>

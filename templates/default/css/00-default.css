@@ -7,6 +7,7 @@ body, section{
 	width:100%;
 	height: 100%;
 	overflow:hidden;
+	font-family: sans, verdana, helvetica;
 }
 
 body{
@@ -144,6 +145,51 @@ section{
 
 #content-create{
 	background-color: #f0fff0;
+	text-align:center;
+}
+
+#content-create > #file-import{
+	position:absolute;
+	left:0px; 
+	top: 0px;
+	width:100%;
+	height:20%;
+	overflow-x:hidden;
+	overflow-y: auto;
+	border-bottom: black 2px solid;
+}
+
+#content-create > #basic-data{
+	position:absolute;
+	left:0px; 
+	top: 20%;
+	width:50%;
+	height:60%;
+	overflow-x:hidden;
+	overflow-y: auto;
+	border-bottom: black 2px solid;
+}
+
+#content-create > #links{
+	position:absolute;
+	right:0px; 
+	top: 20%;
+	width:50%;
+	height:60%;
+	overflow-x:hidden;
+	overflow-y: auto;
+	border-bottom: black 2px solid;
+	border-left: black 2px solid;
+}
+
+#content-create > #botones{
+	position:absolute;
+	left:0px; 
+	top: 80%;
+	width:100%;
+	height:20%;
+	overflow-x:hidden;
+	overflow-y: auto;
 }
 
 #content-create-process-output{

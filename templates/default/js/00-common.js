@@ -17,33 +17,55 @@ app.contents.creation.validate = function($number){
 };
 
 app.contents.creation.save = function(){
-	var $creation_data = { verb: "new_content"};
 	
-	$creation_data.name = $("#content-create #content-create-name").val();
-	if ($creation_data.name == ""){
-		throw "app.contents.creation.save: content name required.";
+	if (app.contents.creation.processed === null){
+		app.mostrar_error("Debe procesar un contenido primero.");
+		return;
 	}
 	
-	$creation_data.description = $("#content-create #content-create-description").val();
-	if ($creation_data.description == ""){
-		throw "app.contents.creation.save: content description required.";
+	app.contents.creation.processed.name = $("#content-create #content-create-name").val();
+	if (app.contents.creation.processed.name == ""){
+		app.mostrar_error("Debe especificar un nombre para el contenido.");
+		$("#content-create #content-create-name").focus();
+		return;
+	}
+	
+	app.contents.creation.processed.description = $("#content-create #content-create-description").val();
+	if (app.contents.creation.processed.description == ""){
+		app.mostrar_error("Debe especificar una descripción para el contenido.");
+		$("#content-create #content-create-description").focus();
+		return;
 	}
 	
 	var $raws = $("#content-create input[name='raws[]']");
-	$creation_data.raws = [];
 	for (var $i = 0; $i < $raws.length; $i++){
-		$creation_data.raws.push($raws[$i].value);
+		app.contents.creation.processed.external_links.push($raws[$i].value);
 	}
 	
-	$creation_data.processed = app.contents.creation.processed;
+	var $tmp_html = "<p><b>Seleccione dónde quiere compartir el contenido: </b></p>\
+	<div id=\"content-create-save-where\" >\n";
 	
-	$creation_data.on_success = function(){
-		app.ui.change_section("contents");
+	for (var i = 1; i < Semilla.repos.length; i++){
+		$tmp_html += "<label style=\"cursor:pointer; border-bottom: black 2px dashed;\" >"+Semilla.repos[i].description+" <input value=\""+i+"\" type=\"checkbox\" /></label>";
 	}
 	
-	app.api({data:$creation_data});
+	$tmp_html += "</div>";
 	
-	
+	app.show_modal({
+		ok: [function(){
+			var repos = $("#content-create-save-where input");
+			for (var i = 0; i < repos.length; i++){
+				if (repos[i].checked){
+					var a = repos[i].value;
+					setTimeout(function(){
+						Semilla.repos[a].add_content(app.contents.creation.processed);
+					},1000);
+				}
+			}
+			app.ui.change_section(0);
+		}],
+		html: $tmp_html
+	})
 }
 
 /**
@@ -152,16 +174,13 @@ app.contents.show_in_search_list = function($cs){
  */
 app.contents.new_item = function(){
 	// vars cleanup
-	app.contents.creation.processed = {};
+	app.contents.creation.processed = null;
 	$("#content-create #content-create-raw-files").html("");
 	$("#content-create #content-create-name").val("");
-	//$("#content-create #content-create-kind")[0].selectedIndex=0;
 	
 	$("#content-create #content-create-process-file").replaceWith( $("#content-create #content-create-process-file")[0].outerHTML );
 	$("#content-create #content-create-process-file")[0].addEventListener("change", app.contents.read_raw_data);
 	$("#content-create-file-details").html("");
-	
-	app.ui.get_object("content-create").reset();
 	
 	app.ui.change_section("content-create");
 }
@@ -245,6 +264,32 @@ $(document).ready(
 			Semilla.importers[i].add_event_handler("parse_progress",
 				function(data){
 					$("#content-create-import-progress").val(data.progress);
+				}
+			);
+		}
+		
+		Semilla.repos[0].add_event_handler("new_content",
+			function(d){
+				app.contents.creation.processed = d.content;
+			}
+		);
+		
+		Semilla.repos[1].name="Desgrabaciones Comunitarias";
+		Semilla.repos[1].description="Desgrabaciones Comunitarias, versión Alfa";
+		Semilla.repos[1].endpoint="http://dc.danielcantarin.com.ar/alfa1/api/";
+		
+		for (var i = 1; i < Semilla.repos.length; i++){
+			Semilla.repos[i].add_event_handler("add_progress",
+				function(data, repo){
+					if (data.progress == 0){
+						var $tmp_html = "Compartiendo en " + repo.name + "...<p><progress id=\"progress-"+repo.name.replace(" ","-")+"\" value=0 max=100/></p>" ;
+						repo.espere_text = $tmp_html;
+						app.espere($tmp_html, "");
+					} else if (data.progress < 100){
+						$("#progress-" + repo.name.replace(" ", "-")).val(data.progress);
+					} else {
+						app.desespere();
+					}
 				}
 			);
 		}
