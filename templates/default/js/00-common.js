@@ -276,7 +276,7 @@ $(document).ready(
 		
 		Semilla.repos[1].name="Desgrabaciones Comunitarias";
 		Semilla.repos[1].description="Desgrabaciones Comunitarias, versión Alfa";
-		Semilla.repos[1].endpoint="http://dc.danielcantarin.com.ar/alfa1/api/";
+		Semilla.repos[1].endpoint="./api/";
 		
 		for (var i = 1; i < Semilla.repos.length; i++){
 			Semilla.repos[i].add_event_handler("add_progress",

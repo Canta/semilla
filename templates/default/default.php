@@ -23,6 +23,12 @@
 			<input type="file" id="file-main" onchange="app.player.load_file();"/>
 		</section>
 		<section id="content-edit">
+			<div id="content-edit-fragments">
+			
+			</div>
+			<div id="content-edit-editor">
+			
+			</div>
 		</section>
 		<section id="content-create">
 			<div id="file-import">
@@ -57,48 +63,4 @@
 				</p>
 			</div>
 		</section>
-		<!--section id="content-create" class="wizard">
-			<form id="content-create-form" onsubmit="return false;">
-				<div class="wizard-title">
-				</div>
-				<div class="wizard-page" validation="app.contents.creation.validate(0);" wizardtitle="New content creation ">
-					<p>Enter new content's basic data:</p>
-					<div id="content-create-properties">
-						<p>Name: <input type="text" name="name" id="content-create-name" placeholder="Content's name" required /></p>
-						<p>Description: <input type="text" name="name" id="content-create-description" placeholder="Content's description" required /></p>
-					</div>
-					<p>
-						<button type="button">add custom property</button>
-					</p>
-				</div>
-				<div class="wizard-page" validation="app.contents.creation.validate(1);" wizardtitle="Add links to online raw files? ">
-					<p>You can add as many links as you want:</p>
-					<p><button type="button" onclick="$('#content-create-raw-files').append('<p>raw file url: <input placeholder=\'Enter raw file url here\' type=text name=\'raws[]\' /></p>');" > add link to raw file </button></p>
-					<div id="content-create-raw-files">
-					</div>
-				</div>
-				<div class="wizard-page" validation="app.contents.creation.validate(2);" wizardtitle="Process local raw file? ">
-					<p></p>
-					<p>Select a file to process: <input type="file" name="file" id="content-create-process-file" /></p>
-					<p id="content-create-file-details">
-					</p>
-					<p>
-						<progress id="content-create-import-progress" value="0" max="100" />
-					</p>
-					<p id="content-create-process-output">
-					</p>
-				</div>
-				<div class="wizard-page" validation="app.contents.creation.validate(3);" wizardtitle="Save content ">
-					<p></p>
-					<p><button type="button" onclick="app.contents.creation.save();">Save content and close wizard</button></p>
-				</div>
-				<div class="wizard-buttons">
-					<p>
-						<button type="button" class="wizard-back-button"> &lt;- Back </button>
-						
-						<button type="button" class="wizard-next-button"> Next -&gt; </button>
-					</p>
-				</div>
-			</form>
-		</section-->
 	</body>
