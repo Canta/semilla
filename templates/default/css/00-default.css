@@ -204,3 +204,62 @@ section{
 	margin-bottom: 10px;
 	display:inline-block;
 }
+
+#content-edit{
+	background-color: #996666;
+	text-align:center;
+}
+
+#content-edit > #content-edit-fragments{
+	position:absolute;
+	width: 50%;
+	height:100%;
+	left:0px;
+	top:0px;
+	border-right: black 2px solid;
+}
+
+#content-edit > #content-edit-editor{
+	position:absolute;
+	width: 50%;
+	height:100%;
+	right:0px;
+	top:0px;
+}
+
+#content-edit-fragments #fragments-thumbs{
+	position:absolute;
+	width: 100%;
+	height:20%;
+	left:0px;
+	bottom:0px;
+	background-color: #000000;
+}
+
+#content-edit-fragments #fragment-render{
+	position:absolute;
+	width: 100%;
+	height:80%;
+	left:0px;
+	top:0px;
+	background-color: #cccccc;
+	overflow:auto;
+}
+
+#content-edit-editor #fragment-editor{
+	position:absolute;
+	width: 80%;
+	height:80%;
+	left:10%;
+	bottom:10%;
+	background-color: #ffffff;
+	padding: 5px;
+	text-align: left;
+	overflow-x: hidden;
+	overflow-y: auto;
+	box-shadow: -3px 3px 3px black;
+	-webkit-box-shadow: -3px 3px 3px black;
+	-o-box-shadow: -3px 3px 3px black;
+	border: black 1px solid;
+}
+

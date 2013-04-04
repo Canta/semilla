@@ -23,15 +23,15 @@ app.contents.creation.save = function(){
 		return;
 	}
 	
-	app.contents.creation.processed.name = $("#content-create #content-create-name").val();
-	if (app.contents.creation.processed.name == ""){
+	app.contents.creation.processed.properties.name = $("#content-create #content-create-name").val();
+	if (app.contents.creation.processed.properties.name == ""){
 		app.mostrar_error("Debe especificar un nombre para el contenido.");
 		$("#content-create #content-create-name").focus();
 		return;
 	}
 	
-	app.contents.creation.processed.description = $("#content-create #content-create-description").val();
-	if (app.contents.creation.processed.description == ""){
+	app.contents.creation.processed.properties.description = $("#content-create #content-create-description").val();
+	if (app.contents.creation.processed.properties.description == ""){
 		app.mostrar_error("Debe especificar una descripción para el contenido.");
 		$("#content-create #content-create-description").focus();
 		return;
@@ -62,7 +62,7 @@ app.contents.creation.save = function(){
 					},1000);
 				}
 			}
-			app.ui.change_section(0);
+			app.ui.change_section("content-edit");
 		}],
 		html: $tmp_html
 	})
@@ -201,9 +201,13 @@ app.contents.read_raw_data = function(evt){
 	
 	if (imported){
 		$tmp_html += "<span class='exito' style='color:#ffffff;'>File: <b>\""+$file.name+"\"</b> - Size: <b>"+Math.round(($file.size / 1024 ) / 1024)+" MB</b> - Type: <i>\""+$file.type+"\"</i></span>";
+		$("#content-create-name").val($file.name);
+		
 	} else {
 		$tmp_html += "<span class='error' style='color:#ffffff;font-weight:bold;'>" + $file.name+": I can't import <i>" + $file.type + "</i> file type yet :(</span>";
+		$("#content-create-name").val("");
 	}
+	$("#content-create-description").val("");
 	$("#content-create-file-details").html($tmp_html);
 	return imported;
 }

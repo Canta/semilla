@@ -24,10 +24,11 @@
 		</section>
 		<section id="content-edit">
 			<div id="content-edit-fragments">
-			
+				<div id="fragment-render"></div>
+				<div id="fragments-thumbs"></div>
 			</div>
 			<div id="content-edit-editor">
-			
+				<div id="fragment-editor" contenteditable="true" ></div>
 			</div>
 		</section>
 		<section id="content-create">

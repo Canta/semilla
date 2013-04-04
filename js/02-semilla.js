@@ -330,11 +330,18 @@ Semilla = (function($fn){
 			name : "Content's name",
 			description : "Content's description"
 		};
-		this.origin = "";
+		this.origin = { 
+			//This property is intended to save the full serialized raw 
+			//input file in Base64.
+			raw : "",
+			content_type: "",
+			file_name: ""
+		};
 		this.external_links = [];
 		this.references = [];
 		this.fragments = [];
 		this.corrections = [];
+		this.kind = "text"; //text, audio, or video. Default text.
 		
 		/**
 		 * method add_fragment.
@@ -357,6 +364,39 @@ Semilla = (function($fn){
 			this.fragments.push(f);
 		};
 		
+		/**
+		 * method render_fragment.
+		 * Returns an string with an HTML representation of a fragment.
+		 * It's useful mainly for UI development, as different content 
+		 * kinds needs different UI controls.
+		 *
+		 * @author Daniel Cantarín <omega_canta@yahoo.com>
+		 * @this {Content}
+		 * @param {Integer} i
+		 * @return {String}
+		 */
+		this.render_fragment = function(i){
+			
+			if (!Semilla.Util.is_numeric(i)){
+				throw "Content.render_fragment: number expected.";
+			}
+			
+			if (!this.fragments[i]){
+				throw "Content.render_fragment: Fragment "+i+" not found.";
+			}
+			
+			var ret = "";
+			
+			if (this.kind === "text"){
+				
+			} else if (this.kind === "audio"){
+				
+			} else if (this.kind === "video"){
+				
+			}
+			
+			return ret;
+		};
 	}
 	$fn.Content = Content;
 	
@@ -549,12 +589,17 @@ Semilla.MP3Importer.def({
 			//console.debug("MP3Importer.parse: creating asset.");
 			var imp = this;
 			var p = new AV.Player.fromFile(f);
+			p.original_file = f;
 			//var a = p.asset;
 			//console.debug("MP3Importer.parse: setting 'duration' event.");
 			p.on('duration', function(duration) {
 				//console.debug("MP3Importer.parse: asset duration: " + duration);
 				//Once with the audio duration, we can create the Content.
 				c = new Semilla.Content();
+				c.kind = "audio";
+				c.origin.file_name = this.original_file.name;
+				c.origin.content_type = this.original_file.type;
+				
 				imp.fire_event("parse_progress", {progress: 0});
 				var $tmp = function(i, duration){
 					
@@ -633,6 +678,8 @@ Semilla.PDFImporter.def({
 			PDFJS.workerSrc = app.path+"/js/libs/pdf.js";
 			a = new FileReader();
 			c = new Semilla.Content();
+			c.origin.file_name = f.name;
+			c.origin.content_type = f.type;
 			var imp = this;
 			a.readAsArrayBuffer(f);
 			a.onloadend = function(evt){
