@@ -19,6 +19,7 @@
  * MA 02110-1301, USA.
  */
 
+
 /**
  * def function.
  * Helper function for easy and clean class definitions.
@@ -148,6 +149,24 @@ Semilla = (function($fn){
 			return this;
 		}
 		
+		/**
+		 * method load_libs.
+		 * Every importer is supposed to use ad-hoc libs for different
+		 * MIME type file handling.
+		 * This method is a generic method for loading those libs.
+		 * The strategy is, given that every custom importer class knows
+		 * the libs it needs to work, it overloads this function 
+		 * implementing all the logic for lib loading before calling any
+		 * lib-dependent method.
+		 * Also, here's the place where it checks if the lib is already
+		 * loaded.
+		 *
+		 * @author Daniel Cantarín <omega_canta@yahoo.com>
+		 * @this {Importer}
+		 */
+		this.load_libs = function(){
+			return;
+		}
 	};
 	$fn.Importer = Importer;
 	
@@ -215,16 +234,7 @@ Semilla = (function($fn){
 				throw "Semilla.Repo.import_content: File object expected";
 			}
 			
-			var imp = null, found = false;
-			for (var i = 0; i < Semilla.importers.length && found == false; i++){
-				for (var i2 = 0; i2 < Semilla.importers[i].mime_types.length; i2++){
-					if ($f.type.toLowerCase() == Semilla.importers[i].mime_types[i2].toLowerCase()){
-						imp = Semilla.importers[i];
-						found = true;
-					}
-				}
-			}
-			
+			var imp = Semilla.Util.get_importer_by_mime_type($f.type);
 			var ret = false;
 			if (imp !== null){
 				ret = imp.parse($f, this);
@@ -387,16 +397,65 @@ Semilla = (function($fn){
 			
 			var ret = "";
 			
-			if (this.kind === "text"){
-				
+			if (this.fragments[i].render){
+				//for future custom fragment types implementing own 
+				//render logic.
+				ret = this.fragments[i].render();
+			} else if (this.kind === "text"){
+				//Text type.
+				//It's assumed that it's an image to be transcripted.
+				ret += "<div class=\"semilla-fragment-container\" >";
+				ret += "<img class=\"semilla-fragment-text-page\" src=\""+this.fragments[i].content+"\" />";
+				ret += "</div>";
 			} else if (this.kind === "audio"){
+				//Audio type.
+				//It's supposed to be time coodinates in an audio.
+				var imp = Semilla.Util.get_importer_by_mime_type(
+					this.origin.content_type
+				);
+				imp.load_libs();
 				
+				ret += "<div class=\"semilla-fragment-container\">";
+				ret += "<div class=\"semilla-fragment-audio-player\" \
+				from=\""+this.fragments[i].from+"\" to=\""+this.fragments[i].to+"\" ></div>";
+				ret += "<div class=\"semilla-fragment-audio-data\" >"+this.origin.raw+"</div>";
+				ret += "</div>";
 			} else if (this.kind === "video"){
-				
+				//Video type.
+				//Coordinates, just like the audio type.
+				//However, it must render a different player object.
 			}
 			
 			return ret;
 		};
+		
+		/**
+		 * method read_raw.
+		 * Given a file object, this method reads the full contents as
+		 * data URL and saves it in the content's "origin" property.
+		 *
+		 * @author Daniel Cantarín <omega_canta@yahoo.com>
+		 * @this {Content}
+		 * @param {Blob} f
+		 * A file object to read
+		 */
+		this.read_raw = function(f){
+			
+			if (!( f instanceof Blob)){
+				throw "Content.read_raw: File (or Blob) expected.";
+			}
+			
+			c.origin.file_name = f.name;
+			c.origin.content_type = f.type;
+			fr = new FileReader();
+			fr.content = this;
+			fr.readAsDataURL(f);
+			fr.onloadend = function(evt){
+				if (evt.target.readyState == FileReader.DONE) { // DONE == 2
+					this.content.origin.raw = evt.target.result;
+				}
+			}
+		}
 	}
 	$fn.Content = Content;
 	
@@ -451,6 +510,80 @@ Semilla = (function($fn){
 		throw "Semilla.Util.ms2m: '" + ms +"' is not a number";
 	}
 	
+	/**
+	 * load_script function.
+	 * Util function for scripts loading.
+	 * A recurrent operation on internal Semilla classes.
+	 * 
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 * @param {String} u
+	 * Script's url
+	 */
+	$fn.Util.load_script = function (u){
+		if (typeof jQuery != "undefined"){
+			jQuery.ajax({
+				async:false,
+				type:'GET',
+				url: u,
+				data:null,
+				dataType:'script'
+			});
+		} else if(typeof window == "undefined" && typeof importScripts !== "undefined"){
+			//No window object, and importScripts defined. 
+			//WebWorker assumed.
+			importScripts(u);
+		} else if (typeof XMLHttpRequest !== "undefined"){
+			//no jQuery, no worker, but XMLHttpRequest present.
+			var xhr = new XMLHttpRequest();
+			xhr.open("GET", u, false);
+			xhr.send();
+			if (typeof window !== "undefined"){
+				var h = document.getElementsByTagName('head')[0];
+				var s = document.createElement('script');
+				s.type= 'text/javascript';
+				s.innerHTML = xhr.responseText;
+				h.appendChild(s);
+			} else {
+				//Node.js assumed.
+			}
+		}
+	}
+	
+	/**
+	 * get_importer_by_mime_type function.
+	 * Given a file's MIME type, it returns an importer suited for that
+	 * kind of file.
+	 * 
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 * @param {String} m
+	 * A MIME type.
+	 */
+	$fn.Util.get_importer_by_mime_type = function(m){
+		var imp = null, found = false;
+		for (var i = 0; i < Semilla.importers.length && found == false; i++){
+			for (var i2 = 0; i2 < Semilla.importers[i].mime_types.length; i2++){
+				if (m.toLowerCase() == Semilla.importers[i].mime_types[i2].toLowerCase()){
+					imp = Semilla.importers[i];
+					found = true;
+					break;
+				}
+			}
+		}
+		return imp;
+	}
+	
+	/**
+	 * clone function.
+	 * Given an object, it returns a copy of the object.
+	 * 
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 * @param {Object} o
+	 * An object to be cloned
+	 */
+	$fn.Util.clone = function(o){
+		return eval(uneval(c));
+	}
+	
 	return $fn;
 })(function Semilla(){});
 
@@ -491,6 +624,10 @@ Semilla.HTTPRepo.def({
 	kind : "HTTP Repo",
 	name : "Web site",
 	description : "A repo for HTTP POST content handling.",
+	//flag for sending or not the serialized raw full file content.
+	//it dramatically changes the resources requirements.
+	send_raw : true,
+	//API controller url
 	endpoint : "./api/",
 	// __add_content is called by the public inherited add_content.
 	__add_content: function(c){
@@ -524,7 +661,14 @@ Semilla.HTTPRepo.def({
 		for (var i in c.properties){
 			data.append(i, c.properties[i]);
 		}
-		data.append("kind", "2");
+		
+		if (this.send_raw !== true){
+			c = Semilla.Util.clone(c); 
+			//now "c" is a copy of the original and not a reference.
+			c.origin.raw = "";
+		}
+		
+		data.append("kind", "2"); //hardcoded for demo app compat.
 		data.append("data", JSON.stringify(c));
 		xhr.open("POST", this.endpoint);
 		this.fire_event("add_progress", {progress:0});
@@ -551,40 +695,18 @@ Semilla.MP3Importer.def({
 	kind        : "MP3 File importer",
 	description : "An importer for Mp3 files. It takes a MP3 file, and creates a Semilla content.",
 	mime_types  : ["audio/mp3", "audio/mpeg"],
-	__parse       : function(f, r){
+	load_libs   : function(){
 		//REQUIRES:
 		//aurora.js and mp3.js (aurora's mp3 decoder)
 		if (typeof AV == "undefined"){
-			if (typeof jQuery != "undefined"){
-				jQuery.ajax({
-					async:false,
-					type:'GET',
-					url: "./js/libs/aurora.js",
-					data:null,
-					dataType:'script'
-				});
-			} else if(typeof window == "undefined" && typeof importScripts !== "undefined"){
-				//No window object, and importScripts defined. 
-				//WebWorker assumed.
-				importScripts("./libs/aurora.js");
-			}
+			Semilla.Util.load_script("./js/libs/aurora.js");
 		}
 		if (AV.Decoder.find("mp3") === null){
-			if (typeof jQuery != "undefined"){
-				jQuery.ajax({
-					async:false,
-					type:'GET',
-					url: "./js/libs/mp3.js",
-					data:null,
-					dataType:'script'
-				});
-			} else if(typeof window == "undefined" && typeof importScripts !== "undefined"){
-				//No window object, and importScripts defined. 
-				//WebWorker assumed.
-				importScripts("./libs/mp3.js");
-			}
+			Semilla.Util.load_script("./js/libs/mp3.js");
 		}
-		
+	},
+	__parse       : function(f, r){
+		this.load_libs();
 		try{
 			//console.debug("MP3Importer.parse: creating asset.");
 			var imp = this;
@@ -596,10 +718,8 @@ Semilla.MP3Importer.def({
 				//console.debug("MP3Importer.parse: asset duration: " + duration);
 				//Once with the audio duration, we can create the Content.
 				c = new Semilla.Content();
+				c.read_raw(f);
 				c.kind = "audio";
-				c.origin.file_name = this.original_file.name;
-				c.origin.content_type = this.original_file.type;
-				
 				imp.fire_event("parse_progress", {progress: 0});
 				var $tmp = function(i, duration){
 					
@@ -650,36 +770,26 @@ Semilla.PDFImporter.def({
 	kind        : "PDF File importer",
 	description : "An importer for PDF files. It takes a PDF, and creates a Semilla content.",
 	mime_types  : ["application/pdf", "application/x-pdf", "application/vnd.pdf", "text/pdf"],
-	__parse       : function(f, r){
+	load_libs   : function(){
 		//REQUIRES:
 		//pdf.js
+		if (typeof PDFJS == "undefined"){
+			Semilla.Util.load_script("./js/libs/pdf.js");
+		}
 		
+	},
+	__parse       : function(f, r){
 		//TODO:
 		//try to get the text position somehow, not just raw text, as
 		//discussed here: 
 		//https://groups.google.com/forum/?fromgroups=#!topic/mozilla.dev.pdf-js/Qzq-xA2MHjs
 		
-		if (typeof PDFJS == "undefined"){
-			if (typeof jQuery != "undefined"){
-				jQuery.ajax({
-					async:false,
-					type:'GET',
-					url: "./js/libs/pdf.js",
-					data:null,
-					dataType:'script'
-				});
-			} else if(typeof window == "undefined" && typeof importScripts !== "undefined"){
-				//No window object, and importScripts defined. 
-				//WebWorker assumed.
-				importScripts("./libs/pdf.js");
-			}
-		}
+		
 		try{
 			PDFJS.workerSrc = app.path+"/js/libs/pdf.js";
 			a = new FileReader();
 			c = new Semilla.Content();
-			c.origin.file_name = f.name;
-			c.origin.content_type = f.type;
+			c.read_raw(f);
 			var imp = this;
 			a.readAsArrayBuffer(f);
 			a.onloadend = function(evt){
