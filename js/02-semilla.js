@@ -304,8 +304,23 @@ Semilla = (function($fn){
 	 */
 	function Fragment(){
 		this.id = Math.round(Math.random() * 999999999);
-		this.content = "";
+		//"content" should be the raw content of the fragment, wither in
+		//a serialized way or some kind of reference (like URLs).
+		//Every Content kind has different fragments, that handles this
+		//in a different way.
+		this.content = ""; 
+		//"text" is the text of the fragment 
 		this.text = "";
+		//"html" is the HTML code of the fragment, used for styling the
+		//text, and for UI management.
+		this.html = "";
+		//"ready" is a property used to know if a fragment is already 
+		//transcripted or checked in some valid way. By default, after
+		//automated importing, is set to false, given that automated 
+		//procces usually renders text not suitable for later accurate 
+		//exporting (or even no text at all, and sometimes is fine for
+		//a fragment to have no text). Somebody has to check this.
+		this.ready = false;
 		this.text_ready = true;
 		this.from = null;
 		this.to   = null;
@@ -340,6 +355,11 @@ Semilla = (function($fn){
 			name : "Content's name",
 			description : "Content's description"
 		};
+		this.external_links = [];
+		this.references = [];
+		this.fragments = [];
+		this.corrections = [];
+		this.kind = "text"; //text, audio, or video. Default text.
 		this.origin = { 
 			//This property is intended to save the full serialized raw 
 			//input file in Base64.
@@ -347,11 +367,7 @@ Semilla = (function($fn){
 			content_type: "",
 			file_name: ""
 		};
-		this.external_links = [];
-		this.references = [];
-		this.fragments = [];
-		this.corrections = [];
-		this.kind = "text"; //text, audio, or video. Default text.
+		
 		
 		/**
 		 * method add_fragment.

@@ -5,6 +5,7 @@ app.contents = {};
 app.contents.all = [];
 app.contents.creation = {};
 app.contents.processing = {};
+app.contents.edition = {};
 
 Semilla.repos.push(new Semilla.HTTPRepo());
 
@@ -62,7 +63,7 @@ app.contents.creation.save = function(){
 					},1000);
 				}
 			}
-			app.ui.change_section("content-edit");
+			app.contents.edition.edit(app.contents.creation.processed);
 		}],
 		html: $tmp_html
 	})
@@ -225,41 +226,42 @@ function convertDataURIToBinary(dataURI) {
   return array;
 }
 
-/**
- * app.contents.is_file_type_valid
- * Given a file MIME type, it checks if the file is valid for the current
- * selected content kind.
- */
-app.contents.is_file_type_valid = function($type){
-	$kinds = ["audio", "text", "video"];
-	
-	$kinds["audio"] = ["audio/ogg", "audio/vorbis", "audio/mpeg", "video/ogg", "audio/mp3"];
-	$kinds["video"] = ["video/webm"];
-	$kinds["text"]  = ["application/pdf"];
-	
-	$k = app.contents.current_kind;
-	
-	$found = false;
-	if ($kinds[$k]){
-		for (var $i = 0; $i < $kinds[$k].length; $i++){
-			if ($type == $kinds[$k][$i]){
-				$found = true;
-				break;
-			}
-		}
-	}
-	
-	return $found;
-}
 
 /**
- * app.contents.process_files
- * Starts the decomposition process.
- * It assumes that the app.contents.files array is well setted.
+ * app.contents.edition.edit
+ * Given a a content, it renders the UI for edition envitonment.
+ * 
+ * @param {Semilla.Content} c
+ * A content to be edited.
  */
-app.contents.process_files = function(){
+app.contents.edition.edit = function(c){
+	if ( !(c instanceof Semilla.Content) ){
+		throw "app.contents.edition.edit: Semilla.Content expected.";
+	}
 	
+	var ifr = 0; 
+	app.espere("Leyendo fragmentos","...ok");
+	//var w = c.fragments.length * ($("#fragments-thumbs").width() * 0.1) + c.fragments.length * ($("#fragments-thumbs").width() * 0.01) + 10;
+	//$("#fragments-thumbs").html("<div style=\"width:"+w+"px;\"></div>");
+	var $tmp_function = function() {
+		if (ifr < c.fragments.length){
+			var $html = "<div class=\"fragment\" index=\""+ifr+"\" fragment_id=\""+c.fragments[ifr].id+"\" ";
+			if (c.fragments[ifr].ready){
+				$html += "ready ";
+			}
+			$html += "></div>";
+			$("#fragments-thumbs").append($html);
+			ifr++;
+			setTimeout($tmp_function, 10);
+		} else {
+			app.desespere("Leyendo fragmentos");
+		}
+	}
+	$tmp_function();
+	
+	app.ui.change_section("content-edit");
 }
+
 
 $(document).ready(
 	function(){
