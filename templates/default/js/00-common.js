@@ -241,19 +241,28 @@ app.contents.edition.edit = function(c){
 	
 	var ifr = 0; 
 	app.espere("Leyendo fragmentos","...ok");
-	//var w = c.fragments.length * ($("#fragments-thumbs").width() * 0.1) + c.fragments.length * ($("#fragments-thumbs").width() * 0.01) + 10;
-	//$("#fragments-thumbs").html("<div style=\"width:"+w+"px;\"></div>");
+	$("#fragments-thumbs").html("<div></div>");
 	var $tmp_function = function() {
 		if (ifr < c.fragments.length){
 			var $html = "<div class=\"fragment\" index=\""+ifr+"\" fragment_id=\""+c.fragments[ifr].id+"\" ";
 			if (c.fragments[ifr].ready){
 				$html += "ready ";
 			}
-			$html += "></div>";
-			$("#fragments-thumbs").append($html);
+			$html += ">&nbsp;</div>";
+			$("#fragments-thumbs > div").append($html);
 			ifr++;
-			setTimeout($tmp_function, 10);
+			setTimeout($tmp_function, 100);
 		} else {
+			
+			var w1 = $("#fragments-thumbs").width();
+			var w = 
+				(c.fragments.length + 1) * (w1 * 0.1) //10% por cada frag.
+				+ 2 //el borde de cada frag
+				+ c.fragments.length * (w1 * 0.01); //el margen derecho
+				
+			$("#fragments-thumbs > div").width(w);
+			$("#fragments-thumbs > div > .fragment").width(w1 * 0.1).css("margin-right", (w1*0.01));
+			 
 			app.desespere("Leyendo fragmentos");
 		}
 	}

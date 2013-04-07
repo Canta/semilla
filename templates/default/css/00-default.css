@@ -234,6 +234,16 @@ section{
 	left:0px;
 	bottom:0px;
 	background-color: #000000;
+	overflow-y:hidden;
+	overflow-x:auto;
+}
+
+#content-edit-fragments #fragments-thumbs > div{
+	height: 100%;
+	position:relative;
+	left:0px;
+	top:0px;
+	min-width:100%;
 }
 
 #content-edit-fragments #fragment-render{
@@ -265,10 +275,11 @@ section{
 
 .fragment {
 	position:relative;
-	left:1%;
-	width: 10%;
 	top: 25%;
 	height:50%;
+	display: inline-block;
+	cursor:pointer;
+	background-color: firebrick;
 	box-shadow: 0px 0px 30px red;
 	-webkit-box-shadow: 0px 0px 30px red;
 	-o-box-shadow: 0px 0px 30px red;
@@ -279,4 +290,5 @@ section{
 	box-shadow: 0px 0px 30px green;
 	-webkit-box-shadow: 0px 0px 30px green;
 	-o-box-shadow: 0px 0px 30px green;
+	background-color: seagreen;
 }
