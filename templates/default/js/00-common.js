@@ -6,6 +6,7 @@ app.contents.all = [];
 app.contents.creation = {};
 app.contents.processing = {};
 app.contents.edition = {};
+app.contents.edition.player = null;
 
 Semilla.repos.push(new Semilla.HTTPRepo());
 
@@ -240,30 +241,38 @@ app.contents.edition.edit = function(c){
 	}
 	
 	var ifr = 0; 
+	app.contents.edition.player = null;
 	app.espere("Leyendo fragmentos","...ok");
-	$("#fragments-thumbs").html("<div></div>");
+	$("#fragments-thumbs").html("<div style=\"display:none;\"></div>");
 	var $tmp_function = function() {
 		if (ifr < c.fragments.length){
 			var $html = "<div class=\"fragment\" index=\""+ifr+"\" fragment_id=\""+c.fragments[ifr].id+"\" ";
 			if (c.fragments[ifr].ready){
 				$html += "ready ";
 			}
-			$html += ">&nbsp;</div>";
+			$html += " onclick=\"app.contents.edition.render_fragment($(this).attr('index'))\">&nbsp;</div>";
 			$("#fragments-thumbs > div").append($html);
 			ifr++;
 			setTimeout($tmp_function, 100);
 		} else {
 			
-			var w1 = $("#fragments-thumbs").width();
-			var w = 
-				(c.fragments.length + 1) * (w1 * 0.1) //10% por cada frag.
-				+ 2 //el borde de cada frag
-				+ c.fragments.length * (w1 * 0.01); //el margen derecho
+			var $tmp2 = function(){
+				$("#fragments-thumbs > div").css("display","inline-block");
+				var w1 = $("#fragments-thumbs").width();
+				var w = 
+					(c.fragments.length + 1) * (w1 * 0.1) //10% por cada frag.
+					+ 2 //el borde de cada frag
+					+ c.fragments.length * (w1 * 0.01); //el margen derecho
+					
+				$("#fragments-thumbs > div").width(w);
+				$("#fragments-thumbs > div > .fragment").width(w1 * 0.1).css("margin-right", (w1*0.01));
 				
-			$("#fragments-thumbs > div").width(w);
-			$("#fragments-thumbs > div > .fragment").width(w1 * 0.1).css("margin-right", (w1*0.01));
-			 
-			app.desespere("Leyendo fragmentos");
+				app.contents.edition.editing = c;
+				app.contents.edition.render_fragment(0);
+				app.desespere("Leyendo fragmentos");
+			}
+			
+			setTimeout($tmp2, 2000);
 		}
 	}
 	$tmp_function();
@@ -271,6 +280,69 @@ app.contents.edition.edit = function(c){
 	app.ui.change_section("content-edit");
 }
 
+
+/**
+ * app.contents.edition.render_fragment
+ * Given a fragment, it renders its UI for edition envitonment.
+ * 
+ * @param {integer} i
+ * The fragment's index
+ */
+app.contents.edition.render_fragment = function(i){
+	
+	if (app.contents.edition.editing.kind == "text"){
+		$("#fragment-render").html(app.contents.edition.editing.render_fragment(i));
+	} else if (app.contents.edition.editing.kind == "audio"){
+		if ( app.contents.edition.player == null){
+			$("#fragment-render").html(app.contents.edition.editing.render_fragment(i));
+			$(".semilla-fragment-audio-player").html(
+				"<button class=\"play-button\" type=\"button\" onclick=\"app.contents.edition.toggle_player();\"></button>\
+				<progress id=\"fragment-play-progress\" value=\"0\" max=\"5000\" />"
+			);
+			app.contents.edition.player = AV.Player.fromURL($(".semilla-fragment-audio-data").html());
+			app.contents.edition.player.progress = $("#fragment-play-progress");
+			app.contents.edition.player.on('buffer', function(perc) {
+				if (perc == 100){
+					this.seek(app.contents.edition.editing.fragments[i].from);
+				}
+			});
+			app.contents.edition.player.on('progress', function(perc) {
+				if (app.contents.edition.player.to && this.currentTime >= app.contents.edition.player.to){
+					this.seek(app.contents.edition.player.from);
+				}
+				app.contents.edition.player.progress.val(this.currentTime - app.contents.edition.player.from);
+			});
+			app.contents.edition.toggle_player();
+		} else {
+			setTimeout(function(){
+				app.contents.edition.player.seek(app.contents.edition.editing.fragments[i].from);
+			},100);
+		}
+		
+		app.contents.edition.player.from = app.contents.edition.editing.fragments[i].from;
+		app.contents.edition.player.to = app.contents.edition.editing.fragments[i].to;
+	}
+	
+	$(
+		$(".fragment").removeAttr("selected").removeClass("glow")[i]
+	).attr("selected","true").addClass("glow");
+	
+	
+}
+
+/**
+ * app.contents.edition.toggle_player
+ * When a player is used for a fragment, this functions turns the 
+ * playback on and off, depending on the player's playing state.
+ */
+app.contents.edition.toggle_player = function(){
+	app.contents.edition.player.togglePlayback();
+	if (app.contents.edition.player.playing){
+		$("#.semilla-fragment-audio-player .play-button").attr("playing","true");
+	} else {
+		$("#.semilla-fragment-audio-player .play-button").removeAttr("playing");
+	}
+}
 
 $(document).ready(
 	function(){

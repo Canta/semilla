@@ -642,7 +642,7 @@ Semilla.HTTPRepo.def({
 	description : "A repo for HTTP POST content handling.",
 	//flag for sending or not the serialized raw full file content.
 	//it dramatically changes the resources requirements.
-	send_raw : true,
+	send_raw : false,
 	//API controller url
 	endpoint : "./api/",
 	// __add_content is called by the public inherited add_content.
@@ -800,9 +800,9 @@ Semilla.PDFImporter.def({
 		//discussed here: 
 		//https://groups.google.com/forum/?fromgroups=#!topic/mozilla.dev.pdf-js/Qzq-xA2MHjs
 		
-		
+		this.load_libs();
 		try{
-			PDFJS.workerSrc = app.path+"/js/libs/pdf.js";
+			PDFJS.workerSrc = "./js/libs/pdf.js";
 			a = new FileReader();
 			c = new Semilla.Content();
 			c.read_raw(f);
@@ -832,7 +832,7 @@ Semilla.PDFImporter.def({
 								page.render(renderContext).then(
 									function(){
 										var fr = new Semilla.Fragment();
-										var b = canvas.toDataURL("image/jpeg",imp.quality);
+										var b = canvas.toDataURL("image/jpeg",imp.output_quality);
 										fr.set_content(b);
 										
 										pdf.getPage($curr_page).data.getTextContent().then(
