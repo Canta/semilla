@@ -840,6 +840,7 @@ Semilla.PDFImporter.def({
 												textin = $.makeArray($(text.bidiTexts).map(function(element,value){return value.str})).join('\n'); 
 												fr.text = textin;
 												fr.text_ready = true;
+												fr.html = "<div class=\"page\">"+textin+"</div>";
 												c.add_fragment(fr);
 											}
 										);

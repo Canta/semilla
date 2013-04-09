@@ -327,6 +327,7 @@ app.contents.edition.render_fragment = function(i){
 		$(".fragment").removeAttr("selected").removeClass("glow")[i]
 	).attr("selected","true").addClass("glow");
 	
+	$("#fragment-editor").html(app.contents.edition.editing.fragments[i].html);
 	
 }
 

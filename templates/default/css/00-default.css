@@ -376,3 +376,14 @@ section{
 	font-size: 10px;
 	overflow:hidden;
 }
+
+.page{
+	position:relative;
+	display: block;
+	background-color: white;
+	border-bottom: black 1px solid;
+	margin-bottom: 10px;
+	width:98%;
+	left:1%;
+	min-height: 20%;
+}
