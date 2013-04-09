@@ -28,6 +28,11 @@
 				<div id="fragments-thumbs"></div>
 			</div>
 			<div id="content-edit-editor">
+				<div class="toolbar draggable" id="rich-text-toolbar">
+					<button onclick="document.execCommand('bold');" type="button" title="bold"><b>B</b></button>
+					<button onclick="document.execCommand('italic');" type="button" title="italic"><i>I</i></button>
+					<button onclick="document.execCommand('underline');" type="button" title="underline"><u>U</u></button>
+				</div>
 				<div id="fragment-editor" contenteditable="true" ></div>
 			</div>
 		</section>
