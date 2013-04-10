@@ -825,9 +825,18 @@ Semilla.PDFImporter.def({
 								canvas.height = viewport.height;
 								canvas.width = viewport.width;
 								context.fillRect(0, 0, viewport.width, viewport.height);
+								var tl = {
+									beginLayout : function(){},
+									endLayout   : function(){},
+									appendText  : function(g){
+										this.geoms.push(g);
+									},
+									geoms : []
+								};
 								var renderContext = {
 									canvasContext: context,
-									viewport: viewport
+									viewport: viewport,
+									textLayer: tl
 								};
 								page.render(renderContext).then(
 									function(){
@@ -840,7 +849,20 @@ Semilla.PDFImporter.def({
 												textin = $.makeArray($(text.bidiTexts).map(function(element,value){return value.str})).join('\n'); 
 												fr.text = textin;
 												fr.text_ready = true;
-												fr.html = "<div class=\"page\">"+textin+"</div>";
+												fr.html = "<div class=\"page\">";
+												var minSize = 8;
+												
+												for (var i in text.bidiTexts){
+													var g = tl.geoms[i];
+													if (g){
+														fr.html += "<span class=\"bidi\" style=\"left:"+
+															g.x+"px; top:"+g.y+"px; font-family:"+g.fontFamily+
+															"; font-size:"+((g.fontSize != 1) ? g.fontSize : minSize)+"px;\">"+text.bidiTexts[i].str+"</span>";
+													} else {
+														fr.html += text.bidiTexts[i].str;
+													}
+												}
+												fr.html += "</div>";
 												c.add_fragment(fr);
 											}
 										);
