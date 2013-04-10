@@ -181,6 +181,14 @@ Semilla = (function($fn){
 	Exporter = function() {
 		this.kind = "Abstract exporter";
 		this.description = "This is an exporter that actually does nothing.\nIt's used as definition for other exporters to overload.";
+		
+		/**
+		 * method load_libs.
+		 * Same as Importer's.
+		 */
+		this.load_libs = function(){
+			return;
+		}
 	};
 	$fn.Exporter = Exporter;
 	
@@ -283,8 +291,8 @@ Semilla = (function($fn){
 	 * @this {Propagator}
 	 */
 	Propagator = function(){
-		kind = "Abstract propagator";
-		description = "This is a propagator that actually does nothing.\nIt's used as definition for other propagators to overload.";
+		this.kind = "Abstract propagator";
+		this.description = "This is a propagator that actually does nothing.\nIt's used as definition for other propagators to overload.";
 	}
 	$fn.Propagator = Propagator;
 	
@@ -321,20 +329,10 @@ Semilla = (function($fn){
 		//exporting (or even no text at all, and sometimes is fine for
 		//a fragment to have no text). Somebody has to check this.
 		this.ready = false;
-		this.text_ready = true;
+		//From and To are used for audio fragments
 		this.from = null;
 		this.to   = null;
 		this.set_content = function($val){
-			/*
-			this.text_ready = false;
-			this.content = new Blob([$val]);
-			var fr = new FileReader();
-			fr.addEventListener("load" ,function(e){
-				this.text = e.target.result;
-				this.text_ready = true;
-			});
-			fr.readAsText(this.content);
-			*/
 			this.content = $val;
 			this.text = $val;
 			return this;
@@ -848,16 +846,16 @@ Semilla.PDFImporter.def({
 											function(text){
 												textin = $.makeArray($(text.bidiTexts).map(function(element,value){return value.str})).join('\n'); 
 												fr.text = textin;
-												fr.text_ready = true;
+												fr.ready = (textin !== "");
 												fr.html = "<div class=\"page\">";
 												var minSize = 8;
 												
 												for (var i in text.bidiTexts){
 													var g = tl.geoms[i];
 													if (g){
-														fr.html += "<span class=\"bidi\" style=\"left:"+
+														fr.html += "<p class=\"bidi\" style=\"left:"+
 															g.x+"px; top:"+g.y+"px; font-family:"+g.fontFamily+
-															"; font-size:"+((g.fontSize != 1) ? g.fontSize : minSize)+"px;\">"+text.bidiTexts[i].str+"</span>";
+															"; font-size:"+((g.fontSize != 1) ? g.fontSize : minSize)+"px;\">"+text.bidiTexts[i].str+"</p>";
 													} else {
 														fr.html += text.bidiTexts[i].str;
 													}
@@ -894,3 +892,21 @@ Semilla.PDFImporter.def({
 	}
 });
 Semilla.importers.push(new Semilla.PDFImporter());
+
+
+/**
+ * CBZExporter class.
+ * Translates from Content to CBZ.
+ *
+ * It uses zip.js library for zip handling via JS.
+ * https://github.com/gildas-lormeau/zip.js
+ *
+ * @author Daniel Cantarín <omega_canta@yahoo.com>
+ * @constructor
+ * @this {CBZExporter}
+ */
+Semilla.CBZExporter = function(){};
+Semilla.CBZExporter.prototype = new Semilla.Exporter();
+Semilla.CBZExporter.def({
+	
+});

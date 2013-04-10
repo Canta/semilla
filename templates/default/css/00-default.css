@@ -352,8 +352,8 @@ section{
 .toolbar{
 	position:absolute;
 	background-color: #C0C0C0;
-	height: 30px;
-	min-width:100px;
+	min-height: 30px;
+	min-width: 30px;
 	overflow-x: visible;
 	overflow-y: hidden;
 	box-shadow: -3px 3px 3px black;
