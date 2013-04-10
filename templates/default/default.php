@@ -32,6 +32,7 @@
 					<button onclick="document.execCommand('bold');" type="button" title="bold"><b>B</b></button>
 					<button onclick="document.execCommand('italic');" type="button" title="italic"><i>I</i></button>
 					<button onclick="document.execCommand('underline');" type="button" title="underline"><u>U</u></button>
+					<button onclick="app.contents.edition.group_in_paragraph();" type="button" title="underline">Agrupar</button>
 					<button onclick="$('#fragment-editor').html($('#fragment-editor').html() + '<div class=\'page\'>&nbsp;</div>');" type="button">Agregar página</button>
 				</div>
 				<div id="fragment-editor" contenteditable="true" ></div>

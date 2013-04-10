@@ -345,6 +345,21 @@ app.contents.edition.toggle_player = function(){
 	}
 }
 
+/**
+ * app.contents.edition.toggle_player
+ * Given a selection of random HTML in the edit field, this function
+ * takes the internal text from that selection and groups it inside 
+ * a single paragraph.
+ */
+app.contents.edition.group_in_paragraph = function(){
+	t = getSelection().getRangeAt(0).toString();
+	a = getSelection().getRangeAt(0).startContainer.parentElement;
+	a.innerHTML = t;
+	b = a.outerHTML;
+	document.execCommand("delete");
+	document.execCommand("insertHTML", false, b);
+}
+
 $(document).ready(
 	function(){
 		
