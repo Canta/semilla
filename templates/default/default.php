@@ -29,11 +29,21 @@
 			</div>
 			<div id="content-edit-editor">
 				<div class="toolbar draggable" id="rich-text-toolbar">
+					<p>Texto:</p>
 					<button onclick="document.execCommand('bold');" type="button" title="bold"><b>B</b></button>
 					<button onclick="document.execCommand('italic');" type="button" title="italic"><i>I</i></button>
 					<button onclick="document.execCommand('underline');" type="button" title="underline"><u>U</u></button>
 					<button onclick="app.contents.edition.group_in_paragraph();" type="button" title="underline">Agrupar</button>
-					<button onclick="$('#fragment-editor').html($('#fragment-editor').html() + '<div class=\'page\'>&nbsp;</div>');" type="button">Agregar página</button>
+					<button onclick="$('#fragment-editor').html($('#fragment-editor').html() + '<div class=\'page\'>&nbsp;</div>');" type="button">Agregar página</button><br/>
+					<p></p>
+				</div>
+				<div class="toolbar draggable" id="fragment-toolbar">
+					<p>Fragmento:</p>
+					<button onclick="app.contents.edition.save_fragment();" type="button" title="bold">Guardar</button><br/>
+					<button onclick="app.contents.edition.finalize_fragment();" type="button" title="bold">Finalizar</button><br/>
+					<button onclick="app.contents.edition.next_fragment();" type="button" title="bold">Siguiente</button><br/>
+					<button onclick="app.contents.edition.prev_fragment();" type="button" title="bold">Anterior</button><br/>
+					<p></p>
 				</div>
 				<div id="fragment-editor" contenteditable="true" ></div>
 			</div>

@@ -329,7 +329,12 @@ Semilla = (function($fn){
 		//exporting (or even no text at all, and sometimes is fine for
 		//a fragment to have no text). Somebody has to check this.
 		this.ready = false;
-		//From and To are used for audio fragments
+		//"parsed" is used for knowing when a fragment is not ready, but
+		//has some preliminary parsed text. For example, this is the 
+		//default state when parsing text from PDF documents, as the 
+		//obtained text AND html code is not suitable for exporting.
+		this.parsed = false;
+		//from and to are mainly used for audio fragments
 		this.from = null;
 		this.to   = null;
 		this.set_content = function($val){
@@ -337,6 +342,29 @@ Semilla = (function($fn){
 			this.text = $val;
 			return this;
 		};
+		
+		this.corrections = [];
+		
+		/**
+		 * method load_latest_correction.
+		 * Sets the fragment the most up to date state.
+		 *
+		 * @author Daniel Cantarín <omega_canta@yahoo.com>
+		 * @this {Fragment}
+		 * @return {Fragment}
+		 */
+		 this.load_latest_correction = function(){
+			if (this.corrections.length > 0){
+				var co = this.corrections[this.corrections.length - 1];
+				this.text = co.text;
+				this.html = co.html;
+				this.ready = co.ready;
+				this.parsed = true; //on any correction, parsed = true
+				this.from = co.from;
+				this.to   = co.to;
+			}
+			return this;
+		 }
 	}
 	$fn.Fragment = Fragment;
 	
@@ -356,7 +384,6 @@ Semilla = (function($fn){
 		this.external_links = [];
 		this.references = [];
 		this.fragments = [];
-		this.corrections = [];
 		this.kind = "text"; //text, audio, or video. Default text.
 		this.origin = { 
 			//This property is intended to save the full serialized raw 
@@ -410,16 +437,17 @@ Semilla = (function($fn){
 			}
 			
 			var ret = "";
+			var fr  = this.fragments[i].load_latest_correction();
 			
-			if (this.fragments[i].render){
+			if (fr.render){
 				//for future custom fragment types implementing own 
 				//render logic.
-				ret = this.fragments[i].render();
+				ret = fr.render();
 			} else if (this.kind === "text"){
 				//Text type.
 				//It's assumed that it's an image to be transcripted.
 				ret += "<div class=\"semilla-fragment-container\" >";
-				ret += "<img class=\"semilla-fragment-text-page\" src=\""+this.fragments[i].content+"\" />";
+				ret += "<img class=\"semilla-fragment-text-page\" src=\""+fr.content+"\" />";
 				ret += "</div>";
 			} else if (this.kind === "audio"){
 				//Audio type.
@@ -431,7 +459,7 @@ Semilla = (function($fn){
 				
 				ret += "<div class=\"semilla-fragment-container\">";
 				ret += "<div class=\"semilla-fragment-audio-player\" \
-				from=\""+this.fragments[i].from+"\" to=\""+this.fragments[i].to+"\" ></div>";
+				from=\""+fr.from+"\" to=\""+fr.to+"\" ></div>";
 				ret += "<div class=\"semilla-fragment-audio-data\" >"+this.origin.raw+"</div>";
 				ret += "</div>";
 			} else if (this.kind === "video"){
@@ -846,7 +874,7 @@ Semilla.PDFImporter.def({
 											function(text){
 												textin = $.makeArray($(text.bidiTexts).map(function(element,value){return value.str})).join('\n'); 
 												fr.text = textin;
-												fr.ready = (textin !== "");
+												fr.parsed = (textin !== "");
 												fr.html = "<div class=\"page\">";
 												var minSize = 8;
 												

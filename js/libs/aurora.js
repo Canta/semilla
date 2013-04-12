@@ -1661,20 +1661,23 @@ AV.Player = (function(_super) {
     if ((_ref = this.device) != null) {
       _ref.stop();
     }
-    this.queue.once('ready', function() {
-      var _ref1, _ref2;
+    if (this.queue){
+        this.queue.once('ready', function() {
+          var _ref1, _ref2;
 
-      if ((_ref1 = _this.device) != null) {
-        _ref1.seek(_this.currentTime);
-      }
-      if (_this.playing) {
-        return (_ref2 = _this.device) != null ? _ref2.start() : void 0;
-      }
-    });
-    timestamp = (timestamp / 1000) * this.format.sampleRate;
-    timestamp = this.asset.decoder.seek(timestamp);
-    this.currentTime = timestamp / this.format.sampleRate * 1000 | 0;
-    this.queue.reset();
+          if ((_ref1 = _this.device) != null) {
+            _ref1.seek(_this.currentTime);
+          }
+          if (_this.playing) {
+            return (_ref2 = _this.device) != null ? _ref2.start() : void 0;
+          }
+        });
+    
+        timestamp = (timestamp / 1000) * this.format.sampleRate;
+        timestamp = this.asset.decoder.seek(timestamp);
+        this.currentTime = timestamp / this.format.sampleRate * 1000 | 0;
+        this.queue.reset();
+    }
     return this.currentTime;
   };
 

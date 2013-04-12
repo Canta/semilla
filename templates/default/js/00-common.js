@@ -249,6 +249,8 @@ app.contents.edition.edit = function(c){
 			var $html = "<div class=\"fragment\" index=\""+ifr+"\" fragment_id=\""+c.fragments[ifr].id+"\" ";
 			if (c.fragments[ifr].ready){
 				$html += "ready ";
+			} else if (c.fragments[ifr].parsed){
+				$html += "parsed ";
 			}
 			$html += " onclick=\"app.contents.edition.render_fragment($(this).attr('index'))\">&nbsp;</div>";
 			$("#fragments-thumbs > div").append($html);
@@ -290,6 +292,8 @@ app.contents.edition.edit = function(c){
  */
 app.contents.edition.render_fragment = function(i){
 	
+	var fr = app.contents.edition.editing.fragments[i].load_latest_correction();
+	
 	if (app.contents.edition.editing.kind == "text"){
 		$("#fragment-render").html(app.contents.edition.editing.render_fragment(i));
 	} else if (app.contents.edition.editing.kind == "audio"){
@@ -299,11 +303,12 @@ app.contents.edition.render_fragment = function(i){
 				"<button class=\"play-button\" type=\"button\" onclick=\"app.contents.edition.toggle_player();\"></button>\
 				<progress id=\"fragment-play-progress\" value=\"0\" max=\"5000\" />"
 			);
+			
 			app.contents.edition.player = AV.Player.fromURL($(".semilla-fragment-audio-data").html());
 			app.contents.edition.player.progress = $("#fragment-play-progress");
 			app.contents.edition.player.on('buffer', function(perc) {
 				if (perc == 100){
-					this.seek(app.contents.edition.editing.fragments[i].from);
+					this.seek(fr.from);
 				}
 			});
 			app.contents.edition.player.on('progress', function(perc) {
@@ -315,20 +320,21 @@ app.contents.edition.render_fragment = function(i){
 			app.contents.edition.toggle_player();
 		} else {
 			setTimeout(function(){
-				app.contents.edition.player.seek(app.contents.edition.editing.fragments[i].from);
+				app.contents.edition.player.seek(fr.from);
 			},100);
 		}
 		
-		app.contents.edition.player.from = app.contents.edition.editing.fragments[i].from;
-		app.contents.edition.player.to = app.contents.edition.editing.fragments[i].to;
+		app.contents.edition.player.from = fr.from;
+		app.contents.edition.player.to = fr.to;
 	}
 	
 	$(
 		$(".fragment").removeAttr("selected").removeClass("glow")[i]
 	).attr("selected","true").addClass("glow");
 	
-	$("#fragment-editor").html(app.contents.edition.editing.fragments[i].html);
+	$("#fragment-editor").html(fr.html);
 	
+	app.contents.edition.current_fragment = i;
 }
 
 /**
@@ -358,6 +364,30 @@ app.contents.edition.group_in_paragraph = function(){
 	b = a.outerHTML;
 	document.execCommand("delete");
 	document.execCommand("insertHTML", false, b);
+}
+
+/**
+ * app.contents.edition.save_fragments
+ * Saves the current content of the fragment as a correction.
+ */
+app.contents.edition.save_fragment = function(){
+	var c   = app.contents.edition.editing;
+	var f1  = c.fragments[app.contents.edition.current_fragment];
+	var f2  = new Semilla.Fragment();
+	f2.content = ""; //not needed for text edition.
+	f2.text    = $("#fragment-editor").text();
+	f2.html    = $("#fragment-editor").html();
+	f2.from    = f1.from;
+	f2.to      = f1.to;
+	f2.parsed  = true;
+	f2.ready   = f1.ready;
+	app.contents.edition.editing.fragments[app.contents.edition.current_fragment].corrections.push(f2);
+	
+	if (f2.ready){
+		$($(".fragment")[app.contents.edition.current_fragment]).attr("ready","true");
+	} else {
+		$($(".fragment")[app.contents.edition.current_fragment]).attr("parsed","true");
+	}
 }
 
 $(document).ready(

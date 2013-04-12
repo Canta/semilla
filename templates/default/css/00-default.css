@@ -271,10 +271,17 @@ section{
 	border: black 1px solid;
 }
 
+.fragment[parsed]{
+	box-shadow: 0px 0px 30px lightsalmon;
+	-webkit-box-shadow: 0px 0px 30px lightsalmon;
+	-o-box-shadow: 0px 0px 30px lightsalmon;
+	background-color: coral;
+}
+
 .fragment[ready]{
-	box-shadow: 0px 0px 30px green;
-	-webkit-box-shadow: 0px 0px 30px green;
-	-o-box-shadow: 0px 0px 30px green;
+	box-shadow: 0px 0px 30px yellowgreen;
+	-webkit-box-shadow: 0px 0px 30px yellowgreen;
+	-o-box-shadow: 0px 0px 30px yellowgreen;
 	background-color: seagreen;
 }
 
@@ -365,6 +372,22 @@ section{
 	z-index: 10;
 	padding-left: 5px;
 	padding-right: 5px;
+	opacity: 0.4;
+	cursor:move;
+	-moz-user-select: none;
+	-khtml-user-select: none;
+	-webkit-user-select: none;
+	-o-user-select: none;
+	user-select: none;
+}
+
+.toolbar:hover{
+	opacity: 1;
+}
+
+.toolbar > p{
+	font-size: 50%;
+	line-height: 50%;
 }
 
 .toolbar button{
@@ -375,6 +398,7 @@ section{
 	height: 20px;
 	font-size: 10px;
 	overflow:hidden;
+	cursor:default;
 }
 
 .page{
