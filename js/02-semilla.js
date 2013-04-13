@@ -302,11 +302,11 @@ Semilla = (function($fn){
 				throw "Semilla.Repo.save_correction: Fragment expected.";
 			}
 			
-			if ( typeof cid === "undefined" || typeof cid !== "number" ){
+			if ( typeof cid === "undefined" || !Semilla.Util.is_numeric(cid) ){
 				throw "Semilla.Repo.save_correction: Content ID expected.";
 			}
 			
-			if ( typeof i === "undefined" || typeof i !== "number" ){
+			if ( typeof i === "undefined" || !Semilla.Util.is_numeric(i) ){
 				throw "Semilla.Repo.save_correction: original fragment index expected.";
 			}
 			
@@ -760,6 +760,7 @@ Semilla.HTTPRepo.def({
 				var r = JSON.parse(evt.target.responseText);
 				this.repo.fire_event("add_progress", {progress:100});
 				if (r.success){
+					this.content.id = r.data.id;
 					this.repo.contents.push(this.content);
 					this.repo.fire_event("new_content", {content:this.content});
 				} else {
@@ -815,7 +816,7 @@ Semilla.HTTPRepo.def({
 				var r = JSON.parse(evt.target.responseText);
 				this.repo.fire_event("save_progress", {progress:100});
 				if (r.success){
-					Semilla.Util.find(this.contents,{id:evt.target.cid})[0].fragments[evt.target.fragment].corrections.push(r.data.correction);
+					Semilla.Util.find(this.repo.contents,{id:this.cid})[0].fragments[this.fragment].corrections.push(JSON.parse(r.data.correction));
 					this.repo.fire_event("new_correction", {
 						content:this.content, 
 						fragment:this.fragment,
@@ -835,6 +836,8 @@ Semilla.HTTPRepo.def({
 		};
 		
 		data.append("verb", "save_correction");
+		data.append("content_id", cid);
+		data.append("fragment", i);
 		data.append("data", JSON.stringify(f));
 		xhr.open("POST", this.endpoint);
 		this.fire_event("save_progress", {progress:0});

@@ -522,13 +522,13 @@ class ABM extends ORM{
 			//die(var_dump($qs));
 			//Una vez con la query construida, la ejecuto.
 			$c = Conexion::get_instance();
-			$ret = $c->execute($qs);
+			$ret = $c->execute($qs,false);
 			
 			if ($es_insert){
 				//necesito obtener el último ID insertado
 				$qs = "select ".$pkey["COLUMN_NAME"]." from ".$this->datos["tabla"]." order by ".$pkey["COLUMN_NAME"]." desc limit 1;";
 				$c = Conexion::get_instance();
-				$ret2 = $c->execute($qs);
+				$ret2 = $c->execute($qs,false);
 				foreach ($ffs as $key=>$ff){
 					if (strtolower($key) == strtolower($pkey["COLUMN_NAME"])){
 						$tmp_valor = isset($ret2[0][strtoupper($key)]) ? $ret2[0][strtoupper($key)] : $ret2[0][strtolower($key)];

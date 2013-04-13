@@ -383,8 +383,7 @@ app.contents.edition.save_fragment = function(){
 	f2.parsed  = true;
 	f2.ready   = f1.ready;
 	//app.contents.edition.editing.fragments[app.contents.edition.current_fragment].corrections.push(f2);
-	console.debug("app.save_fragment():");
-	console.debug(f2);
+	
 	Semilla.repos[1].save_correction(f2, c.id, parseInt(app.contents.edition.current_fragment));
 	
 	if (f2.ready){

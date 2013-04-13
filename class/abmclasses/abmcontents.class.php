@@ -14,13 +14,18 @@ class ABMcontents extends ABM{
 	public function load_fields_from_array($arr){
 		parent::load_fields_from_array($arr);
 		
-		if (isset($arr["raws"])){
-			$this->datos["raws"] = $arr["raws"];
+		if (isset($arr["data"])){ 
+			
+			$tmp1 = json_decode($arr["data"]);
+			
+			if (isset($tmp1->external_links)){
+				$this->datos["raws"] = $tmp1->external_links;
+			}
+			$this->datos["processed"] = $arr["data"];
+			
 		}
 		
-		if (isset($arr["processed"])){
-			$this->datos["processed"] = $arr["processed"];
-		}
+		
 	}
 	
 	public function save(){
@@ -32,6 +37,12 @@ class ABMcontents extends ABM{
 				$raw->datos["fields"]["ID_CONTENT"]->set_valor($this->datos["fields"]["ID"]->get_valor());
 				$raw->save();
 			}
+			
+			$pro = new ABM("processed");
+			$pro->set("ID_CONTENT",$this->get("ID"));
+			$pro->set("FULL_OBJECT",$this->datos["processed"]);
+			$pro->save();
+			
 		} catch(Exception $e){
 			$this->baja($this->datos["fields"]["ID"]->get_valor(), false);
 		}
