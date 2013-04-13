@@ -224,7 +224,9 @@ Semilla = (function($fn){
 		this.users = [];
 		this.events = {
 			new_content : [],
-			add_progress : []
+			add_progress : [],
+			save_progress : [],
+			new_correction : []
 		};
 		/**
 		 * method import_content.
@@ -277,6 +279,53 @@ Semilla = (function($fn){
 		this.__add_content = function(c){
 			this.contents.push(c);
 			this.fire_event("new_content", {content:c});
+		}
+		
+		
+		/**
+		 * method save_correction.
+		 * This method appends a correction to a fragment's corrections
+		 * history. 
+		 * Implements the same strategy as add_content.
+		 *
+		 * @author Daniel Cantarín <omega_canta@yahoo.com>
+		 * @param {Fragment} f
+		 * A Fragment object to be saved as correction.
+		 * @param {integer} cid
+		 * A Content's id.
+		 * @param {integer} i
+		 * The original fragment index in the Content's fragments list.
+		 * @this {Repo}
+		 */
+		this.save_correction = function(f, cid, i){
+			if ( typeof f === "undefined" || ! (f instanceof Semilla.Fragment) ){
+				throw "Semilla.Repo.save_correction: Fragment expected.";
+			}
+			
+			if ( typeof cid === "undefined" || typeof cid !== "number" ){
+				throw "Semilla.Repo.save_correction: Content ID expected.";
+			}
+			
+			if ( typeof i === "undefined" || typeof i !== "number" ){
+				throw "Semilla.Repo.save_correction: original fragment index expected.";
+			}
+			
+			//The correction is a Fragment object. Therefore, i clear 
+			//the corrections history from the correction itself.
+			var f2 = Semilla.Util.clone(f);
+			f2.corrections = [];
+			this.__save_correction(f2, cid, i);
+		}
+		
+		this.__save_correction = function(f, cid, i){
+			var c = null;
+			try{
+				c = Semilla.Util.find(this.contents,{id:cid})[0];
+			} catch(e){
+				throw "Semilla.Repo.save_correction: No content found.";
+			}
+			c.fragments[i].corrections.push(f);
+			this.fire_event("new_correction", {content:c, fragment: i, correction: f});
 		}
 		
 	}
@@ -367,6 +416,7 @@ Semilla = (function($fn){
 		 }
 	}
 	$fn.Fragment = Fragment;
+	$fn.Fragment.def({a:"sda"});
 	
 	/**
 	 * Content class.
@@ -377,6 +427,7 @@ Semilla = (function($fn){
 	 * @this {Content}
 	 */
 	Content = function(){
+		this.id = Math.round(Math.random() * 999999999);
 		this.properties = {
 			name : "Content's name",
 			description : "Content's description"
@@ -623,7 +674,32 @@ Semilla = (function($fn){
 	 * An object to be cloned
 	 */
 	$fn.Util.clone = function(o){
-		return eval(uneval(c));
+		return eval(uneval(o));
+	}
+	
+	/**
+	 * find function.
+	 * Given a collection and an object, this function returns another
+	 * colection filled with the items that matches the criteria stated
+	 * in the given object.
+	 * 
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 * @param {Array} c
+	 * An array (collection) with objects inside.
+	 * @param {Object} o
+	 * An object of arbitrary properties and values that are supposed to
+	 * be found inside objects in the collection.
+	 */
+	$fn.Util.find = function(c, o){
+		var ret = [];
+		for (var i in c){
+			for (var i2 in o){
+				if (c[i][i2] && c[i][i2] == o[i2]){
+					ret.push(c[i]);
+				}
+			}
+		}
+		return ret;
 	}
 	
 	return $fn;
@@ -714,6 +790,54 @@ Semilla.HTTPRepo.def({
 		data.append("data", JSON.stringify(c));
 		xhr.open("POST", this.endpoint);
 		this.fire_event("add_progress", {progress:0});
+		setTimeout(function(){xhr.send(data);},100);
+	},
+	// __save_correction is called by the public inherited save_correction
+	__save_correction: function(f, cid, i){
+		var data = new FormData();
+		var xhr = new XMLHttpRequest();
+		xhr.repo = this;
+		xhr.upload.repo = this;
+		var c = null;
+		try{
+			c = Semilla.Util.find(this.contents,{id:cid})[0];
+		} catch(e){
+			throw "Semilla.HTTPRepo.save_correction: No content found.";
+		}
+		var fragment = c.fragments[i];
+		xhr.content = c;
+		xhr.fragment = i;
+		xhr.cid = cid;
+		xhr.correction = f;
+		
+		xhr.onreadystatechange = function(evt){
+			if (evt.target.readyState == 4){
+				var r = JSON.parse(evt.target.responseText);
+				this.repo.fire_event("save_progress", {progress:100});
+				if (r.success){
+					Semilla.Util.find(this.contents,{id:evt.target.cid})[0].fragments[evt.target.fragment].corrections.push(r.data.correction);
+					this.repo.fire_event("new_correction", {
+						content:this.content, 
+						fragment:this.fragment,
+						correction: this.correction
+					});
+				} else {
+					alert("Error! :S\n"+r.data.message);
+				}
+			}
+		}
+		
+		xhr.upload.onprogress = function(evt) {
+			var loaded = (evt.loaded / evt.total);
+			if (loaded < 1) {
+				this.repo.fire_event("save_progress", {progress:(loaded * 100)});
+			}
+		};
+		
+		data.append("verb", "save_correction");
+		data.append("data", JSON.stringify(f));
+		xhr.open("POST", this.endpoint);
+		this.fire_event("save_progress", {progress:0});
 		setTimeout(function(){xhr.send(data);},100);
 	}
 });

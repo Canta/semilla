@@ -371,6 +371,7 @@ app.contents.edition.group_in_paragraph = function(){
  * Saves the current content of the fragment as a correction.
  */
 app.contents.edition.save_fragment = function(){
+	
 	var c   = app.contents.edition.editing;
 	var f1  = c.fragments[app.contents.edition.current_fragment];
 	var f2  = new Semilla.Fragment();
@@ -381,13 +382,18 @@ app.contents.edition.save_fragment = function(){
 	f2.to      = f1.to;
 	f2.parsed  = true;
 	f2.ready   = f1.ready;
-	app.contents.edition.editing.fragments[app.contents.edition.current_fragment].corrections.push(f2);
+	//app.contents.edition.editing.fragments[app.contents.edition.current_fragment].corrections.push(f2);
+	console.debug("app.save_fragment():");
+	console.debug(f2);
+	Semilla.repos[1].save_correction(f2, c.id, parseInt(app.contents.edition.current_fragment));
 	
 	if (f2.ready){
 		$($(".fragment")[app.contents.edition.current_fragment]).attr("ready","true");
 	} else {
 		$($(".fragment")[app.contents.edition.current_fragment]).attr("parsed","true");
 	}
+	
+	
 }
 
 $(document).ready(
@@ -426,6 +432,22 @@ $(document).ready(
 					}
 				}
 			);
+			
+			Semilla.repos[i].add_event_handler("save_progress",
+				function(data, repo){
+					if (data.progress == 0){
+						var $desc = "Guardando fragmento en " + repo.name + "...";
+						var $html = "<br/><progress id=\"progress-"+repo.name.replace(" ","-")+"\" value=0 max=100/>";
+						repo.espere_text = $desc;
+						app.espere($desc, "", $html);
+					} else if (data.progress < 100){
+						$("#progress-" + repo.name.replace(" ", "-")).val(data.progress);
+					} else {
+						app.desespere(repo.espere_text);
+					}
+				}
+			);
+			
 		}
 		
 		app.espere("Cargando sistema","sistema cargado.");
