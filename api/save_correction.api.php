@@ -30,7 +30,7 @@ class save_correction extends API{
 		$cont->load(Array($c));
 		
 		$tmp1 = json_decode($cont->get("FULL_OBJECT"));
-		$tmp1["fragments"][$index]["corrections"][] = $arr["data"];
+		$tmp1->fragments[$index]->corrections[] = $arr["data"];
 		$cont->set("FULL_OBJECT", json_encode($tmp1));
 		$cont->save();
 		$cont->set_metodo_serializacion("json");
