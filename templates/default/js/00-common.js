@@ -367,7 +367,7 @@ app.contents.edition.group_in_paragraph = function(){
 }
 
 /**
- * app.contents.edition.save_fragments
+ * app.contents.edition.save_fragment
  * Saves the current content of the fragment as a correction.
  */
 app.contents.edition.save_fragment = function(){
@@ -394,6 +394,15 @@ app.contents.edition.save_fragment = function(){
 	
 	
 }
+
+/**
+ * app.contents.edition.finalize_fragment
+ * Same as save_fragment, but it also flags the fragment as ready.
+ */
+app.contents.edition.finalize_fragment = function(){
+	app.contents.edition.editing.fragments[app.contents.edition.current_fragment].ready = true;
+	app.contents.edition.save_fragment();
+};
 
 $(document).ready(
 	function(){
