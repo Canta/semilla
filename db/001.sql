@@ -40,7 +40,11 @@ create table contents(
 	name varchar(255) not null,
 	kind int not null,
 	id_repo int not null default 1,
-	created timestamp not null default current_timestamp
+	created timestamp not null default current_timestamp,
+	/* content's fragment status*/
+	ready int not null default 0,
+	parsed int not null default 0,
+	empty int not null default 0
 ) DEFAULT CHARSET=utf8;
 
 drop table if exists content_kinds;
