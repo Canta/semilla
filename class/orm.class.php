@@ -31,6 +31,7 @@ class ORM {
 		$this->datos["fields"] = Array();
 		$this->datos["last_search"] = new Lista();
 		$this->datos["campo_id"] = "id";
+		$this->datos["cache"] = true;
 		
 		if ($tabla != "" && !is_null($tabla)){
 			$this->check_tabla_existe();
@@ -45,11 +46,19 @@ class ORM {
 		return $this->datos["tabla"];
 	}
 	
+	public function cache($val = null){
+		if (is_null($val)){
+			return $this->datos["cache"];
+		} else {
+			$this->datos["cache"] = (bool)$val;
+		}
+	}
+	
 	private function check_tabla_existe(){
 		try{
 			$c = Conexion::get_instance();
 			$qs = "select * from ".$this->get_tabla()." limit 1;";
-			$r  = $c->execute($qs);
+			$r  = $c->execute($qs, $this->cache());
 		} catch(Exception $e){
 			throw new Exception("Error al intentar leer la tabla \"".$this->get_tabla()."\". Revise que la tabla efectivamente exista y los datos de la conexión sean correctos.");
 		}
@@ -66,7 +75,7 @@ class ORM {
 		$c = Conexion::get_instance();
 		
 		$qs = "select * from INFORMATION_SCHEMA.COLUMNS where table_name = '".$this->get_tabla()."' and (table_schema='".$c->get_database_name()."' or table_catalog='".$c->get_database_name()."')";
-		$r  = $c->execute($qs);
+		$r  = $c->execute($qs, $this->cache());
 		$r  = (is_null($r)) ? Array() : $r;
 		
 		$this->datos["campos"] = $r;
@@ -121,7 +130,7 @@ class ORM {
 				
 				$c  = Conexion::get_instance();
 				$qs = "select * from ".$referencia_tabla." order by ".$referencia_campo." asc;";
-				$r  = $c->execute($qs);
+				$r  = $c->execute($qs, $this->cache());
 				
 				$ret = $r;
 				break;
@@ -179,7 +188,7 @@ class ORM {
 		
 		$c  = Conexion::get_instance();
 		$qs = "select * from ".$this->get_tabla()." where ".$w." limit 1;";
-		$r  = $c->execute($qs);
+		$r  = $c->execute($qs, $this->cache());
 		
 		if (is_null($r) || count($r) == 0){
 			$r = $this->get_empty_fields();
@@ -1294,7 +1303,7 @@ class Model extends ORM{
 		//die(var_dump($qs));
 		
 		$c = Conexion::get_instance();
-		$r = $c->execute($qs);
+		$r = $c->execute($qs, $this->cache());
 		$r = (is_null($r) || $r === false) ? Array(Array()) : $r;
 		
 		$ret = Array();
