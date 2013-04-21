@@ -30,15 +30,18 @@ class save_correction extends API{
 		$c->set_comparador($id_content);
 		$cont->load(Array($c));
 		
-		$tmp1 = json_decode(stripslashes($cont->get("FULL_OBJECT")));
+		$tmp1 = json_decode($cont->get("FULL_OBJECT"));//json_decode(stripslashes($cont->get("FULL_OBJECT")));
+		if (is_null($tmp1)){
+			return APIResponse::fail("Bad previous content. Correction saving canceled.");
+		}
 		
-		$tmp1->fragments[$index]->corrections[] = json_decode(stripslashes($arr["data"]));
+		//$tmp1->fragments[$index]->corrections[] = json_decode($arr["data"]); 
 		
-		$cont2 = new Content(json_encode($tmp1));
+		$cont2 = new Content($cont->get("FULL_OBJECT")); 
+		$cont2->add_correction($index,$arr["data"]);
 		$arr2  = $cont2->get_fragment_stats();
 		
 		//saving new fragments stats
-		
 		$cont3 = new ABMContents();
 		$cont3->cache(false);
 		$c->set_comparando("id");
@@ -46,10 +49,11 @@ class save_correction extends API{
 		$cont3->load_fields_from_array($arr2);
 		$cont3->save();
 		
-		$cont->set("FULL_OBJECT", stripslashes($cont2->to_json()));
+		//and saving correction
+		$cont->set("FULL_OBJECT", $cont2->to_json());//stripslashes($cont2->to_json()));
 		$cont->save();
 		
-		$this->data["response"]->data["correction"] = stripslashes($arr["data"]);
+		$this->data["response"]->data["correction"] = $arr["data"];//stripslashes($arr["data"]);
 		
 		return $this->data["response"];
 	}

@@ -77,6 +77,30 @@ class Content {
 		return json_encode($this->data);
 	}
 	
+	public function add_correction($fragment_index = null, $correction = null){
+		if (is_null($fragment_index) || !is_numeric($fragment_index) ){
+			throw new Exception("Content->add_correction: fragment index expected.");
+		}
+		if (is_null($correction) || !is_string($correction)){
+			throw new Exception("Content->add_correction: correction JSON string expected.");
+		}
+		
+		$corr = json_decode($correction,true); //json_decode(stripslashes($correction));
+		if (is_null($corr)){
+			throw new Exception("Content->add_correction: Bad correction JSON string.");
+		}
+		
+		if (!isset($this->data["fragments"]) || !isset($this->data["fragments"][$fragment_index])){
+			throw new Exception("Content->add_correction: invalid fragment index.");
+		}
+		
+		if (!isset($this->data["fragments"][$fragment_index]["corrections"])){
+			$this->data["fragments"][$fragment_index]["corrections"] = Array();
+		}
+		
+		$this->data["fragments"][$fragment_index]["corrections"][] = $corr;
+	}
+	
 }
 
 

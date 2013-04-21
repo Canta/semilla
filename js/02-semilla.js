@@ -816,7 +816,8 @@ Semilla.HTTPRepo.def({
 				var r = JSON.parse(evt.target.responseText);
 				this.repo.fire_event("save_progress", {progress:100});
 				if (r.success){
-					Semilla.Util.find(this.repo.contents,{id:this.cid})[0].fragments[this.fragment].corrections.push(JSON.parse(r.data.correction));
+					var co = JSON.parse(r.data.correction);
+					Semilla.Util.find(this.repo.contents,{id:this.cid})[0].fragments[this.fragment].corrections.push(co);
 					this.repo.fire_event("new_correction", {
 						content:this.content, 
 						fragment:this.fragment,

@@ -48,7 +48,7 @@ class new_content extends API{
 			return APIResponse::fail("Error parsing content data:\n".$e->getMessage());
 		}
 		
-		$arr["data"] = stripslashes($tmp_content->to_json());
+		$arr["data"] = $tmp_content->to_json(); //stripslashes($tmp_content->to_json());
 		$arr["ready"] = $stats["ready"];
 		$arr["parsed"] = $stats["parsed"];
 		$arr["empty"] = $stats["empty"];
