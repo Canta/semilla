@@ -31,6 +31,14 @@ class Content {
 	
 	public function load_json($str){
 		$this->data = json_decode($str,true);
+		
+		if (is_null($this->data)){
+			$this->data = json_decode(stripslashes($str),true);
+		}
+		
+		if (is_null($this->data)){
+			throw new Exception("Content->load: Could not parse JSON string.");
+		}
 	}
 	
 	public function get_fragment_stats(){
@@ -40,18 +48,21 @@ class Content {
 		$empty = 0;
 		
 		for ($i = 0; $i < count($this->data["fragments"]); $i++){
-			if ($this->data["fragments"][$i]["ready"] === true){
+			if (!isset($this->data["fragments"][0])){
+				die(var_dump($this->data));
+			}
+			if (isset($this->data["fragments"][$i]["ready"]) && $this->data["fragments"][$i]["ready"] === true){
 				$ready++;
 			} else if (count($this->data["fragments"][$i]["corrections"]) > 0){
-				$c = json_decode($this->data["fragments"][$i]["corrections"][count($this->data["fragments"][$i]["corrections"])-1],true);
-				if ($c["ready"]===true){
+				$c = $this->data["fragments"][$i]["corrections"][count($this->data["fragments"][$i]["corrections"])-1];
+				if (isset($c["ready"]) && $c["ready"]===true){
 					$ready++;
 					$this->data["fragments"][$i]["ready"] = true;
 				}else{
 					$parsed++;
 					$this->data["fragments"][$i]["parsed"] = true;
 				}
-			} else if ($this->data["fragments"][$i]["parsed"] === true){
+			} else if (isset($this->data["fragments"][$i]["parsed"]) && $this->data["fragments"][$i]["parsed"] === true){
 				$parsed++;
 			} else {
 				$empty++;

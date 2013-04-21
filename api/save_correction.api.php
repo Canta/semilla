@@ -30,8 +30,9 @@ class save_correction extends API{
 		$c->set_comparador($id_content);
 		$cont->load(Array($c));
 		
-		$tmp1 = json_decode($cont->get("FULL_OBJECT"));
-		$tmp1->fragments[$index]->corrections[] = $arr["data"];
+		$tmp1 = json_decode(stripslashes($cont->get("FULL_OBJECT")));
+		
+		$tmp1->fragments[$index]->corrections[] = json_decode(stripslashes($arr["data"]));
 		
 		$cont2 = new Content(json_encode($tmp1));
 		$arr2  = $cont2->get_fragment_stats();
@@ -45,10 +46,10 @@ class save_correction extends API{
 		$cont3->load_fields_from_array($arr2);
 		$cont3->save();
 		
-		$cont->set("FULL_OBJECT", $cont2->to_json());
+		$cont->set("FULL_OBJECT", stripslashes($cont2->to_json()));
 		$cont->save();
 		
-		$this->data["response"]->data["correction"] = $arr["data"];
+		$this->data["response"]->data["correction"] = stripslashes($arr["data"]);
 		
 		return $this->data["response"];
 	}

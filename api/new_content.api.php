@@ -25,10 +25,9 @@ class new_content extends API{
 		
 		$tmp_content = Array();
 		$stats = Array();
+		$tmp_content = new Content($arr["data"]);
 		
 		try{
-			
-			$tmp_content = new Content($arr["data"]);
 			
 			if (!isset($tmp_content->data["properties"]["name"]) || $tmp_content->data["properties"]["name"] == ""){
 				return APIResponse::fail("No content name specified. Content creation aborted.");
@@ -49,6 +48,7 @@ class new_content extends API{
 			return APIResponse::fail("Error parsing content data:\n".$e->getMessage());
 		}
 		
+		$arr["data"] = stripslashes($tmp_content->to_json());
 		$arr["ready"] = $stats["ready"];
 		$arr["parsed"] = $stats["parsed"];
 		$arr["empty"] = $stats["empty"];
