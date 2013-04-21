@@ -33,10 +33,7 @@ class Content {
 		$this->data = json_decode($str,true);
 		
 		if (is_null($this->data)){
-			$this->data = json_decode(stripslashes($str),true);
-		}
-		
-		if (is_null($this->data)){
+			die(var_dump($str));
 			throw new Exception("Content->load: Could not parse JSON string.");
 		}
 	}

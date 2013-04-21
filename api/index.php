@@ -32,6 +32,27 @@ if (!$found){
 // with the same name.
 $api = new $v(); 
 
+//FIX: handle magic quotes in crappy servers.
+//http://www.php.net/manual/en/security.magicquotes.disabling.php
+if (get_magic_quotes_gpc()) {
+	/*
+    $process = array(&$_GET, &$_POST, &$_COOKIE, &$_REQUEST);
+    while (list($key, $val) = each($process)) {
+        foreach ($val as $k => $v) {
+            unset($process[$key][$k]);
+            if (is_array($v)) {
+                $process[$key][stripslashes($k)] = $v;
+                $process[] = &$process[$key][stripslashes($k)];
+            } else {
+                $process[$key][stripslashes($k)] = stripslashes($v);
+            }
+        }
+    }
+    unset($process);
+    */
+    $_REQUEST["data"] = stripslashes($_REQUEST["data"]);//str_replace("\\\\","\\", $_REQUEST["data"]);
+}
+
 $ret = $api->do_your_stuff($_REQUEST);
 die(json_encode($ret));
 ?>
