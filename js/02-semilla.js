@@ -667,14 +667,37 @@ Semilla = (function($fn){
 	
 	/**
 	 * clone function.
-	 * Given an object, it returns a copy of the object.
+	 * Given an object, it returns a clone of the object.
+	 * Cloned objects retains the "is-a" relation for instanceof.
 	 * 
 	 * @author Daniel Cantarín <omega_canta@yahoo.com>
 	 * @param {Object} o
 	 * An object to be cloned
 	 */
 	$fn.Util.clone = function(o){
-		return eval(uneval(o));
+		function Clone() { }
+		Clone.prototype = o;
+		return new Clone();
+	}
+	
+	/**
+	 * copy function.
+	 * Given an object, it returns a copy of the object.
+	 * The returning object is identical to the given one, but it does
+	 * NOT works with the instanceof operator.
+	 * 
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 * @param {Object} o
+	 * An object to be copied
+	 */
+	$fn.Util.clone = function(o){
+		if (typeof uneval !== "undefined"){
+			return eval(uneval(o));
+		} else if (JSON) {
+			var o2 = JSON.parse(JSON.stringify(o));
+			o2.prototype = o;
+			return o2;
+		}
 	}
 	
 	/**
