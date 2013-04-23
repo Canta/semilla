@@ -691,7 +691,9 @@ Semilla = (function($fn){
 	 * An object to be copied
 	 */
 	$fn.Util.clone = function(o){
-		if (typeof uneval !== "undefined"){
+		if (typeof o.toSource !== "undefined"){
+			return eval(o.toSource());
+		} else if (typeof uneval !== "undefined"){
 			return eval(uneval(o));
 		} else if (JSON) {
 			var o2 = JSON.parse(JSON.stringify(o));
