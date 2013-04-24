@@ -222,12 +222,17 @@ Semilla = (function($fn){
 		this.description = "This is a repo that actually does nothing.\nIt's used as definition for other repos to overload.";
 		this.contents = [];
 		this.users = [];
+		this.search_results = [];
 		this.events = {
 			new_content : [],
 			add_progress : [],
 			save_progress : [],
-			new_correction : []
+			new_correction : [],
+			search_start : [],
+			search_progress : [],
+			search_end : []
 		};
+		
 		/**
 		 * method import_content.
 		 * Given a File object, this method checks for a compatible 
@@ -250,7 +255,6 @@ Semilla = (function($fn){
 				ret = imp.parse($f, this);
 			}
 			
-			//console.debug("Semilla.Repo.import_content: " + ret);
 			return ret;
 		}
 		
@@ -326,6 +330,30 @@ Semilla = (function($fn){
 			}
 			c.fragments[i].corrections.push(f);
 			this.fire_event("new_correction", {content:c, fragment: i, correction: f});
+		}
+		
+		/**
+		 * method search.
+		 * Given a string, this method finds the contents of the repo 
+		 * containing that string.
+		 * Once again, it calls the "private" overloaded function in 
+		 * custom classes.
+		 * 
+		 * @author Daniel Cantarín <omega_canta@yahoo.com>
+		 * @param {String} s
+		 * @this {Repo}
+		 */
+		this.search = function(s){
+			if ( typeof s === "undefined" || typeof s != "string" ){
+				throw "Semilla.Repo.search: search string expected.";
+			}
+			
+			this.__search(s);
+		}
+		
+		this.__search = function(s){
+			
+			this.fire_event("search_end", {search_string:s});
 		}
 		
 	}
@@ -868,6 +896,33 @@ Semilla.HTTPRepo.def({
 		xhr.open("POST", this.endpoint);
 		this.fire_event("save_progress", {progress:0});
 		setTimeout(function(){xhr.send(data);},100);
+	},
+	__search : function(s){
+		var data = new FormData();
+		var xhr = new XMLHttpRequest();
+		xhr.repo = this;
+		xhr.upload.repo = this;
+		
+		xhr.onreadystatechange = function(evt){
+			if (evt.target.readyState == 4){
+				var r = JSON.parse(evt.target.responseText);
+				this.repo.fire_event("search_progress", {progress:100});
+				if (r.success){
+					this.repo.search_results = r.data.contents;
+					this.repo.fire_event("search_end", {
+						"search_string" : s
+					});
+				} else {
+					throw "Semilla.HTTPRepo ("+this.repo.name+") - Error while searching:\n"+r.data.message;
+				}
+			}
+		};
+		
+		data.append("verb", "search_contents");
+		data.append("search_string", s);
+		xhr.open("POST", this.endpoint);
+		this.fire_event("search_start", {"search_string" : s });
+		xhr.send(data);
 	}
 });
 

@@ -75,7 +75,17 @@ app.contents.creation.save = function(){
  * Given an input, stated in the UI's search text box, searches in the servers.
  */ 
 app.contents.search = function(){
-	app.espere("Buscando contenidos...", "listo.");
+	//app.espere("Buscando contenidos...", "listo.");
+	
+	var search_string = $.trim($("#text-search-contents").val());
+	
+	if (search_string !== ""){
+		for (var i in Semilla.repos){
+			Semilla.repos[i].search(search_string);
+		}
+	}
+	
+	/*
 	app.api({
 		data: {
 			verb: "get_contents",
@@ -90,33 +100,10 @@ app.contents.search = function(){
 			}
 		}
 	});
+	*/
 };
 app.contents.search.history = [];
 app.contents.search.list = $();
-app.contents.load_all = function(){
-	app.espere("Cargando contenidos desde el servidor...","contenidos cargados.");
-	if (window.localStorage && window.localStorage.getItem("contents")){
-		app.contents.all = JSON.parse(window.localStorage.getItem("contents"));
-		app.contents.show_latests();
-		app.desespere("Cargando contenidos desde el servidor...");
-		return true;
-	}
-	app.api({
-		data:{
-			verb: "get_all_contents"
-		},
-		on_success: function($resp, $status, $xhr){
-			if ($resp.success){
-				window.localStorage.setItem("contents", JSON.stringify($resp.data.contents));
-				app.contents.all = $resp.data.contents;
-				app.contents.show_latests();
-				app.desespere("Cargando contenidos desde el servidor...");
-			} else {
-				app.mostrar_error($resp.data.message);
-			}
-		}
-	});
-}
 
 /**
  * contents.get_latests
@@ -417,6 +404,19 @@ $(document).ready(
 		Semilla.repos[1].name="Desgrabaciones Comunitarias";
 		Semilla.repos[1].description="Desgrabaciones Comunitarias, versión Alfa";
 		Semilla.repos[1].endpoint="./api/";
+		
+		Semilla.repos[1].add_event_handler("search_end",
+			function(data,repo){
+				app.contents.show_in_search_list(repo.search_results);
+				app.desespere("Buscando Contenidos...");
+			}
+		);
+		
+		Semilla.repos[1].add_event_handler("search_start",
+			function(data,repo){
+				app.espere("Buscando Contenidos...", "listo.");
+			}
+		);
 		
 		for (var i = 1; i < Semilla.repos.length; i++){
 			Semilla.repos[i].add_event_handler("add_progress",
