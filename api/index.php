@@ -50,7 +50,10 @@ if (get_magic_quotes_gpc()) {
     }
     unset($process);
     */
-    $_REQUEST["data"] = stripslashes($_REQUEST["data"]);//str_replace("\\\\","\\", $_REQUEST["data"]);
+    
+	foreach ($_REQUEST as $key=>$value){
+		$_REQUEST[$key] = stripslashes($value);
+	}
 }
 
 $ret = $api->do_your_stuff($_REQUEST);

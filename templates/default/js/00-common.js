@@ -141,7 +141,7 @@ app.contents.show_latests = function(){
  * @returns void
  **/
 
-app.contents.show_in_search_list = function($cs){
+app.contents.show_in_search_list = function($cs, repo){
 	if ($cs == undefined || !($cs instanceof Array) ){
 		throw "app.contents.show_in_search_list: array expected.";
 	}
@@ -150,8 +150,15 @@ app.contents.show_in_search_list = function($cs){
 	
 	var $tmp_html = "";
 	
+	
+	
 	for (var $i = 0; $i < $cs.length; $i++){
-		$tmp_html += "<div class=\"item con-sombrita redondeadito\" index=\""+$cs[$i].index+"\">"+$cs[$i].name+"</div>";
+		var total = parseInt($cs[$i].ready) + parseInt($cs[$i].parsed) + parseInt($cs[$i].empty);
+		total = (total == 0) ? 1 : total;
+		var ready = parseInt($cs[$i].ready) * 100 / total;
+		var parsed = parseInt($cs[$i].parsed) * 100 / total;
+		var empty = parseInt($cs[$i].empty * 100 / total);
+		$tmp_html += "<div class=\"item con-sombrita redondeadito\" id_content=\""+$cs[$i].id+"\" repo_name=\""+repo.name+"\" ><span class=\"content-name\">"+$cs[$i].name+"</span><span class=\"content-stats\">"+total+" fragmentos: "+ready+"% listos, "+parsed+"% pre-editados, "+empty+"% vacíos</span><span class=\"content-options\"></span></div>";
 	}
 	
 	app.contents.search.list.append($tmp_html);
@@ -407,14 +414,14 @@ $(document).ready(
 		
 		Semilla.repos[1].add_event_handler("search_end",
 			function(data,repo){
-				app.contents.show_in_search_list(repo.search_results);
-				app.desespere("Buscando Contenidos...");
+				app.contents.show_in_search_list(repo.search_results, repo);
+				app.desespere("Buscando contenidos en "+repo.name+"...");
 			}
 		);
 		
 		Semilla.repos[1].add_event_handler("search_start",
 			function(data,repo){
-				app.espere("Buscando Contenidos...", "listo.");
+				app.espere("Buscando contenidos en "+repo.name+"...", "listo.");
 			}
 		);
 		
