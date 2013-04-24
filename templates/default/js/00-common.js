@@ -386,13 +386,6 @@ app.contents.edition.save_fragment = function(){
 	
 	Semilla.repos[1].save_correction(f2, c.id, parseInt(app.contents.edition.current_fragment));
 	
-	if (f2.ready){
-		$($(".fragment")[app.contents.edition.current_fragment]).attr("ready","true");
-	} else {
-		$($(".fragment")[app.contents.edition.current_fragment]).attr("parsed","true");
-	}
-	
-	
 }
 
 /**
@@ -452,6 +445,19 @@ $(document).ready(
 						$("#progress-" + repo.name.replace(" ", "-")).val(data.progress);
 					} else {
 						app.desespere(repo.espere_text);
+					}
+				}
+			);
+			
+			Semilla.repos[i].add_event_handler("new_correction",
+				function(data,repo){
+					
+					var co = (typeof data.correction == "string") ? JSON.parse(data.correction) : data.correction;
+					
+					if (co.ready){
+						$($(".fragment")[app.contents.edition.current_fragment]).attr("ready","true");
+					} else {
+						$($(".fragment")[app.contents.edition.current_fragment]).attr("parsed","true");
 					}
 				}
 			);
