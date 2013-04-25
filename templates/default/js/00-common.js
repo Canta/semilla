@@ -155,9 +155,9 @@ app.contents.show_in_search_list = function($cs, repo){
 	for (var $i = 0; $i < $cs.length; $i++){
 		var total = parseInt($cs[$i].ready) + parseInt($cs[$i].parsed) + parseInt($cs[$i].empty);
 		total = (total == 0) ? 1 : total;
-		var ready = parseInt($cs[$i].ready) * 100 / total;
-		var parsed = parseInt($cs[$i].parsed) * 100 / total;
-		var empty = parseInt($cs[$i].empty * 100 / total);
+		var ready = Math.round(parseInt($cs[$i].ready) * 100 / total);
+		var parsed = Math.round(parseInt($cs[$i].parsed) * 100 / total);
+		var empty = Math.round(parseInt($cs[$i].empty * 100 / total));
 		$tmp_html += "<div class=\"item con-sombrita redondeadito\" id_content=\""+$cs[$i].id+"\" repo_name=\""+repo.name+"\" ><span class=\"content-name\">"+$cs[$i].name+"</span><span class=\"content-stats\">"+total+" fragmentos: "+ready+"% listos, "+parsed+"% pre-editados, "+empty+"% vacíos</span><span class=\"content-options\"></span></div>";
 	}
 	
