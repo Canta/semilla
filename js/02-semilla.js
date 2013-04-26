@@ -521,7 +521,7 @@ Semilla = (function($fn){
 		 * @this {Fragment}
 		 * @return {Fragment}
 		 */
-		 this.load_latest_correction = function(){
+		this.load_latest_correction = function(){
 			if (this.corrections.length > 0){
 				var co = this.corrections[this.corrections.length - 1];
 				this.text = co.text;
@@ -532,7 +532,35 @@ Semilla = (function($fn){
 				this.to   = co.to;
 			}
 			return this;
-		 }
+		}
+		 
+		/**
+		 * method load.
+		 * Given a string, that is suppossed to have a valid json object,
+		 * this method loads every property of the parsed object into
+		 * a Semilla.Fragment instance.
+		 *
+		 * @author Daniel Cantarín <omega_canta@yahoo.com>
+		 * @this {Fragment} 
+		 * @param {String} s
+		 * A String containing JSON object definition.
+		 */
+		this.load = function(s){
+			if ( typeof s === "undefined" || typeof s != "string" ){
+				throw "Semilla.Fragment.load: string expected.";
+			}
+			
+			var c = null;
+			try{
+				c = JSON.parse(s);
+			} catch(e){
+				throw "Semilla.Fragment.load: invalid JSON string.";
+			}
+			
+			for (var i in c){
+				this[i] = c[i];
+			}
+		}
 	}
 	$fn.Fragment = Fragment;
 	$fn.Fragment.def({a:"sda"});
@@ -668,6 +696,42 @@ Semilla = (function($fn){
 				}
 			}
 		}
+		
+		/**
+		 * method load.
+		 * Given a string, that is suppossed to have a valid json object,
+		 * this method loads every property of the parsed object into
+		 * a Semilla.Content instance.
+		 *
+		 * @author Daniel Cantarín <omega_canta@yahoo.com>
+		 * @this {Content} 
+		 * @param {String} s
+		 * A String containing JSON object definition.
+		 */
+		this.load = function(s){
+			if ( typeof s === "undefined" || typeof s != "string" ){
+				throw "Semilla.Content.load: string expected.";
+			}
+			
+			var c = null;
+			try{
+				c = JSON.parse(s);
+			} catch(e){
+				throw "Semilla.Content.load: invalid JSON string.";
+			}
+			
+			for (var i in c){
+				this[i] = Semilla.Util.clone(c[i]);
+			}
+			
+			if (c.fragments !== undefined){
+				for (var i = 0; i < c.fragments.length; i++){
+					this.fragments[i] = new Semilla.Fragment();
+					this.fragments[i].load(JSON.stringify(c.fragments[i]));
+				}
+			}
+		}
+		
 	}
 	$fn.Content = Content;
 	
@@ -1036,8 +1100,12 @@ Semilla.HTTPRepo.def({
 					this.repo.fire_event("search_progress", {progress:100});
 				}
 				if (r.success){
+					
+					if (r.data.content !== ""){
+						c.load(r.data.content);
+					}
 					if (this.callback !== undefined){
-						this.callback(c,this);
+						this.callback(c,this.repo);
 					} else {
 						this.repo.fire_event("content_get_end", {"object":this.search, "content":r.data.content});
 					}
