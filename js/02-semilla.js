@@ -272,7 +272,10 @@ Semilla = (function($fn){
 			new_correction : [],
 			search_start : [],
 			search_progress : [],
-			search_end : []
+			search_end : [],
+			content_get_start : [],
+			content_get_progress : [],
+			content_get_end : []
 		};
 		
 		/**
@@ -396,6 +399,52 @@ Semilla = (function($fn){
 		this.__search = function(s){
 			
 			this.fire_event("search_end", {search_string:s});
+		}
+		
+		/**
+		 * method get_content.
+		 * Given a object with properties and values, this method finds 
+		 * a content in the repo that matches with the values criteria.
+		 * 
+		 * For example, in case of a parameter object {"hash":"x"}, this
+		 * function will find the first content in the repo that has the
+		 * property "hash" with the value "x" assigned.
+		 * 
+		 * Optionally, it takes a second argument that must be a 
+		 * callback function. It's used when calling this method and 
+		 * don't want to use the already setted event handlers.
+		 * 
+		 * Every repo has its own mechanic to do this. 
+		 * So, Once again, it calls the "private" overloaded function in 
+		 * custom classes.
+		 * 
+		 * @author Daniel Cantarín <omega_canta@yahoo.com>
+		 * @param {Object} o
+		 * @param {Function} c
+		 * An optional callback function. When setted, this method 
+		 * ignores the event handlers.
+		 * 
+		 * @this {Repo}
+		 */
+		this.get_content = function(o,f){
+			if ( typeof o === "undefined" || typeof o != "object" ){
+				throw "Semilla.Repo.get_content: object expected.";
+			}
+			
+			if ( typeof f !== "undefined" && typeof f != "function" ){
+				throw "Semilla.Repo.get_content: second parameter must be undefined or a function.";
+			}
+			
+			this.__get_content(o, f);
+		}
+		
+		this.__get_content = function(o, f){
+			
+			if (f !== undefined){
+				f(o,this);
+			} else {
+				this.fire_event("content_get_end", {"object":o});
+			}
 		}
 		
 	}
@@ -965,6 +1014,48 @@ Semilla.HTTPRepo.def({
 		xhr.open("POST", this.endpoint);
 		this.fire_event("search_start", {"search_string" : s });
 		xhr.send(data);
+	},
+	__get_content : function(o,f){
+		
+		var c = new Semilla.Content();
+		var data = new FormData();
+		var xhr = new XMLHttpRequest();
+		xhr.repo = this;
+		if (f !== undefined){
+			xhr.callback = f;
+		}
+		xhr.search = o;
+		xhr.content = c;
+		xhr.upload.repo = this;
+		
+		
+		xhr.onreadystatechange = function(evt){
+			if (evt.target.readyState == 4){
+				var r = JSON.parse(evt.target.responseText);
+				if (this.callback === undefined){
+					this.repo.fire_event("search_progress", {progress:100});
+				}
+				if (r.success){
+					if (this.callback !== undefined){
+						this.callback(c,this);
+					} else {
+						this.repo.fire_event("content_get_end", {"object":this.search, "content":r.data.content});
+					}
+				} else {
+					this.repo.fire_event("content_get_end", {"object":this.search, "content":this.content});
+					throw "Semilla.HTTPRepo ("+this.repo.name+") - Error while getting content:\n"+r.data.message;
+				}
+			}
+		};
+		
+		data.append("verb", "get_content");
+		data.append("search", JSON.stringify(o));
+		xhr.open("POST", this.endpoint);
+		if (f === undefined){
+			this.fire_event("content_get_start", {"object":o});
+		}
+		xhr.send(data);
+		
 	}
 });
 

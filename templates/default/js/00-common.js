@@ -149,7 +149,11 @@ app.contents.show_in_search_list = function($cs, repo){
 	app.contents.search.list.find(".item").remove();
 	
 	var $tmp_html = "";
+	var $tmp_options = "<option id='-1'>---</option>";
 	
+	for (var $i = 0; $i < Semilla.exporters.length; $i++){
+		$tmp_options += "<option value=\""+$i+"\" >"+Semilla.exporters[$i].extension+"</option>\n";
+	}
 	
 	
 	for (var $i = 0; $i < $cs.length; $i++){
@@ -158,7 +162,8 @@ app.contents.show_in_search_list = function($cs, repo){
 		var ready = Math.round(parseInt($cs[$i].ready) * 100 / total);
 		var parsed = Math.round(parseInt($cs[$i].parsed) * 100 / total);
 		var empty = Math.round(parseInt($cs[$i].empty * 100 / total));
-		$tmp_html += "<div class=\"item con-sombrita redondeadito\" id_content=\""+$cs[$i].id+"\" repo_name=\""+repo.name+"\" ><span class=\"content-name\">"+$cs[$i].name+"</span><span class=\"content-stats\">"+total+" fragmentos: "+ready+"% listos, "+parsed+"% pre-editados, "+empty+"% vacíos</span><span class=\"content-options\"></span></div>";
+		
+		$tmp_html += "<div class=\"item con-sombrita redondeadito\" id_content=\""+$cs[$i].id+"\" repo_name=\""+repo.name+"\" ><span class=\"content-name\">"+$cs[$i].name+"</span><span class=\"content-stats\">"+total+" fragmentos: "+ready+"% listos, "+parsed+"% pre-editados, "+empty+"% vacíos</span><span class=\"content-options\">Exportar: <select id=\"select-options-"+$cs[$i].id+"\" onchange=\"app.contents.edition.export(this.parentNode.parentNode);\" title='Seleccione formato...'>"+$tmp_options+"</select></span></div>";
 	}
 	
 	app.contents.search.list.append($tmp_html);
@@ -390,6 +395,36 @@ app.contents.edition.finalize_fragment = function(){
 	app.contents.edition.editing.fragments[app.contents.edition.current_fragment].ready = true;
 	app.contents.edition.save_fragment();
 };
+
+
+app.contents.edition.export = function(obj){
+	
+	var r = null;
+	var e = null;
+	obj = $(obj);
+	for (var i = 0; i < Semilla.repos.length; i++){
+		if (Semilla.repos[i].name == obj.attr("repo_name")){
+			r = Semilla.repos[i];
+			break;
+		}
+	}
+	
+	for (var i = 0; i < Semilla.exporters.length; i++){
+		if (i == parseInt(obj.find("select").val())){
+			e = Semilla.exporters[i];
+			break;
+		}
+	}
+	
+	if (r !== null && e !== null){
+		r.exporter = e;
+		r.get_content({"id":obj.attr("id_content")}, function(content, repo){
+			repo.exporter.parse(content);
+		});
+	}
+	
+}
+
 
 $(document).ready(
 	function(){
