@@ -402,6 +402,33 @@ $(document).ready(
 			);
 		}
 		
+		for (var i in Semilla.exporters){
+			Semilla.exporters[i].add_event_handler("parse_start",
+				function(data, exp){
+					app.espere("Exportando contenido a "+exp.extension+"...","listo.");
+				}
+			);
+			
+			Semilla.exporters[i].add_event_handler("parse_end",
+				function(data, exp){
+					app.desespere("Exportando contenido a "+exp.extension+"...");
+					var u = URL.createObjectURL(new Blob([exp.output]));
+					var l = "<p>Descargar: <a href="+u+" download='"+exp.content.properties.name+"."+exp.extension+"'>"+exp.content.properties.name+"."+exp.extension+"</a></p>";
+					var $tmp = function(){
+						app.show_modal({
+							html : l,
+							ok : [
+								function(){
+									$(".modal a")[0].click();
+								}
+							]
+						});
+					};
+					setTimeout($tmp,2000);
+				}
+			);
+		}
+		
 		Semilla.repos[0].add_event_handler("new_content",
 			function(d){
 				app.contents.creation.processed = d.content;
