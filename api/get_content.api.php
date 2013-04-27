@@ -10,7 +10,6 @@ require_once("../class/orm.class.php");
 class get_content extends API{
 	
 	public function do_your_stuff($arr){
-		require_once("../class/util/conexion.class.php");
 		
 		
 		if (!isset($arr["search"]) ){
