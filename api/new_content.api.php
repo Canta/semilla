@@ -28,9 +28,15 @@ class new_content extends API{
 		$arr["id_repo"] = 1;
 		$arr["kind"] = 2;
 		
-		$tmp_content = implode("",$_SESSION["upload"][$arr["token"]]["chunks"]);
+		$tmp_content = "";
+		if (get_magic_quotes_gpc()) {
+			$tmp_content = stripslashes(implode("",$_SESSION["upload"][$arr["token"]]["chunks"]));
+		} else {
+			$tmp_content = implode("",$_SESSION["upload"][$arr["token"]]["chunks"]);
+		}
 		$stats = Array();
 		$tmp_content = new Content($tmp_content);
+		unset($_SESSION["upload"][$arr["token"]]);
 		
 		try{
 			
@@ -59,11 +65,12 @@ class new_content extends API{
 		$arr["empty"] = $stats["empty"];
 		
 		$newc = new ABMcontents();
+		$newc->cache(false);
 		$newc->load_fields_from_array($arr);
 		$newc->save();
-		$newc->set_metodo_serializacion("json");
 		
 		$this->data["response"]->data["id"] = $newc->get("ID");
+		$this->data["response"]->data["length"] = strlen($newc->datos["processed"]);
 		
 		return $this->data["response"];
 	}

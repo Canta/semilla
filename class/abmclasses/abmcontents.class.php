@@ -18,6 +18,10 @@ class ABMcontents extends ABM{
 			
 			$tmp1 = json_decode($arr["data"]);
 			
+			if (is_null($tmp1)){
+				throw new Exception("ABMContents: bad JSON data.");
+			}
+			
 			if (isset($tmp1->external_links)){
 				$this->datos["raws"] = $tmp1->external_links;
 			}
@@ -38,6 +42,11 @@ class ABMcontents extends ABM{
 				$raw->save();
 			}
 			
+			/*
+			$c  = Conexion::get_instance();
+			$qs = "set @@global.max_allowed_packet=1073741824;";
+			$r = $c->execute($qs,false);
+			*/
 			$pro = new ABM("processed");
 			$pro->set("ID_CONTENT",$this->get("ID"));
 			$pro->set("FULL_OBJECT",$this->datos["processed"]);

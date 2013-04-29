@@ -7,6 +7,7 @@
  * 
  */ 
 header("Access-Control-Allow-Origin:*");
+ini_set("memory_limit","512M");
 require_once("../class/api.class.php");
 
 if (!isset($_REQUEST["verb"])){

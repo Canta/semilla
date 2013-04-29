@@ -952,7 +952,7 @@ Semilla.HTTPRepo.def({
 	description : "A repo for HTTP POST content handling.",
 	//flag for sending or not the serialized raw full file content.
 	//it dramatically changes the resources requirements.
-	send_raw : false,
+	send_raw : true,
 	//API controller url
 	endpoint : "./api/",
 	//Chunk size for chunked upload. Default, 500K.
@@ -1009,7 +1009,7 @@ Semilla.HTTPRepo.def({
 						var xhr2 = new XMLHttpRequest();
 						xhr2.open("POST", this.repo.endpoint, false);
 						xhr2.send(data);
-						resp = JSON.parse(this.responseText);
+						resp = JSON.parse(xhr2.responseText);
 						this.content.id = resp.data.id;
 						this.repo.contents.push(this.content);
 						this.repo.fire_event("new_content", {content:this.content});

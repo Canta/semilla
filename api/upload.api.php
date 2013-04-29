@@ -11,7 +11,6 @@ class upload extends API{
 	
 	public function do_your_stuff($arr){
 		
-		
 		if (!isset($arr["chunk"]) ){
 			return APIResponse::fail("No chunk specified.");
 		}
@@ -27,7 +26,6 @@ class upload extends API{
 		if (!isset($_SESSION["upload"][$arr["token"]]) ){
 			return APIResponse::fail("Invalid token. Permission to upload denied.");
 		}
-		
 		
 		$token = $arr["token"];
 		$finished = false;
