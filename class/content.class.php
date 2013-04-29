@@ -1,4 +1,5 @@
 <?php
+require_once("orm.class.php");
 
 class Content {
 	
@@ -72,6 +73,27 @@ class Content {
 	
 	public function to_json(){
 		return json_encode($this->data);
+	}
+	
+	public function save_processed(){
+		
+		$c = Conexion::get_instance();
+		
+		$str = $this->to_json();
+		$size = 512 * 1024;
+		$max = strlen($str);
+		
+		$pro = new ABM("processed");
+		$pro->set("ID_CONTENT",$this->data["id"]);
+		$pro->save();
+		
+		$c->execute("update processed set full_object = '' where id_content = '".$this->data["id"]."';",false);
+		
+		for ($i = 0; $i < $max; $i = $i + $size){
+			$qs = "update processed set full_object = concat(full_object , '".mysql_real_escape_string(substr($str,$i,$size))."') where id_content = '".$this->data["id"]."';";
+			$c->execute($qs,false);
+		}
+		
 	}
 	
 	public function add_correction($fragment_index = null, $correction = null){

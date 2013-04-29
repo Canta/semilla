@@ -1,6 +1,6 @@
 <?php
 require_once(dirname(__FILE__)."/../orm.class.php");
-
+require_once(dirname(__FILE__)."/../content.class.php");
 
 class ABMcontents extends ABM{
 	
@@ -42,15 +42,9 @@ class ABMcontents extends ABM{
 				$raw->save();
 			}
 			
-			/*
-			$c  = Conexion::get_instance();
-			$qs = "set @@global.max_allowed_packet=1073741824;";
-			$r = $c->execute($qs,false);
-			*/
-			$pro = new ABM("processed");
-			$pro->set("ID_CONTENT",$this->get("ID"));
-			$pro->set("FULL_OBJECT",$this->datos["processed"]);
-			$pro->save();
+			$c = new Content($this->datos["processed"]);
+			$c->data["id"] = $this->get("ID");
+			$c->save_processed();
 			
 		} catch(Exception $e){
 			$this->baja($this->datos["fields"]["ID"]->get_valor(), false);
