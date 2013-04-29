@@ -42,6 +42,10 @@ class upload extends API{
 			return APIResponse::fail("Upload already finished.");
 		}
 		
+		if (count($_SESSION["upload"][$token]["chunks"]) == $_SESSION["upload"][$token]["max_chunks"]){
+			$finished = true;
+		}
+		
 		$this->data["response"]->data["chunk_count"] = count($_SESSION["upload"][$token]["chunks"]);
 		$this->data["response"]->data["finished"] = $finished;
 		

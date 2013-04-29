@@ -488,7 +488,7 @@ $(document).ready(
 		);
 		
 		for (var i = 1; i < Semilla.repos.length; i++){
-			Semilla.repos[i].add_event_handler("add_progress",
+			Semilla.repos[i].add_event_handler("upload_progress",
 				function(data, repo){
 					if (data.progress == 0){
 						var $desc = "Compartiendo en " + repo.name + "...";

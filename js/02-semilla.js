@@ -267,7 +267,7 @@ Semilla = (function($fn){
 		this.search_results = [];
 		this.events = {
 			new_content : [],
-			add_progress : [],
+			upload_progress : [],
 			save_progress : [],
 			new_correction : [],
 			search_start : [],
@@ -955,39 +955,12 @@ Semilla.HTTPRepo.def({
 	send_raw : false,
 	//API controller url
 	endpoint : "./api/",
+	//Chunk size for chunked upload. Default, 500K.
+	chunksize: 512 * 1000,
 	// __add_content is called by the public inherited add_content.
 	__add_content: function(c){
 		var data = new FormData();
 		var xhr = new XMLHttpRequest();
-		xhr.repo = this;
-		xhr.upload.repo = this;
-		xhr.content = c;
-		
-		xhr.onreadystatechange = function(evt){
-			if (evt.target.readyState == 4){
-				var r = JSON.parse(evt.target.responseText);
-				this.repo.fire_event("add_progress", {progress:100});
-				if (r.success){
-					this.content.id = r.data.id;
-					this.repo.contents.push(this.content);
-					this.repo.fire_event("new_content", {content:this.content});
-				} else {
-					alert("Error! :S\n"+r.data.message);
-				}
-			}
-		}
-		
-		xhr.upload.onprogress = function(evt) {
-			var loaded = (evt.loaded / evt.total);
-			if (loaded < 1) {
-				this.repo.fire_event("add_progress", {progress:(loaded * 100)});
-			}
-		};
-		
-		data.append("verb", "new_content");
-		for (var i in c.properties){
-			data.append(i, c.properties[i]);
-		}
 		
 		if (this.send_raw !== true){
 			c = Semilla.Util.clone(c); 
@@ -995,10 +968,79 @@ Semilla.HTTPRepo.def({
 			c.origin.raw = "";
 		}
 		
-		data.append("kind", "2"); //hardcoded for demo app compat.
-		data.append("data", JSON.stringify(c));
-		xhr.open("POST", this.endpoint);
-		this.fire_event("add_progress", {progress:0});
+		/* First, i get an upload token */
+		
+		data.append("verb", "get_upload_token");
+		data.append("size", JSON.stringify(c).length);
+		data.append("chunk_size", this.chunksize);
+		xhr.open("POST", this.endpoint,false);
+		xhr.send(data);
+		var respuesta = JSON.parse(xhr.responseText);
+		var token = respuesta.data.token;
+		
+		if (!respuesta.success){
+			throw "Semilla.HTTPRepo.add_content: Could not get an upload token:\n"+respuesta.data.message;
+		}
+		
+		/* then, once i got the token, i start the chunked upload */
+		
+		var data = new FormData();
+		var xhr = new XMLHttpRequest();
+		xhr.repo = this;
+		xhr.upload.repo = this;
+		xhr.content = c;
+		
+		xhr.content_text = JSON.stringify(c);
+		xhr.maximo = Math.ceil(xhr.content_text.length / this.chunksize);
+		xhr.indice = 0;
+		xhr.token = token;
+		
+		
+		xhr.onreadystatechange = function(evt){
+			if (evt.target.readyState == 4){
+				var r = JSON.parse(evt.target.responseText);
+				var data = new FormData();
+				if (r.success){
+					this.repo.fire_event("upload_progress", {progress: (r.data.chunk_count * 100 / this.maximo)});
+					if (r.data.finished){
+						/* upload complete. Now, i fire the content creation */
+						data.append("verb", "new_content");
+						data.append("token", this.token);
+						var xhr2 = new XMLHttpRequest();
+						xhr2.open("POST", this.repo.endpoint, false);
+						xhr2.send(data);
+						resp = JSON.parse(this.responseText);
+						this.content.id = resp.data.id;
+						this.repo.contents.push(this.content);
+						this.repo.fire_event("new_content", {content:this.content});
+					} else {
+						this.indice = r.data.chunk_count;
+						data.append("verb", "upload");
+						data.append("token", this.token);
+						data.append("chunk", this.content_text.substr(this.indice * this.repo.chunksize ,this.repo.chunksize));
+						this.open("POST", this.repo.endpoint, true);
+						setTimeout(function(){xhr.send(data);},10);
+					}
+				} else {
+					alert("Error! :S\n"+r.data.message);
+				}
+			}
+		}
+		
+		/*
+		xhr.upload.onprogress = function(evt) {
+			var loaded = (evt.loaded / evt.total);
+			if (loaded < 1) {
+				this.repo.fire_event("upload_progress", {progress:(loaded * 100)});
+			}
+		};
+		*/
+		
+		data.append("verb", "upload");
+		data.append("token", token);
+		data.append("chunk", xhr.content_text.substr(0,this.chunksize));
+		xhr.open("POST", this.endpoint, true);
+		this.fire_event("upload_progress", {progress:0});
 		setTimeout(function(){xhr.send(data);},100);
 	},
 	// __save_correction is called by the public inherited save_correction
@@ -1048,7 +1090,7 @@ Semilla.HTTPRepo.def({
 		data.append("content_id", cid);
 		data.append("fragment", i);
 		data.append("data", JSON.stringify(f));
-		xhr.open("POST", this.endpoint);
+		xhr.open("POST", this.endpoint,true);
 		this.fire_event("save_progress", {progress:0});
 		setTimeout(function(){xhr.send(data);},100);
 	},

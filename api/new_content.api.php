@@ -13,19 +13,24 @@ class new_content extends API{
 		require_once("../class/util/conexion.class.php");
 		require_once("../class/abmclasses/abmcontents.class.php");
 		
-		if (!isset($arr["data"])){
-			return APIResponse::fail("No content data specified. Content creation aborted.");
+		if (!isset($arr["token"])){
+			return APIResponse::fail("No token specified. Content creation aborted.");
 		}
 		
-		if (!isset($arr["kind"])){
-			return APIResponse::fail("No content kind specified. Content creation aborted.");
+		if (!isset($_SESSION)){
+			@session_start();
+		}
+		
+		if (!isset($_SESSION["upload"][$arr["token"]]) ){
+			return APIResponse::fail("Invalid token. Permission to create content denied.");
 		}
 		
 		$arr["id_repo"] = 1;
+		$arr["kind"] = 2;
 		
-		$tmp_content = Array();
+		$tmp_content = implode("",$_SESSION["upload"][$arr["token"]]["chunks"]);
 		$stats = Array();
-		$tmp_content = new Content($arr["data"]);
+		$tmp_content = new Content($tmp_content);
 		
 		try{
 			
