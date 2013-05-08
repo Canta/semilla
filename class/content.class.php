@@ -34,7 +34,7 @@ class Content {
 		$this->data = json_decode($str,true);
 		
 		if (is_null($this->data)){
-			die(var_dump($str));
+			//die(var_dump($this->data));
 			throw new Exception("Content->load: Could not parse JSON string.");
 		}
 	}
@@ -47,7 +47,8 @@ class Content {
 		
 		for ($i = 0; $i < count($this->data["fragments"]); $i++){
 			if (!isset($this->data["fragments"][0])){
-				die(var_dump($this->data));
+				//die(var_dump($this->data));
+				throw new Exception("Content->get_fragment_stats: no fragments defined.");
 			}
 			if (isset($this->data["fragments"][$i]["ready"]) && $this->data["fragments"][$i]["ready"] === true){
 				$ready++;
@@ -83,17 +84,45 @@ class Content {
 		$size = 512 * 1024;
 		$max = strlen($str);
 		
-		$pro = new ABM("processed");
-		$pro->set("ID_CONTENT",$this->data["id"]);
-		$pro->save();
+		$r = Array();
+		$r[] = $c->execute("START TRANSACTION",false);
 		
-		$c->execute("update processed set full_object = '' where id_content = '".$this->data["id"]."';",false);
-		
-		for ($i = 0; $i < $max; $i = $i + $size){
-			$qs = "update processed set full_object = concat(full_object , '".mysql_real_escape_string(substr($str,$i,$size))."') where id_content = '".$this->data["id"]."';";
-			$c->execute($qs,false);
+		try{
+			$r[] = $c->execute("delete from processed where id_content = '".$this->data["id"]."';",false);
+			
+			for ($i = 0; $i < $max; $i = $i + $size){
+				$qs = "insert into processed (id_content, chunk) values ('".$this->data["id"]."', ifnull('".mysql_real_escape_string(substr($str,$i,$size))."',''));";
+				$c->execute($qs,false);
+			}
+			
+			$r[] = $c->execute("COMMIT",false);
+		} catch(Exception $e) {
+			die(var_dump($e));
 		}
 		
+		//die(var_dump($r));
+		
+	}
+	
+	public function get_processed_from_db(){
+		
+		$abm2 = new ABM("processed");
+		$cond = new Condicion();
+		$cond->set_comparando("id_content");
+		$cond->set_comparador($this->data["id"]);
+		$abm2->cache(false);
+		$lista = $abm2->search(Array($cond));
+		$items = $lista->get_items();
+		
+		$content = "";
+		foreach ($items as $item){
+			$content .= $item["chunk"];
+		}
+		
+		unset($lista);
+		
+		
+		return $content; 
 	}
 	
 	public function add_correction($fragment_index = null, $correction = null){

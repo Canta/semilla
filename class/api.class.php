@@ -28,7 +28,8 @@ class API {
 		// it is expected that the API scripts change that on error.
 		$this->data["response"] = new APIResponse();
 		// sets the default error handler for all api calls
-		set_error_handler(create_function("\$errno, \$errstr, \$errfile, \$errline", "die(json_encode(APIResponse::fail(\"Error #\".\$errno.\": \".\$errstr)));"));
+		//set_error_handler(create_function("\$errno, \$errstr, \$errfile, \$errline", "die(json_encode(APIResponse::fail(\"Error #\".\$errno.\": \".\$errstr)));"));
+		set_error_handler("API::errorHandler");
 	}
 	
 	/** 
@@ -42,8 +43,8 @@ class API {
 	 * @param string $errfile Filename where the error happened.
 	 * @param int $errline Line number where the error happened.
 	 */
-	function errorHandler($errno, $errstr, $errfile, $errline) {
-		$ret = APIResponse::fail("Error #".$errno.": ".$errstr);
+	public static function errorHandler($errno, $errstr, $errfile, $errline) {
+		$ret = APIResponse::fail("Error #".$errno.": ".$errstr."\n\n".$errfile.", línea ".$errno);
 		die(json_encode($ret));
 	}
 	

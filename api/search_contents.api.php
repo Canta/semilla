@@ -18,8 +18,8 @@ class search_contents extends API{
 		
 		$c  = Conexion::get_instance();
 		$qs = "select * from contents C where 
-		C.id in (select P.id_content from processed P where P.full_object like '%".mysql_escape_string($arr["search_string"])."%') 
-		or C.name like '%".mysql_escape_string($arr["search_string"])."%'";
+		C.id in (select P.id_content from processed P where P.chunk like '%".mysql_real_escape_string($arr["search_string"])."%') 
+		or C.name like '%".mysql_real_escape_string($arr["search_string"])."%'";
 		$r  = $c->execute($qs,false);
 		
 		$this->data["response"]->data["contents"] = $r;

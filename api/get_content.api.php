@@ -34,12 +34,16 @@ class get_content extends API{
 		$abm1->load($conds);
 		$abm2 = new ABM("processed");
 		$cond = new Condicion();
-		$cond->set_comparando("id");
+		$cond->set_comparando("id_content");
 		$cond->set_comparador($abm1->get("ID"));
 		$abm2->cache(false);
-		$abm2->load(Array($cond));
+		$lista = $abm2->search(Array($cond));
+		$items = $lista->get_items();
 		
-		$content = $abm2->get("FULL_OBJECT");
+		$content = "";
+		foreach ($items as $item){
+			$content .= $item["chunk"];
+		}
 		
 		$this->data["response"]->data["content"] = $content;
 		

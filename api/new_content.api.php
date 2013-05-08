@@ -29,11 +29,8 @@ class new_content extends API{
 		$arr["kind"] = 2;
 		
 		$tmp_content = "";
-		if (get_magic_quotes_gpc()) {
-			$tmp_content = stripslashes(implode("",$_SESSION["upload"][$arr["token"]]["chunks"]));
-		} else {
-			$tmp_content = implode("",$_SESSION["upload"][$arr["token"]]["chunks"]);
-		}
+		$tmp_content = implode("",$_SESSION["upload"][$arr["token"]]["chunks"]);
+		
 		$stats = Array();
 		$tmp_content = new Content($tmp_content);
 		unset($_SESSION["upload"][$arr["token"]]);

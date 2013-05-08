@@ -99,11 +99,10 @@ ON DELETE CASCADE;
 drop table if exists processed;
 create table processed(
 	id int not null primary key auto_increment,
-	id_content int not null unique,
+	id_content int not null,
 	ver int not null default '1',
 	hash varchar(32) not null,
-	created timestamp not null default current_timestamp,
-	full_object longtext not null
+	chunk longtext not null
 ) default charset = utf8;
 
 ALTER TABLE processed
