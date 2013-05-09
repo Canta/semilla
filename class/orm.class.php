@@ -1119,7 +1119,7 @@ class ABM extends ORM{
 	//Dado un array de criterios, busca items en la tabla del ABM.
 	//Opcionalmente se puede ingresar un array con los campos de resultado.
 	//Caso contrario, muestra todos los campos de la tabla
-	public function search($criterios, $campos = null, $campo_id = null, $paginado=null){
+	public function search($criterios, $campos = null, $campo_id = null, $paginado=null, $order_by = null){
 		if (!is_array($criterios)){
 			throw new Exception("Clase ABM, método search(): se esperaba un array de criterios.<br/>\n");
 		}
@@ -1127,6 +1127,7 @@ class ABM extends ORM{
 		//Validaciones y seteos por defecto.
 		$campos   = is_array($campos) ? $campos : Array();
 		$campo_id = is_null($campo_id) ? $this->datos["campo_id"] : $campo_id;
+		$order_by = is_null($order_by) ? $this->datos["campo_id"] : $order_by;
 		//Me aseguro de que siempre esté el ID en la lista de campos
 		if (!in_array($campo_id, $campos)){
 			array_unshift($campos, $campo_id);
@@ -1161,6 +1162,8 @@ class ABM extends ORM{
 				$qs .= "AND (".$c.") ";
 			}
 		}
+		$qs .= "ORDER BY ".$order_by." ";
+		
 		//die(var_dump($qs));
 		$c = Conexion::get_instance();
 		$row = null;

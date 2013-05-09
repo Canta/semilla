@@ -84,23 +84,20 @@ class Content {
 		$size = 512 * 1024;
 		$max = strlen($str);
 		
-		$r = Array();
-		$r[] = $c->execute("START TRANSACTION",false);
+		$c->execute("START TRANSACTION",false);
 		
 		try{
-			$r[] = $c->execute("delete from processed where id_content = '".$this->data["id"]."';",false);
+			$c->execute("delete from processed where id_content = '".$this->data["id"]."';",false);
 			
 			for ($i = 0; $i < $max; $i = $i + $size){
 				$qs = "insert into processed (id_content, chunk) values ('".$this->data["id"]."', ifnull('".mysql_real_escape_string(substr($str,$i,$size))."',''));";
 				$c->execute($qs,false);
 			}
 			
-			$r[] = $c->execute("COMMIT",false);
+			$c->execute("COMMIT",false);
 		} catch(Exception $e) {
 			die(var_dump($e));
 		}
-		
-		//die(var_dump($r));
 		
 	}
 	
