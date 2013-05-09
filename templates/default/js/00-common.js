@@ -106,30 +106,33 @@ app.contents.search.history = [];
 app.contents.search.list = $();
 
 /**
- * contents.get_latests
- * returns the last 10 contents from the full list
- * 
- * @returns array
- **/
-app.contents.get_latests = function(){
-	var $arr = [];
-	for (var $i = app.contents.all.length - 1; $i > -1 && $i > app.contents.all.length - 10; $i--){
-		app.contents.all[$i].index = $i;
-		$arr.push(app.contents.all[$i]);
+ * app.contents.load_from_repo
+ * Given a repo name and a content ID, it gets the content from the repo.
+ */ 
+app.contents.load_from_repo = function(repo_name, id){
+	
+	var repo = null;
+	for (var i = 0; i < Semilla.repos.length; i++){
+		if (Semilla.repos[i].name == repo_name){
+			repo = Semilla.repos[i];
+			break;
+		}
 	}
-	return $arr;
-}
+	
+	if (repo === null){
+		throw "app.contents.load_from_repo: Repository \""+repo_name+"\" not found.";
+	}
+	
+	app.espere("Cargando contenido desde "+repo_name+"...", "listo.");
+	
+	repo.get_content({"id":id}, function(content,repo){
+		app.contents.edition.edit(content);
+		app.desespere("Cargando contenido desde "+repo_name+"...");
+	});
+	
+};
 
-/**
- * contents.show_latests
- * Shows on the search list the last 10 contents from the full list
- * 
- * @returns void
- **/
-app.contents.show_latests = function(){
-	var $arr = app.contents.get_latests();
-	app.contents.show_in_search_list($arr);
-}
+
 
 /**
  * contents.show_in_search_list
