@@ -23,6 +23,7 @@ la situación en su magnitud más amplia y se puedan empezar a especular
 soluciones a los diferentes estratos de tareas involucradas. Es decir,
 este texto pretende ser una forma inicial de relevamiento.
 
+
 - Un pequeño apartado sobre el CEFyL
 
 El CEFyL es el órgano gremial de los estudiantes de la facultad de
@@ -49,7 +50,6 @@ es de alguna manera un problema para el CEFyL: ya sea desde la decisión
 básica de hacerse cargo de la tarea o no hacerlo, el CEFyL es un mediador
 legítimo en la cuestión y tiene la potestad para intervenir y tomar 
 decisiones al respecto. 
-Insisto, afirmo que la gestión de los textos es un problema del CEFyL.
 
 
 - Acerca de la idea de soluciones mediante desarrollo de Software 
