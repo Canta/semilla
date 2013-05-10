@@ -166,7 +166,7 @@ app.contents.show_in_search_list = function($cs, repo){
 		var parsed = Math.round(parseInt($cs[$i].parsed) * 100 / total);
 		var empty = Math.round(parseInt($cs[$i].empty * 100 / total));
 		
-		$tmp_html += "<div class=\"item con-sombrita redondeadito\" id_content=\""+$cs[$i].id+"\" repo_name=\""+repo.name+"\" ><span class=\"content-name\">"+$cs[$i].name+"</span><span class=\"content-stats\">"+total+" fragmentos: "+ready+"% listos, "+parsed+"% pre-editados, "+empty+"% vacíos</span><span class=\"content-options\">Exportar: <select id=\"select-options-"+$cs[$i].id+"\" onchange=\"app.contents.edition.export(this.parentNode.parentNode);\" title='Seleccione formato...'>"+$tmp_options+"</select></span></div>";
+		$tmp_html += "<div class=\"item con-sombrita redondeadito\" id_content=\""+$cs[$i].id+"\" repo_name=\""+repo.name+"\" ><span class=\"content-name\" onclick=\"app.contents.load_from_repo($(this).parent().attr('repo_name'), $(this).parent().attr('id_content'));\" title=\"Click para editar...\">"+$cs[$i].name+"</span><span class=\"content-stats\">"+total+" fragmentos: "+ready+"% listos, "+parsed+"% pre-editados, "+empty+"% vacíos</span><span class=\"content-options\">Exportar: <select id=\"select-options-"+$cs[$i].id+"\" onchange=\"app.contents.edition.export(this.parentNode.parentNode);\" title='Seleccione formato...'>"+$tmp_options+"</select></span></div>";
 	}
 	
 	app.contents.search.list.append($tmp_html);
@@ -217,6 +217,7 @@ app.contents.read_raw_data = function(evt){
 }
 
 function convertDataURIToBinary(dataURI) {
+  BASE64_MARKER = ",";
   var base64Index = dataURI.indexOf(BASE64_MARKER) + BASE64_MARKER.length;
   var base64 = dataURI.substring(base64Index);
   var raw = window.atob(base64);
@@ -296,17 +297,26 @@ app.contents.edition.render_fragment = function(i){
 	
 	var fr = app.contents.edition.editing.fragments[i].load_latest_correction();
 	
-	if (app.contents.edition.editing.kind == "text"){
+	if (app.contents.edition.editing.kind.toString() == "text"){
 		$("#fragment-render").html(app.contents.edition.editing.render_fragment(i));
-	} else if (app.contents.edition.editing.kind == "audio"){
+	} else if (app.contents.edition.editing.kind.toString() == "audio"){
 		if ( app.contents.edition.player == null){
+			
+			//En caso de que no estén cargadas, cargo las librerías de gestión de audio
+			//var imp = Semilla.Util.get_importer_by_mime_type(app.contents.edition.editing.origin.content_type);
+			//imp.load_libs();
+			
 			$("#fragment-render").html(app.contents.edition.editing.render_fragment(i));
 			$(".semilla-fragment-audio-player").html(
 				"<button class=\"play-button\" type=\"button\" onclick=\"app.contents.edition.toggle_player();\"></button>\
 				<progress id=\"fragment-play-progress\" value=\"0\" max=\"5000\" />"
 			);
 			
-			app.contents.edition.player = AV.Player.fromURL($(".semilla-fragment-audio-data").html());
+			//app.contents.edition.player = AV.Player.fromURL($(".semilla-fragment-audio-data").html());
+			//$(".semilla-fragment-audio-data").html().split(",")[1]
+			var bloby = new Blob([convertDataURIToBinary($(".semilla-fragment-audio-data").html())], {type: "application/octet-binary"});
+			
+			app.contents.edition.player = AV.Player.fromFile(bloby);
 			app.contents.edition.player.progress = $("#fragment-play-progress");
 			app.contents.edition.player.on('buffer', function(perc) {
 				if (perc == 100){
@@ -386,8 +396,7 @@ app.contents.edition.save_fragment = function(){
 	f2.ready   = f1.ready;
 	//app.contents.edition.editing.fragments[app.contents.edition.current_fragment].corrections.push(f2);
 	
-	Semilla.repos[1].save_correction(f2, c.id, parseInt(app.contents.edition.current_fragment));
-	
+	Semilla.repos[1].save_correction(f2, c.id.toString(), parseInt(app.contents.edition.current_fragment));
 }
 
 /**

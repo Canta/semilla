@@ -138,6 +138,15 @@ section{
 	width: 50%;
 }
 
+.item .content-name:hover{
+	font-weight:bold;
+	color: red;
+	-webkit-text-shadow: 0px 0px 15px white;
+	-moz-text-shadow: 0px 0px 15px white;
+	-o-text-shadow: 0px 0px 15px white;
+	text-shadow: 0px 0px 15px white;
+}
+
 .item .content-stats{
 	position:relative; 
 	float:left;

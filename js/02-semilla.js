@@ -641,13 +641,13 @@ Semilla = (function($fn){
 				//for future custom fragment types implementing own 
 				//render logic.
 				ret = fr.render();
-			} else if (this.kind === "text"){
+			} else if (this.kind.toString() === "text"){
 				//Text type.
 				//It's assumed that it's an image to be transcripted.
 				ret += "<div class=\"semilla-fragment-container\" >";
 				ret += "<img class=\"semilla-fragment-text-page\" src=\""+fr.content+"\" />";
 				ret += "</div>";
-			} else if (this.kind === "audio"){
+			} else if (this.kind.toString() === "audio"){
 				//Audio type.
 				//It's supposed to be time coodinates in an audio.
 				var imp = Semilla.Util.get_importer_by_mime_type(
@@ -660,7 +660,7 @@ Semilla = (function($fn){
 				from=\""+fr.from+"\" to=\""+fr.to+"\" ></div>";
 				ret += "<div class=\"semilla-fragment-audio-data\" >"+this.origin.raw+"</div>";
 				ret += "</div>";
-			} else if (this.kind === "video"){
+			} else if (this.kind.toString() === "video"){
 				//Video type.
 				//Coordinates, just like the audio type.
 				//However, it must render a different player object.
@@ -1145,6 +1145,7 @@ Semilla.HTTPRepo.def({
 					
 					if (r.data.content !== ""){
 						c.load(r.data.content);
+						this.repo.contents.push(c);
 					}
 					if (this.callback !== undefined){
 						this.callback(c,this.repo);
