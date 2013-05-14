@@ -836,17 +836,38 @@ Semilla = (function($fn){
 	 * A MIME type.
 	 */
 	$fn.Util.get_importer_by_mime_type = function(m){
-		var imp = null, found = false;
+		var imp = null;
 		for (var i = 0; i < Semilla.importers.length && found == false; i++){
 			for (var i2 = 0; i2 < Semilla.importers[i].mime_types.length; i2++){
 				if (m.toLowerCase() == Semilla.importers[i].mime_types[i2].toLowerCase()){
 					imp = Semilla.importers[i];
-					found = true;
 					break;
 				}
 			}
 		}
 		return imp;
+	}
+	
+	/**
+	 * get_exporters_by_mime_type function.
+	 * Given a file's MIME type, it returns an array of exporter objects
+	 * suited for that kind of file.
+	 * 
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 * @param {String} m
+	 * A MIME type.
+	 */
+	$fn.Util.get_exporters_by_mime_type = function(m){
+		var exp = [];
+		
+		for (var i = 0; i < Semilla.exporters.length && found == false; i++){
+			for (var i2 = 0; i2 < Semilla.exporters[i].mime_types.length; i2++){
+				if (m.toLowerCase() == Semilla.exporters[i].mime_types[i2].toLowerCase()){
+					exp.push(Semilla.exporters[i]);
+				}
+			}
+		}
+		return exp;
 	}
 	
 	/**
@@ -874,7 +895,7 @@ Semilla = (function($fn){
 	 * @param {Object} o
 	 * An object to be copied
 	 */
-	$fn.Util.clone = function(o){
+	$fn.Util.copy = function(o){
 		if (typeof o.toSource !== "undefined"){
 			return eval(o.toSource());
 		} else if (typeof uneval !== "undefined"){
@@ -907,6 +928,29 @@ Semilla = (function($fn){
 					ret.push(c[i]);
 				}
 			}
+		}
+		return ret;
+	}
+	
+	/**
+	 * encerar function.
+	 * Given a number, this functions adds N zeroes to the left.
+	 * 
+	 * @author Daniel Cantarín <omega_canta@yahoo.com>
+	 * @param {Numeric} n
+	 * A number.
+	 * @param {Integer} l
+	 * The final length of the number, including left zeroes.
+	 */
+	$fn.Util.encerar = function(n, l){
+		if (!Semilla.Util.is_numeric(l)){
+			throw "Semilla.Util.encerar: number required";
+		}
+		
+		var ret = "" + n;
+		
+		while (l > ret.length){
+			ret = "0" + ret;
 		}
 		return ret;
 	}
@@ -1449,5 +1493,68 @@ Semilla.exporters.push(new Semilla.HTMLExporter());
 Semilla.CBZExporter = function(){};
 Semilla.CBZExporter.prototype = new Semilla.Exporter();
 Semilla.CBZExporter.def({
-	
+	//Audio files can not be exported to CBZ yet.
+	//In order to do so, it is needed to generate an image from the 
+	//HTML code of the transcription. Canvas should do that fine. 
+	mime_types : ["application/pdf", "application/x-pdf", "application/vnd.pdf", "text/pdf"],
+	kind : "CBZ exporter",
+	description : "Converts a Content into a Comic Book Zipped file",
+	extension : "cbz",
+	load_libs   : function(){
+		//REQUIRES:
+		//zip.js
+		if (typeof zip == "undefined"){
+			Semilla.Util.load_script("./js/libs/zip.js");
+			zip.workerScriptsPath = "./js/libs/";
+		}
+	},
+	__parse : function(c){
+		this.load_libs();
+		var out = "";
+		this.content = c;
+		this.fire_event("parse_start");
+		zip.current_content = c;
+		zip.current_exporter = this;
+		
+		this.aux_parse = function (writer){
+			var c = zip.current_content;
+			var e = zip.current_exporter;
+			var image = "";
+			
+			image = (c.fragments[writer.added]) ?  c.fragments[writer.added].content : "";
+			var zr = new zip.Data64URIReader(image);
+			writer.add(Semilla.Util.encerar(writer.added+1,4)+".jpg", zr, function() {
+				// onsuccess callback
+				
+				if (writer.added < c.fragments.length){
+					//console.debug(writer.added);
+					writer.added++;
+					zip.current_exporter.aux_parse(writer);
+				} else {
+					// close the zip writer
+					writer.close(function(blob) {
+						e.output = blob;
+					});
+					e.fire_event("parse_end");
+				}
+			}, function(currentIndex, totalIndex) {
+				// onprogress callback
+			},
+			{
+				level : 9
+			});
+		}
+		
+		zip.createWriter(new zip.BlobWriter(), function(writer) {
+			if (typeof writer.added == "undefined"){
+				writer.added = 0;
+			}
+			
+			zip.current_exporter.aux_parse(writer);
+			
+		}, function(error) {
+			// onerror callback
+		});
+	}
 });
+Semilla.exporters.push(new Semilla.CBZExporter());
