@@ -183,6 +183,7 @@ Semilla = (function($fn){
 		this.description = "This is an exporter that actually does nothing.\nIt's used as definition for other exporters to overload.";
 		this.output = "";
 		this.extension = "";
+		this.mime_types = [];
 		this.content = new Semilla.Content();
 		this.events = {
 			parse_start : [],
@@ -1388,6 +1389,8 @@ Semilla.TXTExporter.def({
 	kind : "Text exporter",
 	description : "Converts a Content into a text file",
 	extension : "txt",
+	//All mime types are compatible with this exporter
+	mime_types : ["audio/mp3", "audio/mpeg","application/pdf", "application/x-pdf", "application/vnd.pdf", "text/pdf"],
 	__parse : function(c){
 		var out = "";
 		this.content = c;
@@ -1401,6 +1404,36 @@ Semilla.TXTExporter.def({
 	
 });
 Semilla.exporters.push(new Semilla.TXTExporter());
+
+/**
+ * HTMLExporter class.
+ * Translates from Content to an HTML file.
+ *
+ * @author Daniel Cantarín <omega_canta@yahoo.com>
+ * @constructor
+ * @this {HTMLExporter}
+ */
+Semilla.HTMLExporter = function(){};
+Semilla.HTMLExporter.prototype = new Semilla.Exporter();
+Semilla.HTMLExporter.def({
+	kind : "HTML exporter",
+	description : "Converts a Content into an HTML file",
+	extension : "html",
+	//All mime types are compatible with this exporter
+	mime_types : ["audio/mp3", "audio/mpeg","application/pdf", "application/x-pdf", "application/vnd.pdf", "text/pdf"],
+	__parse : function(c){
+		var out = "";
+		this.content = c;
+		this.fire_event("parse_start");
+		for (var i = 0; i < c.fragments.length; i++){
+			out += c.fragments[i].load_latest_correction().html;
+		}
+		this.output = out;
+		this.fire_event("parse_end");
+	}
+	
+});
+Semilla.exporters.push(new Semilla.HTMLExporter());
 
 /**
  * CBZExporter class.
