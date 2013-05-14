@@ -836,11 +836,12 @@ Semilla = (function($fn){
 	 * A MIME type.
 	 */
 	$fn.Util.get_importer_by_mime_type = function(m){
-		var imp = null;
+		var imp = null, found = false;
 		for (var i = 0; i < Semilla.importers.length && found == false; i++){
 			for (var i2 = 0; i2 < Semilla.importers[i].mime_types.length; i2++){
 				if (m.toLowerCase() == Semilla.importers[i].mime_types[i2].toLowerCase()){
 					imp = Semilla.importers[i];
+					found = true;
 					break;
 				}
 			}
@@ -859,8 +860,7 @@ Semilla = (function($fn){
 	 */
 	$fn.Util.get_exporters_by_mime_type = function(m){
 		var exp = [];
-		
-		for (var i = 0; i < Semilla.exporters.length && found == false; i++){
+		for (var i = 0; i < Semilla.exporters.length; i++){
 			for (var i2 = 0; i2 < Semilla.exporters[i].mime_types.length; i2++){
 				if (m.toLowerCase() == Semilla.exporters[i].mime_types[i2].toLowerCase()){
 					exp.push(Semilla.exporters[i]);
@@ -895,7 +895,7 @@ Semilla = (function($fn){
 	 * @param {Object} o
 	 * An object to be copied
 	 */
-	$fn.Util.copy = function(o){
+	$fn.Util.clone = function(o){
 		if (typeof o.toSource !== "undefined"){
 			return eval(o.toSource());
 		} else if (typeof uneval !== "undefined"){
