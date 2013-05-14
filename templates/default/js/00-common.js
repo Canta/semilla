@@ -202,13 +202,19 @@ app.contents.read_raw_data = function(evt){
 	var $file = $files[0];
 	var $tmp_html = "";
 	var imported = Semilla.repos[0].import_content($file);
+	var type = $file.type;
+	if (type == null || type == undefined || type == ""){
+		var name = $file.name.split(".");
+		type = "application/" + name[name.length-1].toLowerCase();
+	}
+	
 	
 	if (imported){
-		$tmp_html += "<span class='exito' style='color:#ffffff;'>File: <b>\""+$file.name+"\"</b> - Size: <b>"+Math.round(($file.size / 1024 ) / 1024)+" MB</b> - Type: <i>\""+$file.type+"\"</i></span>";
+		$tmp_html += "<span class='exito' style='color:#ffffff;'>File: <b>\""+$file.name+"\"</b> - Size: <b>"+Math.round(($file.size / 1024 ) / 1024)+" MB</b> - Type: <i>\""+type+"\"</i></span>";
 		$("#content-create-name").val($file.name);
 		
 	} else {
-		$tmp_html += "<span class='error' style='color:#ffffff;font-weight:bold;'>" + $file.name+": I can't import <i>" + $file.type + "</i> file type yet :(</span>";
+		$tmp_html += "<span class='error' style='color:#ffffff;font-weight:bold;'>" + $file.name+": I can't import \"<i>" + type + "</i>\" file type yet :(</span>";
 		$("#content-create-name").val("");
 	}
 	$("#content-create-description").val("");

@@ -114,9 +114,9 @@ Semilla = (function($fn){
 	 */
 	
 	Importer = function(){
-		this.kind = "Abstract importer";
-		this.description = "This is an importer that actually does nothing.\nIt's used as definition for other importers to overload.";
-		this.mime_types = [];
+		this.kind = "Basic importer";
+		this.description = "This is an importer that actually reads a Semilla file.\nIt's also used as definition for other importers to overload.";
+		this.mime_types = ["application/sem", "application/x-sem", "application/vnd.sem", "text/sem", "text/json", "application/json"];
 		this.output_quality = 0.1;
 		this.events = {
 			file_parsed : [],
@@ -144,8 +144,22 @@ Semilla = (function($fn){
 		};
 		
 		this.__parse = function(f,r){
+			c = new Semilla.Content();
+			c.read_text(f);
 			
-			this.fire_event("file_parsed",{});
+			var $tmp1 = function(obj){
+				if (c.origin.raw != ""){
+					var tmp = c.origin.raw;
+					c.origin.raw = "";
+					c.load(tmp);
+					obj.fire_event("parse_progress",{progress: 100});
+					r.add_content(c);
+					obj.fire_event("file_parsed",c);
+				} else {
+					setTimeout(function(){$tmp1(obj);},100);
+				}
+			}
+			$tmp1(this);
 			return this;
 		}
 		
@@ -169,6 +183,7 @@ Semilla = (function($fn){
 		}
 	};
 	$fn.Importer = Importer;
+	$fn.Importer.def({});
 	
 	/**
 	 * Exporter class.
@@ -179,11 +194,11 @@ Semilla = (function($fn){
 	 * @this {Exporter}
 	 */
 	Exporter = function() {
-		this.kind = "Abstract exporter";
-		this.description = "This is an exporter that actually does nothing.\nIt's used as definition for other exporters to overload.";
+		this.kind = "Basic exporter";
+		this.description = "This is an exporter that actually only lets you save a Content object.\nIt's also used as definition for other exporters to overload.";
 		this.output = "";
-		this.extension = "";
-		this.mime_types = [];
+		this.extension = "sem";
+		this.mime_types = ["*"];
 		this.content = new Semilla.Content();
 		this.events = {
 			parse_start : [],
@@ -216,9 +231,15 @@ Semilla = (function($fn){
 		};
 		
 		this.__parse = function(c){
-			this.fire_event("output_parsed",{});
+			var out = "";
+			this.content = c;
+			this.fire_event("parse_start");
+			out = JSON.stringify(c);
+			this.output = out;
+			this.fire_event("parse_end");
 			return this;
 		}
+		
 		
 		/**
 		 * method save_to_file.
@@ -234,6 +255,7 @@ Semilla = (function($fn){
 		}
 	};
 	$fn.Exporter = Exporter;
+	$fn.Exporter.def({});
 	
 	/**
 	 * Advertiser class.
@@ -295,7 +317,13 @@ Semilla = (function($fn){
 				throw "Semilla.Repo.import_content: File object expected";
 			}
 			
-			var imp = Semilla.Util.get_importer_by_mime_type($f.type);
+			var type = $f.type;
+			if (type == null || type == undefined || type == ""){
+				var name = $f.name.split(".");
+				type = "application/" + name[name.length-1].toLowerCase();
+			}
+			
+			var imp = Semilla.Util.get_importer_by_mime_type(type);
 			var ret = false;
 			if (imp !== null){
 				ret = imp.parse($f, this);
@@ -699,6 +727,34 @@ Semilla = (function($fn){
 		}
 		
 		/**
+		 * method read_text.
+		 * Given a file object, this method reads the full contents as
+		 * text and saves it in the content's "origin" property.
+		 *
+		 * @author Daniel Cantarín <omega_canta@yahoo.com>
+		 * @this {Content}
+		 * @param {Blob} f
+		 * A file object to read
+		 */
+		this.read_text = function(f){
+			
+			if (!( f instanceof Blob)){
+				throw "Content.read_text: File (or Blob) expected.";
+			}
+			
+			c.origin.file_name = f.name;
+			c.origin.content_type = f.type;
+			fr = new FileReader();
+			fr.content = this;
+			fr.readAsText(f);
+			fr.onloadend = function(evt){
+				if (evt.target.readyState == FileReader.DONE) { // DONE == 2
+					this.content.origin.raw = evt.target.result;
+				}
+			}
+		}
+		
+		/**
 		 * method load.
 		 * Given a string, that is suppossed to have a valid json object,
 		 * this method loads every property of the parsed object into
@@ -718,6 +774,7 @@ Semilla = (function($fn){
 			try{
 				c = JSON.parse(s);
 			} catch(e){
+				console.debug(s);
 				throw "Semilla.Content.load: invalid JSON string.";
 			}
 			
@@ -1216,6 +1273,8 @@ Semilla.HTTPRepo.def({
 });
 
 
+Semilla.importers.push(new Semilla.Importer());
+
 
 /**
  * MP3Importer class.
@@ -1419,6 +1478,8 @@ Semilla.PDFImporter.def({
 Semilla.importers.push(new Semilla.PDFImporter());
 
 
+
+Semilla.exporters.push(new Semilla.Exporter());
 /**
  * TXTExporter class.
  * Translates from Content to text file.
@@ -1558,3 +1619,4 @@ Semilla.CBZExporter.def({
 	}
 });
 Semilla.exporters.push(new Semilla.CBZExporter());
+
