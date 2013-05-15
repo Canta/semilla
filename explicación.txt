@@ -39,7 +39,7 @@ función, dado su caracter de organización gremial e institucional, el
 CEFyL tiene necesariamente un problema y una responsabilidad de acción a
 la hora de garantizar (¿es garantizar la palabra?) los derechos de los
 estudiantes absolutamente ineludible, estimo, en cualquier lectura: sea
-reclamando al Estado, sea autogestionando, o de otras maneras. 
+reclamando al Estado, sea autogestionando, sea de otras maneras. 
 
 Y entre los derechos de los estudiantes está el acceso a los materiales
 de estudio, de los que forman parte los textos universitarios, cuales 
@@ -61,14 +61,16 @@ de automatizar las tareas repetitivas, llevando la intervención humana
 al mínimo y permitiendo trabajar los objetos en cuestión en masa. Es el 
 caso desde una pequeña oficina hasta una fábrica automatizada de nivel 
 industrial mundial. 
+
 Pero en el caso de la gestión de textos, las tecnologías requieren una 
-infraestructura técnica (desde pericia técnica hasta calidad de los 
-contenidos, pasando por requisitos de hardware) difícil de sustentar, 
-razón por la cuál se convierte en un rubro donde todas las tareas suelen 
-recaer en personas que las ejecutan manualmente.
+infraestructura técnica (desde pericia técnica de los operadores hasta 
+calidad de los contenidos, pasando por requisitos de hardware) difícil 
+de sustentar, razón por la cuál se convierte en un rubro donde todas las
+tareas suelen recaer en personas que las ejecutan manualmente. 
 
 Entonces, en ese contexto, la estrategia es desarrollar herramientas que
-faciliten ese trabajo manual, llevándolo al mínimo esfuerzo posible.
+faciliten ese trabajo manual, llevándolo al mínimo esfuerzo y máxima 
+productividad posibles.
 
 Esas herramientas existen, de acuerdo a la diferente naturaleza de 
 aquello que se pretende trabajar. Y cada herramienta, cada objeto en 
@@ -109,7 +111,7 @@ eso, la elección de los diferentes softwares para las diferentes tareas
 es crucial.
 
 Al caso, personalmente trabajo en un desarrollo de software que permita
-facilitar la integración entre las diferentes tareas.
+facilitar al máximo la integración entre las diferentes tareas.
 
 
 - Acerca de los problemas de la Secretaría de Publicaciones del CEFyL.
@@ -162,7 +164,7 @@ Siempre los textos son en última instancia el problema. Pero el cómo se
 manejan depende, y mucho, de cada caso de uso.
 
 
-- Acerca del acceso a los textos.
+- Acerca de la distribución y el acceso a los textos.
 
 De la modernidad para acá, "acceder a un texto" está mediado por una 
 abstracción que se llama "publicación", que está mediada por abstracciones 
@@ -197,10 +199,11 @@ pretenden tengan la misma función, es necesario disponer de textos a los
 cuales no se tiene acceso por librerías, es necesario disponer de textos 
 que los privados con fines de lucro ya no imprimen, es necesario disponer
 de textos que los privados con fines de lucro no están dispuestos a 
-imprimir, es necesario disponer de textos cuyos autores pretenden 
-condicionar su distribución, es necesario contar con una base de textos 
-considerable ordenada para poder distribuirlos, es necesario mantener 
-esa base de textos con el paso de los años... 
+imprimir, es necesario disponer de textos cuyos autores y/o 
+distribuidores pretenden condicionar su distribución, es necesario 
+contar con una base de textos considerable ordenada para poder 
+distribuirlos, es necesario mantener esa base de textos con el paso de 
+los años... 
 
 El CEFyL históricamente se organizó y desarrolló soluciones para ese 
 montón de problemas. Consta en su historia que siempre hizo lo que pudo,
@@ -220,3 +223,106 @@ estructurales de la comunidad universitaria en su conjunto. Y esto, es
 también muy costoso, aunque tal vez puediera requerir menos dinero.
 
 
+- Acerca de la obtención textos. 
+
+Los textos que se pretende distribuir entre el estudiantado en tanto que
+material de estudio tienen diferentes orígenes. Algunos pueden ser 
+transcripciones de grabaciones, como es el caso con los desgrabados de 
+clases; algunos pueden ser traducciones, que al caso son otro tipo de 
+transcripción; otros pueden ser fragmentos de libros, libros enteros, 
+notas en revistas, u otras publicaciones; algunos, como se mencionara 
+en otro párrafo, requieren cierto grado de precisión agregada, como ser 
+X editorial o X edición.
+
+El CEFyL requiere mantener un repositorio de textos a distribuir 
+actualizado de acuerdo a las necesidades de cada cuatrimestre. Muchos 
+textos se repiten año tras año, pero muchos otros deben renovarse 
+constantemente. Esto implica montar algún circuito de entrada y 
+almaceniamiento de textos en el CEFyL. 
+
+Desconozco con precisión las soluciones que idearon con los años en las 
+diferentes gestiones del CEFyL. Sé que ese circuito de entrada y 
+mantenimiento de textos requiere ser lo suficientemente flexible como 
+para permitir integrar desde un escaneo de un libro viejo perdido en 
+una biblioteca en la casa de un profesor, hasta la clase dictada hace 
+menos de una hora, todo ordenado y accesible para poder responder a los
+pedidos de los alumnos. 
+
+En esta línea de problemas, y nuevamente menciono que desconozco la 
+con precisión infraestructura interna lograda en las secretarías del 
+CEFyL, lo usual es que en la improvisación se trabaje con directorios, 
+archivos, y listas en planillas. Esa es una organización típica en 
+cualquier oficina que maneje cantidades moderadas de documentos. También
+es típico que, eventualmente, al crecer el repositorio de contenidos y 
+por ende la complejidad que implica su mantención, se adapte la 
+infraestructura a algún sistema ad-hoc centralizado en alguna base de 
+datos, aún cuando pueda ser para gestionar sólo metainformación de los 
+contenidos (como ser "el orden", "dónde está guardado", etc). Luego, la 
+gestión de esa base de datos implica algunos operadores que carguen 
+información, y algún modo de acceso a la misma. Esto también viene al 
+caso de poder guardar copias de seguridad de toda esa información, para 
+garantizar la operación del sistema de distribución de textos a futuro.
+
+También surgen problemas de cara al consumo de esa información. Hay 
+usuarios del sistema de acceso a textos, de ese canal de distrubución, 
+que necesitan estar al tanto de cierta información para interactuar. Por
+ejemplo, saber si un texto ya está o no disponible, entre otros. 
+
+Estas generalizaciones toman diferentes formas de acuerdo a la historia 
+de cada organización puntual: cómo arrancaron, qué problemas fueron 
+enfrentando, qué políticas tienen frente a esos problemas, qué recursos,
+etcétera. Sabemos que hubo un momento de la historia de la gestión de 
+textos donde las fotocopiadoras ya existían y sin embargo pedir tener 
+todo en archivos como es estandar hoy en día era pedir mucho; y sin 
+embargo el qué pasó entre esos dos momentos puede bien haber quedado 
+enterrado en el paso del tiempo, en la memoria de quienes lo vivieron.
+
+En definitiva, ingresar y mantener textos es en sí todo un campo de 
+problemas específicos a solucionar, que sin saber el modo preciso como 
+lo enfrentó el CEFyL podemos así y todo generalizar un poco y hablar 
+sobre historias típicas que se dan en este contexto. Se deja implicado,
+además, todo lo que constituye la maquinaria social de búsqueda de 
+textos a ingresar: desde rogarle a un profesor hasta buscar copias 
+piratas para poder tener ese texto disponible en el repositorio. Todo 
+eso en conjunto es una cantidad incuestionablemente enorme de trabajo, y
+de ese trabajo depende la integridad de los repositorios del CEFyL. 
+
+Entonces, una estrategia de desarrollo de herramientas de software para 
+minimizar el trabajo implica lidiar con esos problemas: 
+
+  1 - Que se puedan ingresar a un repositorio textos de diferentes 
+  orígenes. Lo cual incluye la idea de diferentes naturalezas de 
+  "inputs", como puede serlo un audio que se pretende distribuir como 
+  texto.
+  
+  2 - Que a esos textos se les puedan aplicar diferentes trabajos. A 
+  veces transcribirlos, a veces corregirlos, a veces recortarlos...
+  
+  3 - Que a esos textos se pueda acceder de manera eficiente. 
+  
+  4 - Que se pueda hacer pública información pertinente sobre esos 
+  textos de cara a su potencial consumo. 
+  
+Y cada uno de esos items implica a su vez problemas más puntuales a 
+solucionar.
+
+
+ 
+- Acerca de la generación de textos. 
+
+Una buena parte del circuito de ingreso de textos al repositorio del 
+CEFyL consiste en textos generados por el CEFyL mismo. En ese conjunto 
+entran los desgrabados de clases, por ejemplo, siendo el ejemplo más 
+típico e inmediato. Sin embargo, "generar" un texto es una idea que, una
+vez analizada en su contexto, puede cambiar radicalmente sus modos.
+
+Al principio de este documento afirmé dos cosas: 1, que la gestión de 
+textos es un problema del CEFyL, y 2, que el CEFyL atraviesa una crisis 
+que irremediablemente lo lleva a replantearse los modos de la gestión de 
+textos (especialmente frente a los recortes de puestos de trabajo y de 
+oferta de desgrabaciones, que capitalizan los privados).
+Teniendo eso en cuenta, y en el contexto de soluciones vinculadas al 
+desarrollo de software, me permito explorar algunos vericuetos técnicos 
+de la generación de textos.
+
+"Generar un texto" puede no ser necesariamente "escribir algo". 
