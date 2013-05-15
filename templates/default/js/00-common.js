@@ -472,7 +472,10 @@ app.contents.edition.export = function(obj){
 	
 	if (r !== null && e !== null){
 		r.exporter = e;
+		var texto = "Obteniendo contenido desde "+r.name+"...";
+		app.espere(texto, "");
 		r.get_content({"id":obj.attr("id_content")}, function(content, repo){
+			app.desespere(texto);
 			repo.exporter.parse(content);
 		});
 	}
