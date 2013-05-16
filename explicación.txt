@@ -70,7 +70,8 @@ tareas suelen recaer en personas que las ejecutan manualmente.
 
 Entonces, en ese contexto, la estrategia es desarrollar herramientas que
 faciliten ese trabajo manual, llevándolo al mínimo esfuerzo y máxima 
-productividad posibles.
+productividad posibles, sin necesidad de aspirar a gastos o estructuras
+imposibles de acceder.
 
 Esas herramientas existen, de acuerdo a la diferente naturaleza de 
 aquello que se pretende trabajar. Y cada herramienta, cada objeto en 
@@ -103,15 +104,12 @@ gestión de textos: también hay problemas de auditoría, problemas de
 acceso, problemas de distribución, etc, todos siempre en última instancia 
 vinculados directamente a los textos.
 
-No existe ni se supone que existe UN sólo software que solucione todos
+No existe ni se supone que exista UN sólo software que solucione todos
 los problemas de todas las tareas de la gestión de textos. Lo que existe 
 es muchos softwares diferentes, para facilitar diferentes tareas, que 
 luego cada organización debe lograr hacer funcionar coordinados. Para 
 eso, la elección de los diferentes softwares para las diferentes tareas 
 es crucial.
-
-Al caso, personalmente trabajo en un desarrollo de software que permita
-facilitar al máximo la integración entre las diferentes tareas.
 
 
 - Acerca de los problemas de la Secretaría de Publicaciones del CEFyL.
@@ -147,6 +145,7 @@ reducción de materias a desgrabar el caso paradigmático: SIM, un privado
 con fines de lucro y ajeno al órgano gremial, desgraba aquello que el 
 CEFyL no puede por cuestiones económicas, llevando el acceso a esos 
 materiales al plano comercial y al mercado.
+
 Ante esto, desde la comunidad surgen planteos y reclamos al CEFyL; acerca
 de los precios de los desgrabados o las fotocopias, acerca de la política
 frente al acceso, acerca de los recortes en los puestos de trabajo, entre 
@@ -215,7 +214,7 @@ Al caso, los canales de distribución todavía alternativos se muestran
 como una opción potencialmente superadora. Tienen como punto a favor el 
 hecho se pretenden un enorme ahorro de dinero. Pero, por otro lado, 
 exigen una organización y pericia técnica diferente a las que requiere 
-el canal de los libros impresos; se hacen algunas cosas que antes no se 
+el canal de los textos impresos; se hacen algunas cosas que antes no se 
 hacían, se cambia el planteo del acceso a los textos hacia la propia 
 comunidad, y se debe lidiar con un proceso de migración que va más allá 
 de "imprimir o no imprimir" sino que recae en condiciones culturales 
@@ -238,7 +237,7 @@ El CEFyL requiere mantener un repositorio de textos a distribuir
 actualizado de acuerdo a las necesidades de cada cuatrimestre. Muchos 
 textos se repiten año tras año, pero muchos otros deben renovarse 
 constantemente. Esto implica montar algún circuito de entrada y 
-almaceniamiento de textos en el CEFyL. 
+almacenamiento de textos en el CEFyL. 
 
 Desconozco con precisión las soluciones que idearon con los años en las 
 diferentes gestiones del CEFyL. Sé que ese circuito de entrada y 
@@ -248,8 +247,8 @@ una biblioteca en la casa de un profesor, hasta la clase dictada hace
 menos de una hora, todo ordenado y accesible para poder responder a los
 pedidos de los alumnos. 
 
-En esta línea de problemas, y nuevamente menciono que desconozco la 
-con precisión infraestructura interna lograda en las secretarías del 
+En esta línea de problemas, y nuevamente menciono que desconozco con 
+precisión la infraestructura interna lograda en las secretarías del 
 CEFyL, lo usual es que en la improvisación se trabaje con directorios, 
 archivos, y listas en planillas. Esa es una organización típica en 
 cualquier oficina que maneje cantidades moderadas de documentos. También
@@ -293,19 +292,22 @@ minimizar el trabajo implica lidiar con esos problemas:
   1 - Que se puedan ingresar a un repositorio textos de diferentes 
   orígenes. Lo cual incluye la idea de diferentes naturalezas de 
   "inputs", como puede serlo un audio que se pretende distribuir como 
-  texto.
+  texto frente a un archivo inicialmente ya con texto en digital.
   
   2 - Que a esos textos se les puedan aplicar diferentes trabajos. A 
   veces transcribirlos, a veces corregirlos, a veces recortarlos...
   
-  3 - Que a esos textos se pueda acceder de manera eficiente. 
+  3 - Que a esos textos se pueda acceder de manera eficiente. Tienen que
+  estar guardados, pero también poder ser distribuidos, todo de acuerdo 
+  a exigencias inmediatas.
   
   4 - Que se pueda hacer pública información pertinente sobre esos 
-  textos de cara a su potencial consumo. 
+  textos de cara a su potencial consumo. Es necesario, entonces, 
+  gestionar de manera eficiente metainformación de los contenidos.
   
-Y cada uno de esos items implica a su vez problemas más puntuales a 
-solucionar.
 
+Y cada uno de esos items implica a su vez problemas más puntuales a 
+solucionar. 
 
  
 - Acerca de la generación de textos. 
@@ -314,7 +316,7 @@ Una buena parte del circuito de ingreso de textos al repositorio del
 CEFyL consiste en textos generados por el CEFyL mismo. En ese conjunto 
 entran los desgrabados de clases, por ejemplo, siendo el ejemplo más 
 típico e inmediato. Sin embargo, "generar" un texto es una idea que, una
-vez analizada en su contexto, puede cambiar radicalmente sus modos.
+vez analizada en su contexto, puede cambiar radicalmente sus modos. 
 
 Al principio de este documento afirmé dos cosas: 1, que la gestión de 
 textos es un problema del CEFyL, y 2, que el CEFyL atraviesa una crisis 
@@ -325,4 +327,135 @@ Teniendo eso en cuenta, y en el contexto de soluciones vinculadas al
 desarrollo de software, me permito explorar algunos vericuetos técnicos 
 de la generación de textos.
 
-"Generar un texto" puede no ser necesariamente "escribir algo". 
+"Generar un texto" puede no ser necesariamente "escribir algo". Un texto
+es lo que finalmente obtiene un usuario de ese circuito de distribución 
+de textos, y generarlo puede consistir en diferentes tareas de acuerdo a
+qué sea aquello que se pretende distribuir. 
+
+Por ejemplo, si queremos distribuir el desgrabado de una clase, eso está
+mediado por un trabajo de grabación y transcripción de dicha clase. 
+Luego, si queremos que se distribuya el texto mediante impresiones, es 
+necesario tener el texto disponible dentro del entorno de impresión (es
+decir, que se pueda acceder a él desde alguna impresora de 
+Publicaciones). 
+
+Para ese caso, en una época lo mínimo indispensable era tener una copia 
+impresa, escrita de cualquier manera pero en papel, que más tarde 
+pudiera ser fotocopiado en la secretaría de Publicaciones. Y si ese 
+papel no está, el texto no está.
+
+Hoy por hoy, si bien lo anterior puede persistir en alguna medida, 
+es necesario guardar el texto en algún formato de archivo imprimible, de
+los muchos formatos que hay disponibles. Sabemos que el estandar de 
+facto, al menos en nuestra facultad, parece ser el PDF. Entonces, 
+suponiendo que no se dispone de un "original" en papel para fotocopiar,
+generar el PDF viene a ser un sinónimo de "generar un texo", y cuando el
+PDF no está, el texto no está.
+
+Pero sin embargo tal vez queremos distribuir ese texto de otra manera. 
+Tal vez queremos que, además, a ese texto se pueda acceder mediante 
+internet, de manera remota, no impresa sino directamente en digital. 
+Entonces, necesitamos además tener ese archivo disponible por fuera de 
+las computadoras de Publicaciones. Y necesitamos hacer pública la 
+información de que ese archivo está efectivamente disponible para la 
+descarga; de alguna manera tiene que ser posible ubicar ese archivo 
+desde el lado del usuario. Porque, en ese contexto, si el usuario no lo 
+encuentra, si esa información no está, el texto no está.
+
+Además, es posible que diferentes usuarios requieran diferentes formatos
+de archivo. Actualmente proliferan tantos sistemas operativos, 
+dispositivos de lectura de textos, y hasta modo de uso de los textos, 
+que no se termina de saldar la necesidad con tener simplemente un PDF. 
+Y, en ese contexto, si el formato que se requiere no está, el texto no 
+está. 
+
+Un ejemplo concreto de esto último puede ser el caso de uso de "copiar y
+pegar" texto desde un PDF hasta una monografía cuando el PDF consiste en
+imágenes escaneadas, sin texto propiamente dicho discriminado de la 
+imagen. O, tomando el mismo PDF, el caso de uso de hacer búsquedas 
+automatizadas de texto dentro de ese texto; al ser imágenes escaneadas, 
+no es posible. Los cuales no son casos raros en el material que tiene 
+disponible el CEFyL. Sin embargo, al ser ese material suficiente para 
+imprimir, sirvió para resolver problemas en algún momento de su historia
+y sigue siendo material en uso actualmente. 
+
+Eso puede parecer un caso de uso más bien ocioso, dado que, en 
+definitiva, siempre hay algún otro formato y alguna otra forma de 
+acceso: ya sea desde convertir algún otro formato hasta ir personalmente
+a la biblioteca de la facultad a leer en papel en la sala de lectura.
+Pero es importante entenderlo en el contexto de la importancia de los 
+estándares culturales que operan sobre la distribución de los textos, 
+así como también el contexto de la crisis económica que atraviesa el 
+CEFyL y de la que se aprovechan los privados capitalizando impresiones; 
+pensar en otros circuitos de distribución de textos alternativos a las 
+impresiones es también pensar en sus condiciones básicas inherentes y 
+en sus condiciones de éxito en su instalación cultural. 
+
+Entonces, "generar un texto" debe entenderse como aquello que se hace 
+cuando "el texto no está", y eso es algo que depende enteramente de cómo
+se pretenda distribuir ese texto. El trabajo de generación de textos es 
+vital para el sistema de distribución, y puede ser sumamente costoso. Y 
+a esto se suma la complejidad de la obtención de esos textos, como se 
+hablara antes al respecto. 
+
+- Acerca de la impresión y venta de textos.
+
+Publicaciones imprime textos y los vende, dijimos. De modo que se 
+comporta como cualquier otro privado con fines de lucro de los 
+alrededores de la facultad. Pero sin embargo sus fines han de ser otros,
+dado que el CEFyL no es una empresa ni una organización con fines de 
+lucro.
+
+Publicaciones imprime textos y los vende, en buena medida, porque eso es
+el canal estandar de distribución de textos al cuál se adaptó en su 
+historia. La gente cuando pide un texto pide un papel impreso, de modo 
+que el CEFyL imprime un papel con tinta. Ese papel y esa tinta tienen un
+costo, de modo que el CEFyL cobra un arancel por ellos. Eso lógicamente
+generalizando la situación.
+
+Pero sucede que "papel y tinta" no es todo lo que requiere esa 
+organización, ese canal de distribución de textos. Requiere también 
+equipamiento, maquinaria de impresión de textos, la cual tiene un costo.
+Y además, requiere de mano de obra para el trabajo de obtención y 
+generación de textos; mano de obra que típicamente cobra dinero por su 
+trabajo. Lo cuál también es un costo para el CEFyL, lo cuál se vé 
+entonces reflejado en el precio de las impresiones, y por lo tanto 
+condicionando así el acceso a los textos. 
+
+El CEFyL recibe dinero estatal. Y algunos estudiantes también, mediante 
+becas de estudio. Aparentemente este dinero no es suficiente para 
+mantener los gastos del CEFyL, ni siquiera con el agregado de las ventas
+de impresiones, y por lo tanto comenzaron en el año 2012 políticas de 
+recorte de gastos. Se sortearon menos puestos de trabajo, se complicó 
+el pago de un sueldo a los trabajadores del CEFyL, y recortaron las 
+materias a desgrabar. Esto, además de generar un profundo malestar en la
+comunidad estudiantil, termina de despertar la necesidad de revisar el 
+circuito de distribución de textos, en búsqueda de alternativas que sean
+posibles de sostener para el CEFyL.
+
+En ese sentido, el CEFyL exploró algunas iniciativas medianamente 
+recientes vinculadas a la gestión digital de textos. Por un lado, la 
+iniciativa política de sostener BiblioFyL, un canal de distribución de 
+textos en formato digital históricamente comunitario y gestionado desde 
+el gremio estudiantil por fuera de la organización formal del CEFyL. Y 
+por otro lado, la gestión de pedidos on-line, que le permitiría 
+controlar mejor su cuota de impresiones regulando los pedidos en 
+diferentes tiempos (en lugar de responder personalmente y en el momento)
+así como también lograr una medición más precisa del consumo de 
+impresiones.
+
+Esto forma parte de la historia más reciente del CEFyL, y son 
+iniciativas tal vez no del todo maduras. Si bien pueden entenderse como 
+con cierto grado de éxito, todavía no se muestran como una estrategia 
+suficiente para paliar en términos tolerables los problemas económicos y
+políticos del CEFyL; porque siguen teniendo problemas en la generación 
+de textos, siguen teniendo problemas a la hora de dar cuenta cómo se 
+gestionan los gastos, siguen teniendo problemas de organización interna, 
+y de cara al estudiantado siguen sin poder dar solución a algunos 
+problemas vinculados a la gestión de textos. Teniendo entonces esto en 
+cuenta, se entiende que el CEFyL debe, además de lógicamente tomar las 
+medidas en lo inmediato que le corresponda tomar, y si es que pretende 
+un cambio contundente en ese camino, explorar más en profundidad esos 
+canales alternativos de distribución de textos.
+
+
