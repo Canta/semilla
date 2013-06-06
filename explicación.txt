@@ -18,10 +18,11 @@ El ejemplo más inmediato para analizar estos problemas nuestra comunidad
 lo tiene en el funcionamiento de la Secretaría de Publicaciones del CEFyL.
 
 En este texto hago algunas lecturas sobre esos problemas, y trato de 
-contextualizarlos, para que a partir de esas notas se pueda contemplar 
-la situación en su magnitud más amplia y se puedan empezar a especular 
-soluciones a los diferentes estratos de tareas involucradas. Es decir,
-este texto pretende ser una forma inicial de relevamiento.
+contextualizarlos, con la esperanza de que a partir de esas notas se 
+pueda comenzar a contemplar la situación en su magnitud más amplia y se 
+puedan empezar a especular soluciones a los diferentes estratos de 
+tareas involucradas. Es decir, este texto pretende ser una forma inicial 
+de relevamiento.
 
 
 - Un pequeño apartado sobre el CEFyL
@@ -37,9 +38,9 @@ de interlocutor en interlocutor, haciendo que cualquier afirmación sea
 muy fácilmente nulificada desde otra perspectiva. Pero en términos de 
 función, dado su caracter de organización gremial e institucional, el 
 CEFyL tiene necesariamente un problema y una responsabilidad de acción a
-la hora de garantizar (¿es garantizar la palabra?) los derechos de los
-estudiantes absolutamente ineludible, estimo, en cualquier lectura: sea
-reclamando al Estado, sea autogestionando, sea de otras maneras. 
+la hora de mediar por los derechos de los estudiantes absolutamente 
+ineludible, estimo, en cualquier lectura: sea reclamando al Estado, sea 
+gestionando, sea de otras maneras. 
 
 Y entre los derechos de los estudiantes está el acceso a los materiales
 de estudio, de los que forman parte los textos universitarios, cuales 
@@ -219,7 +220,7 @@ hacían, se cambia el planteo del acceso a los textos hacia la propia
 comunidad, y se debe lidiar con un proceso de migración que va más allá 
 de "imprimir o no imprimir" sino que recae en condiciones culturales 
 estructurales de la comunidad universitaria en su conjunto. Y esto, es 
-también muy costoso, aunque tal vez puediera requerir menos dinero.
+también muy costoso, aunque tal vez pudiera requerir menos dinero.
 
 
 - Acerca de la obtención textos. 
@@ -398,6 +399,7 @@ vital para el sistema de distribución, y puede ser sumamente costoso. Y
 a esto se suma la complejidad de la obtención de esos textos, como se 
 hablara antes al respecto. 
 
+
 - Acerca de la impresión y venta de textos.
 
 Publicaciones imprime textos y los vende, dijimos. De modo que se 
@@ -458,4 +460,6 @@ medidas en lo inmediato que le corresponda tomar, y si es que pretende
 un cambio contundente en ese camino, explorar más en profundidad esos 
 canales alternativos de distribución de textos.
 
+
+- Acerca de la copia de textos
 
