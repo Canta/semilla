@@ -1,6 +1,6 @@
 - Acerca de este texto.
 
-Mi nombre es Daniel Cantarín, tengo 30 años de edad a la fecha, y soy 
+Mi nombre es Daniel Cantarín, tengo 31 años de edad a la fecha, y soy 
 programador. También soy estudiante de la Facultad de Filosofía y Letras
 de la Universidad de Buenos Aires.
 
@@ -462,4 +462,114 @@ canales alternativos de distribución de textos.
 
 
 - Acerca de la copia de textos
+
+Parte de la complejidad técnica en la copia y distribución de textos 
+reside enteramente en su dimensión legal. Los textos están subordinados 
+a diferentes legislaciones que determinan la legalidad de una operación 
+de copia. A esto se le suma que, cuando hablamos de la distribución por 
+los canales vinculados a "las nuevas tecnologías" (concretamente, 
+internet), las fronteras nacionales se vuelven difusas y la legislación 
+al respecto de la legalidad de una copia es todavía más compleja.
+
+Como los demás, este es un marco de problemas para especialistas y 
+entusiastas. Sólo alguien activamente vinculado a la cuestión puede dar 
+cuenta de las complejidades en los derechos vinculados a las copias de 
+textos. Yo, programador, no soy esa persona. Pero es fundamental para 
+una organización que pretende llevar adelante una iniciativa de gestión 
+de textos a nivel mediano o grande, como lo es la Secretaría de 
+Publicaciones del CEFyL, estar al tanto de los problemas vinculados a 
+distribuir copias de textos que pueden llegar a estar sujetos a derechos
+de copia restrictivos para la operación. Porque una acción legal sobre 
+puntos neurálgicos de la organización puede llegar a frenarla o incluso 
+desmantelarla a no ser que se tomen los recaudos necesarios.
+
+Al caso de esta sección, existen numerosas experiencias de acciones 
+legales contra proyectos de distribución tanto de textos como de 
+material multimedial, recientes, así como también que sucedieran durante
+el curso de la década pasada.
+
+
+
+- Qué estrategia de solución evalué para este escenario
+
+En primer lugar, intenté pensar una solución general que abarcara la mayor
+cantidad de problemas posibles. Eso es un poco la premisa principal detrás
+de la iniciativa. 
+Es evidente desde el principio que, en frente de tantos problemas, la 
+integración de la mayor cantidad posible en una solución exige un 
+desarrollo complejo. 
+
+Los primeros problemas que encaré fueron los tecnológicos, aquellos 
+vinculados a las condiciones técnicas de los textos.
+Teniendo en cuenta que, según especulo, por empiria y de acuerdo a 
+mi contacto periférico con la organización de Publicaciones, la mayor
+cantidad de los textos se gestionan en formato PDF, exploré y 
+eventualmente aprendí detalles técnicos y pormenores de la 
+manipulación del formato PDF, de modo de, por un lado, respetar 
+cualquiera sea la organización para generación de textos en digital 
+lograda por quienes trabajan en Pulicaciones, y por otro lógicamente 
+integrar todo ese caudal de textos en una nueva solución.
+
+Así descubrí en sus detalles técnicos algo que yo ya sabía por empiria:
+el formato PDF es pésimo para el trabajo de gestión de textos.
+PDF es un formato ideado para la gestión de impresiones, no de textos.
+Esto es así al punto tal que un archivo PDF ni siquiera guarda texto: 
+guarda una representación gráfica de un documento, que luego puede 
+manipularse con extrema precisión en términos de gráfico, lo cuál 
+permite alta fidelidad en el trabajo de impresión; pero a la hora de 
+recuperar el texto original, presenta muchos problemas, para los que 
+el PDF no brinda ni pretende brindar muchos recursos qué digamos.
+PDF ni siquiera guarda "caracteres", "letras": guarda "glyphs", que 
+son pequeños dibujitos, que luego se deben interpretar como caracteres
+si se pretende leer un texto. Un humano no percibe diferencia entre 
+esas dos abstracciones ("caracteres" y "glyphs"), pero una computadora
+sí, y una computadora requiere caracteres para poder trabajar textos. 
+Es por esto que los PDF se imprimen bien, se leen bien, pero cuando se 
+pretende hacer cosas como "copiar y pegar" desde un PDF hacia otro 
+software, usualmente hay problemas: porque eso involucra mecanismos de 
+conversión entre glyphs y caracteres, y esos mecanismos son falibles.
+Además, un PDF no registra abstracciones básicas de la gestión de textos
+como ser "párrafo", por ejemplo, o "retorno de carro" (la tecla "enter"); 
+registra conjuntos de glyphs con coordenadas bidimencionales (X e Y) que 
+los posicionan en una página. 
+Luego, obtener texto desde un PDF, se vuelve una tarea muy costosa, y 
+prácticamente imposible de automatizar con precisión.
+
+Entonces, desde ese momento ya supe que PDF es un problema técnico
+importante si una solución pretende integrar los muchos problemas de 
+la gestión de textos en general. PDF debe ser, en todo caso, un 
+producto final de algún proceso vinculado a las impresiones, más no 
+la materia prima que alimenta un sistema que excede a las impresiones.
+Sí, desde el vamos, toda esta iniciativa se ampara en una condición 
+de crisis frente al trabajo de imprimir textos, evaluando alternativas,
+lograr escapar al formato PDF es vital.
+
+Pero, si bien tal vez podría idearse un circuito de entrada de textos 
+que no implique generar PDFs como materia prima, de una manera u otra 
+la situación es que actualmente se cuenta con miles de PDFs que no 
+pueden simplemente de un día para otro quedar fuera del sistema. 
+Cualquier solución que se especule debe integrar esos PDFs.
+
+En paralelo a esto exploré otros detalles de la manipulación de PDFs. 
+Concretamente, la posibilidad de conversiones automáticas a otros 
+formatos.
+Coherentemente con lo ya planteado, resulta sencillo transformar PDFs 
+a imágenes, más no a texto plano o textos "ricos" (formatos con 
+agregados como ser negritas, itálicas, imágenes incrustadas, y demás). 
+Se puede lograr, dependiendo el archivo PDF en cuestión, exportar su 
+texto a otro formato más manipulable; pero esa exportación, como conté,
+es falible e imprecisa, dada la naturaleza innata de la información que
+guarda un PDF.
+
+La buena noticia es que, mal que mal, PDF es un formato con bastante 
+soporte práctico. Buena parte de los dispositivos disponibles en la 
+actualidad lo leen sin mayores problemas.  
+Pero continúa siendo un formato muy problemático para otros contextos.
+Por ejemplo, realizar búsquedas masivas en un repositorio de textos 
+intetentando ubicar sentencias o fragmentos (tarea para nada exótica), 
+la diferencia de peso entre un archivo PDF con gráficos a uno de texto
+puro (que impacta en el espacio requerido para los repositorios, los 
+tiempos de transmisión vía internet, los costos de mantener eso en 
+servidores tercerizados, la dificultad para mantener tanto material 
+online, 
 
