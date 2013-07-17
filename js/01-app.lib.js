@@ -495,7 +495,13 @@ jQuery.fn.unserialize = function(str){
 		var items = str.split('&');
 		for (var i = 0; i < items.length; i++) {
 			var parts = items[i].split(/=/);
-			this.find('[name='+ parts[0] +']').val(decodeURIComponent(parts[1].replace(/\+/g," ")));
+			obj = this.find('[name='+ parts[0] +']');
+			if (obj.length == 0){
+				try{
+					obj = this.parent().find('[name='+ parts[0] +']');
+				} catch(e){}
+			}
+			obj.val(decodeURIComponent(parts[1].replace(/\+/g," ")));
 		};
 		return this;
 }
