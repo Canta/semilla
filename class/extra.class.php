@@ -148,6 +148,7 @@ class Lista {
 		}
 		
 		$this->datos["campos"] = (isset($data["campos"])) ? $data["campos"] : Array();
+		$this->datos["exclude"] = (isset($data["exclude"])) ? $data["exclude"] : Array();
 		$this->datos["items"] = (isset($data["items"])) ? $data["items"] : Array();
 		$this->datos["campo_id"] = (isset($data["campo_id"])) ? $data["campo_id"] : "id";
 		$this->datos["tabla"] = (isset($data["tabla"])) ? $data["tabla"] : "";
@@ -171,6 +172,13 @@ class Lista {
 		$this->datos["campos"] = $arr;
 	}
 	
+	public function set_excluidos($arr){
+		if (!is_array($arr)){
+			throw new Exception("Clase Lista, método set_excluidos: se esperaba un array; se utilizó \"".gettype($arr)."\".<br/>\n");
+		}
+		$this->datos["exclude"] = $arr;
+	}
+	
 	public function set_items($arr){
 		if (!is_array($arr)){
 			throw new Exception("Clase Lista, método set_items: se esperaba un array; se utilizó \"".gettype($arr)."\".<br/>\n");
@@ -192,18 +200,21 @@ class Lista {
 		
 		if (count($this->datos["items"]) > 0){
 			foreach($this->datos["campos"] as $nombre => $item){
-				if ($item instanceOf Field){
-					if (trim(strtolower($this->datos["campo_id"])) != trim(strtolower($nombre)) ){
-						if ($item->get_rotulo() != ""){
-							$ret .= "<td>".$item->get_rotulo()."</td>";
-						}else {
-							$ret .= "<td>".$item->get_id()."</td>";
+				
+				if (array_search($nombre, $this->datos["exclude"]) === false){
+					if ($item instanceOf Field ){
+						if (trim(strtolower($this->datos["campo_id"])) != trim(strtolower($nombre)) ){
+							if ($item->get_rotulo() != ""){
+								$ret .= "<td>".$item->get_rotulo()."</td>";
+							}else {
+								$ret .= "<td>".$item->get_id()."</td>";
+							}
 						}
-					}
-				} else {
-					//Si no es un Field, se asume String
-					if (trim(strtolower($this->datos["campo_id"])) != trim(strtolower($item)) ){
-						$ret .= "<td>".$item."</td>";
+					} else {
+						//Si no es un Field, se asume String
+						if (trim(strtolower($this->datos["campo_id"])) != trim(strtolower($item)) ){
+							$ret .= "<td>".$item."</td>";
+						}
 					}
 				}
 			}
@@ -249,6 +260,7 @@ class Lista {
 								&& trim(strtolower($this->datos["campo_id"])) != trim(strtolower($campos[$nombre]))
 							) || !is_string($campos[$nombre])
 						)
+						&& array_search($nombre, $this->datos["exclude"]) === false 
 					){
 						//echo(get_class($campos[$nombre]));
 						if ($campos[$nombre] instanceOf SelectField){
