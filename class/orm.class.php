@@ -80,7 +80,6 @@ class ORM {
 		
 		$this->datos["campos"] = $r;
 		
-		
 		//AGREGADO:
 		//Carga también las keys de la tabla.
 		//Útil para relaciones y detección de campos ID.
@@ -257,6 +256,7 @@ class ORM {
 				$largo = ($largo <= 0 && isset($campo["character_maximum_length"]) ) ? (int)$campo["character_maximum_length"] : $largo;
 				
 				$comentario = (isset($campo["COLUMN_COMMENT"])) ? $campo["COLUMN_COMMENT"] : $campo["column_comment"];
+				$default = (isset($campo["COLUMN_DEFAULT"])) ? $campo["COLUMN_DEFAULT"] : null;
 				
 				$tipoSQL = (isset($campo["data_type"])) ? $campo["data_type"] : $campo["DATA_TYPE"];;
 				$tipoHTML = Field::sqltype2htmltype($tipoSQL);
@@ -273,6 +273,7 @@ class ORM {
 				$ret[$nombre]->set_tipo_sql($tipoSQL);
 				$ret[$nombre]->set_largo( $largo );
 				$ret[$nombre]->set_rotulo( $comentario );
+				$ret[$nombre]->set_valorDefault( $default );
 				
 				//$ret[$name]->set_requerido( pg_field_is_null($this->consulta, $x) );
 				//$ret[$name]->set_primary_key( (strpos($flags, "primary_key") > -1) );

@@ -13,7 +13,7 @@
  */ 
 class Field {
 	
-	public $data; 
+	public $data;
 	
 	public function __construct($id="", $rotulo="", $valor="", $tipoHTML=""){
 		$this->data = Array();
@@ -26,7 +26,7 @@ class Field {
 		$this->data["largo"] = 0;
 		$this->data["primaryKey"] = false;
 		$this->data["columnas"] = 0;
-		$this->data["valor_default"] = null;
+		//$this->data["valor_default"] = null; //FIX: no lo seteo.
 		
 		if (trim($tipoHTML) == ""){
 			$tipoHTML = "text";
@@ -127,10 +127,9 @@ class Field {
 		$def = $this->get_valor_default();;
 		$requerido = $this->get_requerido();
 		
-		if (!$requerido && strlen($ret) <= 0) {
-			$ret = 'null';
-		} else {
+		if ($requerido) {
 			$ret = (strlen($ret) > 0) ? $ret : $def;
+			$ret = is_null($ret) ? 'null' : $ret;
 		}
 		
 		$tipo = $this->get_tipo_sql();
@@ -424,6 +423,9 @@ class Field {
 			case "real":
 				$return = "^[0-9\\.\\,]*$";
 				break;
+			case "float":
+				$return = "^[0-9\\.\\,]*$";
+				break;
 			case "datetime":
 				//$return = "^([0-9]{4})[-/]([0-1][0-9])[-/]([0-3][0-9])(\s[0-9]{2,2}:[0-5][0-9]:[0-5][0-9])?$"; //aaaaMMdd hh:mm:ss
 				$return = "^([0-3][0-9])[-/]([0-1][0-9])[-/]([0-9]{4})(\s[0-9]{2,2}:[0-5][0-9]:[0-5][0-9])?$"; //ddMMaaaa hh:mm:ss
@@ -536,7 +538,7 @@ class Field {
 		}
 		
 		//Si se estableció manualmente un valor default, usa ese valor e ignora el automático.
-		$ret = (isset($this->data["valor_default"]) && !is_null($this->data["valor_default"])) ? $this->data["valor_default"] : $ret;
+		$ret = ( isset($this->data["valor_default"]) ) ? $this->data["valor_default"] : $ret;
 		
 		return $ret;
 	}
