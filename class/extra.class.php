@@ -186,7 +186,7 @@ class Lista {
 		$this->datos["items"] = $arr;
 	}
 	
-	public function get_tabla(){
+	public function get_tabla(){         
 		return $this->datos["tabla"];
 	}
 	
@@ -227,7 +227,7 @@ class Lista {
 				}
 				//las acciones eliminar y modificar están determinadas por los permisos del usuario
 				if ($nombre == "modificar"){
-					$nombre = (isset($_SESSION["user"]) && $_SESSION["user"]->puede($this->get_tabla(), "UPDATE")) ? "modificar" : "ver";
+					$nombre = (isset($_SESSION["user"]) && $_SESSION["user"]->puede($this->get_tabla(), "UPDATE")) ? "modificar" : "ver";                                      
 				}
 				if ($nombre == "eliminar"){
 					$renderizar = (isset($_SESSION["user"]) && $_SESSION["user"]->puede($this->get_tabla(), "DELETE")) ? true : false;
@@ -265,6 +265,8 @@ class Lista {
 						//echo(get_class($campos[$nombre]));
 						if ($campos[$nombre] instanceOf SelectField){
 							$ret .= "<td>".$campos[$nombre]->get_descripcion_valor($valor)."</td>\n";
+						} else if ($campos[$nombre] instanceOf BitField){
+							$ret .= "<td>".hexdec(bin2hex($valor))."</td>\n";
 						} else {
 							$ret .= "<td>".$valor."</td>\n";
 						}
@@ -288,7 +290,7 @@ class Lista {
 					//Las acciones "modificar" y "eliminar" están determinadas por los permisos del usuario.
 					if ($nombre == "modificar"){
 						$nombre = (isset($_SESSION["user"]) && $_SESSION["user"]->puede($this->get_tabla(), "UPDATE")) ? "modificar" : "ver";
-					}
+                    }
 					if ($nombre == "eliminar"){
 						$renderizar = (isset($_SESSION["user"]) && $_SESSION["user"]->puede($this->get_tabla(), "DELETE")) ? true : false;
 					}

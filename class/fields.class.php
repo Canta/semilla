@@ -26,6 +26,8 @@ class Field {
 		$this->data["largo"] = 0;
 		$this->data["primaryKey"] = false;
 		$this->data["columnas"] = 0;
+		$this->data["clase_css"] = "Field";
+		
 		//$this->data["valor_default"] = null; //FIX: no lo seteo.
 		
 		if (trim($tipoHTML) == ""){
@@ -114,6 +116,14 @@ class Field {
 				if (strpos(strtolower($this->data["tipoSQL"]),"int") !== false ){
 					$tmp[$i] = ((int)trim($tmp[$i]) == 0) ? "" : $tmp[$i];
 				}
+				
+				//Tratamiento para los cambos bit
+				if (strtolower($this->data["tipoSQL"]) == "bit"){
+					$tmp[$i] = ( $tmp[$i] == "" || is_null($tmp[$i]) ) ? "0" : $tmp[$i];
+					$tmp[$i] = ( is_numeric($tmp[$i]) ) ? "b'".$tmp[$i]."'" : $tmp[$i];
+					$tmp[$i] = bindec($tmp[$i]);
+					
+				}
 			}
 		}
 		
@@ -139,6 +149,8 @@ class Field {
 			//Si la pongo entre comillas, se convierte en un string.
 		} else if ($ret == 'null'){
 			//Idem con el valor NULL
+		} else if (strtolower($tipo) == "bit"){
+			//Idem campos BIT
 		} else {
 			//Para cualquier otro caso, el valor va entre comillas.
 			$ret = "'".mysql_real_escape_string($ret)."'";
@@ -187,6 +199,36 @@ class Field {
 		} 
 		
 		return $this->data["regexValidacion"];
+	}
+	
+	public function validate(){
+		
+		$va = $this->get_valor();
+		
+		if ($this->get_requerido() === true && ($va === "" || is_null($va))){
+			//echo($this->get_HTML_name() . " es requerido y el valor es \"".$va."\"<br/>");
+			return false;
+		}
+		
+		
+		$ret = false;
+		
+		$rx = $this->get_regex_validacion();
+		$ma = preg_match("/".$rx."/",$va);
+		
+		if ($ma === false){
+			throw new Exception("<b class=\"exception_text\">Clase Field, método validate: hubo un error al intentar validad la expresión regular \"".$rx."\" contra el valor \"".$va."\". Imposible continuar.</b>");
+		} else if ($ma > 0) {
+			//echo($this->get_HTML_name() . " validó \"".$va."\"<br/>");
+			$ret = true;
+		} else {
+			$ret = (boolean)$this->get_requerido();
+			//echo($this->get_HTML_name() . " no era obligatorio y su valor es \"".$va."\". Entonces, devuelvo \"".(($ret) ? "verdadero" : "falso")."\".<br/>");
+		}
+		
+		//die(var_dump($ret));
+		
+		return $ret;
 	}
 	
 	public function set_id($valor){
@@ -243,8 +285,8 @@ class Field {
 		$this->data["regexValidacion"] = $valor;
 	}
 	
-	public function set_clase_CSS(){
-		$return = "Field";
+	public function get_clase_CSS(){
+		$return = $this->data["clase_css"];
 		
 		if ($this->get_tipo_HTML() == "enum"){
 			$return .= " enum";
@@ -252,6 +294,12 @@ class Field {
 		
 		return $return;
 	}
+	
+	public function add_clase_CSS($val){
+		$this->data["clase_css"] = $this->data["clase_css"] . " " . $val;
+	}
+	
+	
 	
 	//20120522 - Daniel Cantarín
 	//De acuerdo a problemas de implementación en múltiples motores de bases de datos,
@@ -294,7 +342,7 @@ class Field {
 				$type = ($this->get_primary_key() === true) ? "hidden" : $this->get_tipo_HTML() ;
 				$type = ($type=="select") ? "hidden" : $type;
 				$type = str_replace("enum","text",$type);
-				$clase_css = $this->set_clase_CSS();
+				$clase_css = $this->get_clase_CSS();
 				
 				$ret2 .= "<input class='".$clase_css."' id='".$this->get_id()."' name='".$this->get_HTML_name()."' type='".$type."' value='".$valores[$v]."' pattern='".$this->get_regex_validacion($autoregex)."' alt='".str_replace("'","`",$this->get_rotulo())."' ";
 				
@@ -455,6 +503,9 @@ class Field {
 			case "smallint":
 				$return = "^[0-9\\.\\,]*$";
 				break;
+			case "bit":
+				$return = "^[0-9\\.\\,]*$";
+				break;
 			default:
 				echo "sql2regex: No encontré este tipo: ".strtolower(trim($this->get_tipo_sql()))."<br/>";
 				break;
@@ -480,6 +531,7 @@ class Field {
 		
 		//Si se trata de un campo requerido, pero el valor por defecto es NULL,
 		//me manejo con otra lógica vinculada al tipo de datos.
+		//http://stackoverflow.com/questions/1942586/comparison-of-database-column-types-in-mysql-postgresql-and-sqlite-cross-map
 		switch(strtolower(trim($this->get_tipo_sql()))){
 			case "string":
 				$ret = "";
@@ -532,6 +584,12 @@ class Field {
 			case "smallint":
 				$ret = "0";
 				break;
+			case "bit":
+				$ret = "b'0'";
+				break;
+			case "tinyint":
+				$ret = "0";
+				break;
 			default:
 				$ret = "";
 				break;
@@ -556,7 +614,7 @@ class TimestampField extends Field{
 	
 	public function __construct($id="", $rotulo="", $valor="", $tipoHTML=""){
 		parent::__construct($id, $rotulo, $valor, $tipoHTML);
-		$this->set_activado(false); 
+		$this->set_activado(false);
 		$this->data["valor_default"] = "now()";
 	}
 	
@@ -566,7 +624,50 @@ class TimestampField extends Field{
 	
 	public function get_valor_para_sql(){
 		$ret = parent::get_valor_para_sql();
-		$ret = ($ret == '0') ? "now()" : $ret;
+		$ret = ($ret == '0' || $ret == '' || strtoupper($ret) == 'CURRENT_TIMESTAMP' || $ret == "''") ? "now()" : $ret;
+		return $ret;
+	}
+	
+}
+
+//20130723 - Daniel Cantarín 
+//Agrego un tipo de Field especial para bits
+class BitField extends Field{
+	public function __construct($id="", $rotulo="", $valor="", $tipoHTML=""){
+		parent::__construct($id, $rotulo, $valor, $tipoHTML);
+		$this->data["valor_default"] = "b'0'";
+	}
+	
+	private function encerar($val, $chars){
+		while (strlen($val) < $chars){
+			$val = "0".$val;
+		}
+		return $val;
+	}
+	
+	
+	public function set_valor($valor){
+		$tmp = $valor;
+		
+		if (!empty($tmp)){
+			$largo = $this->get_largo();
+			$tmp = (is_numeric($tmp)) ? "b'".decbin($tmp)."'" : "b'".$this->encerar(decbin(hexdec(bin2hex($valor))),$largo)."'";
+		}
+		parent::set_valor($tmp);
+	}
+	
+	public function get_valor($corregir = true){
+		
+		$ret = parent::get_valor($corregir);
+		if ($corregir){
+			$ret = bindec($ret);
+		}
+		return $ret;
+	}
+	
+	public function get_valor_para_sql(){
+		$ret = parent::get_valor_para_sql();
+		$ret = (is_numeric($ret)) ? "b'".decbin($ret)."'" : $ret;
 		return $ret;
 	}
 	
@@ -687,7 +788,7 @@ class SelectField extends Field {
 			$type = ($this->get_primary_key() === true) ? "hidden" : $this->get_tipo_HTML() ;
 			$type = ($type=="select") ? "hidden" : $type;
 			$type = str_replace("enum","text",$type);
-			$clase_css = $this->set_clase_CSS();
+			$clase_css = $this->get_clase_CSS();
 			
 			$ret2 .= "<input class='".$clase_css."' id='".$this->get_id()."' name='".$this->get_HTML_name()."' type='".$type."' value='".$valores[$v]."' pattern='".$this->get_regex_validacion($autoregex)."' alt='".str_replace("'","`",$this->get_rotulo())."' ";
 			
@@ -885,7 +986,7 @@ class OptionalListField extends SelectField{
 		$type = ($this->get_primary_key() === true) ? "hidden" : $this->get_tipo_HTML() ;
 		$type = ($type != "hidden") ? "text" : $type;
 		$type = str_replace("enum","text",$type);
-		$clase_css = $this->set_clase_CSS();
+		$clase_css = $this->get_clase_CSS();
 		$disabled = "";
 		
 		$ret2 .= "<input separador=\"".$this->get_separador()."\"  class='".$clase_css."' id='".$this->get_id()."' name='".$this->get_HTML_name()."' type='".$type."' value='".$valor."' old_value='".$valor."' pattern='".$this->get_regex_validacion($autoregex)."' alt='".str_replace("'","`",$this->get_rotulo())."' ";
@@ -966,7 +1067,7 @@ class FileField extends Field{
 		$type = ($this->get_primary_key() === true) ? "hidden" : $this->get_tipo_HTML() ;
 		$type = ($type != "hidden") ? "text" : $type;
 		$type = str_replace("enum","text",$type);
-		$clase_css = $this->set_clase_CSS();
+		$clase_css = $this->get_clase_CSS();
 		
 		$ret2 .= "<input class='".$clase_css."' type='file' name='file_".$this->get_id()."' id='file_".$this->get_id()."' ";
 		if ($this->get_requerido() === TRUE){
@@ -1010,7 +1111,7 @@ class ImageFileField extends FileField{
 	public function render(){
 		$ret  = str_replace("</span>\n", "", parent::render());
 		
-		$ret .= "\n<br/>\n<img src='".$this->get_valor()."' class='".$this->set_clase_CSS()."' id='image_".$this->get_id()."' onclick=\"$('#file_".$this->get_id()."')[0].click();\" />\n<br/>\n";
+		$ret .= "\n<br/>\n<img src='".$this->get_valor()."' class='".$this->get_clase_CSS()."' id='image_".$this->get_id()."' onclick=\"$('#file_".$this->get_id()."')[0].click();\" />\n<br/>\n";
 		
 		$ret .= "</span>\n";
 		return $ret;

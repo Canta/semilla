@@ -76,6 +76,10 @@
 	border: none;
 }
 
+.erroneo{
+	background-color: #ffaaaa;
+}
+
 .mensaje > .texto-mensaje{
 	width:90%;
 	height:50%;

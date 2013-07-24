@@ -254,6 +254,10 @@ class ORM {
 				
 				$largo = (isset($campo["CHARACTER_MAXIMUM_LENGTH"]) && (int)$campo["CHARACTER_MAXIMUM_LENGTH"] > 0) ? (int)$campo["CHARACTER_MAXIMUM_LENGTH"] : 0;
 				$largo = ($largo <= 0 && isset($campo["character_maximum_length"]) ) ? (int)$campo["character_maximum_length"] : $largo;
+				if ($largo == 0 || $largo == '' || is_null($largo)){
+					//Chequeo si no existe también NUMERIC_PRECISION
+					$largo = (isset($campo["NUMERIC_PRECISION"]) && (int)$campo["NUMERIC_PRECISION"] > 0) ? (int)$campo["NUMERIC_PRECISION"] : 0;
+				}
 				
 				$comentario = (isset($campo["COLUMN_COMMENT"])) ? $campo["COLUMN_COMMENT"] : $campo["column_comment"];
 				$default = (isset($campo["COLUMN_DEFAULT"])) ? $campo["COLUMN_DEFAULT"] : null;
@@ -263,6 +267,9 @@ class ORM {
 				
 				if (strpos(strtolower($tipoSQL),"timestamp") !== false){
 					$ret[$nombre] = new TimestampField();
+					$default = 'now()';
+				}else if (strpos(strtolower($tipoSQL),"bit") !== false){
+					$ret[$nombre] = new BitField();
 				} else {
 					$ret[$nombre] = new Field();
 				}
@@ -343,6 +350,10 @@ class ORM {
 				//echo("Campo:".$nombre."<br/>");
 				$largo = (isset($campo["CHARACTER_MAXIMUM_LENGTH"]) && (int)$campo["CHARACTER_MAXIMUM_LENGTH"] > 0) ? (int)$campo["CHARACTER_MAXIMUM_LENGTH"] : 0;
 				$largo = ($largo <= 0 && isset($campo["character_maximum_length"])) ? (int)$campo["character_maximum_length"] : $largo;
+				if ($largo == 0 || $largo == '' || is_null($largo)){
+					//Chequeo si no existe también NUMERIC_PRECISION
+					$largo = (isset($campo["NUMERIC_PRECISION"]) && (int)$campo["NUMERIC_PRECISION"] > 0) ? (int)$campo["NUMERIC_PRECISION"] : 0;
+				}
 				
 				$comentario = (isset($campo["COLUMN_COMMENT"])) ? $campo["COLUMN_COMMENT"] : $campo["column_comment"];
 				
@@ -372,20 +383,22 @@ class ORM {
 				}
 				
 				//echo($nombre.":".$tipoSQL."<br/>");
-				if (strpos(strtolower($tipoSQL),"timestamp") !== false){
+				if (strpos(strtolower($tipoSQL),"timestamp") !== false) {
 					$ret[$i][$nombre] = new TimestampField();
+				} if (strtolower($tipoSQL) == "bit") {
+					$ret[$i][$nombre] = new BitField();
 				} else {
 					$ret[$i][$nombre] = new Field();
 				}
 				//$ret[$i][$nombre]->set_id($tipoHTML.$nombre); //por ejemplo: textLEGAJO, checkboxACTIVO, etc.
 				$ret[$i][$nombre]->set_id($nombre);
-				$ret[$i][$nombre]->set_valor($valor);
+				$ret[$i][$nombre]->set_largo($largo);
 				$ret[$i][$nombre]->set_tipo_HTML($tipoHTML);
 				$ret[$i][$nombre]->set_tipo_sql($tipoSQL);
-				$ret[$i][$nombre]->set_largo($largo);
 				$ret[$i][$nombre]->set_rotulo($comentario);
-				
 				$ret[$i][$nombre]->set_requerido( (trim($nullable) === "NO") );
+				$ret[$i][$nombre]->set_valor($valor);
+				
 				//echo(var_dump($pkey)); echo("<br>");
 				$ret[$i][$nombre]->set_primary_key( $pkey );
 				//$ret[$i][$nombre]->set_activado( !((boolean)strpos($flags, "auto_increment")) );
@@ -762,7 +775,25 @@ class ABM extends ORM{
 	//Loopea por todos los fields y chequea los datos que contienen con diferentes criterios.
 	//Devuelve true o false.
 	public function validate(){
-		return true;
+		$fs = $this->get_fields();
+		$ret = true;
+		
+		$id = strtoupper($this->get_campo_id());
+		$new = $this->is_new_item();
+		
+		foreach ($fs as $nombre => $f){
+			
+			if (!($new && $id == strtoupper($nombre))){
+				if (!$f->validate()){
+					$ret = false;
+					$rot = $f->get_rotulo();
+					$f->add_clase_CSS("erroneo");
+					$msg = new MensajeOperacion("El valor del campo ".(($rot == "") ? $nombre : $rot)." es inválido. ",ABM::ERROR_VALIDACION);
+					$this->add_mensaje($msg);
+				}
+			}
+		}
+		return $ret;
 	}
 	
 	public function get_rotulos_from_field_names($fns){
@@ -1011,7 +1042,17 @@ class ABM extends ORM{
 			//echo("<br/>analizar_operacion: 1<br/>");
 			$this->load_fields_from_array($data);
 			$this->save();
-			$op = "modificacion";
+			
+			$tmpok = true;
+			$msgs = $this->get_mensajes();
+			foreach ($msgs as $msg){
+				if ($msg->isError()){
+					$tmpok = false;
+					break;
+				}
+			}
+			
+			$op = ($tmpok) ? "modificacion" : $op;
 		} else if(isset($data['boton_nuevo_item']) && ($op == "alta")){
 			//Nuevo item
 			//Muestra el formulario de modificación, pero vacío.
