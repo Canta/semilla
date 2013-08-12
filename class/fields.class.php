@@ -27,6 +27,7 @@ class Field {
 		$this->data["primaryKey"] = false;
 		$this->data["columnas"] = 0;
 		$this->data["clase_css"] = "Field";
+		$this->data["alias"] = null;
 		
 		//$this->data["valor_default"] = null; //FIX: no lo seteo.
 		
@@ -75,6 +76,17 @@ class Field {
 		return $this->data["rotulo"];
 	}
 	
+	
+	public function is_number(){
+		$ret = false;
+		
+		$arr  = Array("int","int2","int4","int8","numeric","real","float","timestamp","timestamptz","integer","timestamp without time zone","smallint","bit");
+		$tipo = $this->get_tipo_sql();
+		$ret = (array_search($tipo,$arr) !== false);
+		
+		return $ret;
+	}
+	
 	public function get_valor($corregir = true){
 		
 		//20111006 - agrego la posibilidad de corregir los datos.
@@ -82,7 +94,11 @@ class Field {
 		//En lugar de eso, devuelvo sólo data útil, o un string vacío.
 		//20120810 - Daniel Cantarín 
 		//Agrego tratamiento para valores que sean arrays.
-		$tmp = implode($this->data["valor"]);
+		//$tmp = implode($this->data["valor"]);
+		//20130803 - Daniel Cantarín 
+		//Agrego la gestión de aliases para los fields.
+		//Esta funcionalidad es muy útil para abms combinados.
+		$tmp = (!is_null($this->data["alias"]) && $this->data["alias"] instanceof Field) ? $this->data["alias"]->get_valor() : implode($this->data["valor"]);
 		
 		if ($corregir){
 			if (strpos(strtolower($this->data["tipoSQL"]),"date") > -1 ){
@@ -151,6 +167,8 @@ class Field {
 			//Idem con el valor NULL
 		} else if (strtolower($tipo) == "bit"){
 			//Idem campos BIT
+		} else if ($this instanceof PasswordField){
+			//Idem PasswordFields
 		} else {
 			//Para cualquier otro caso, el valor va entre comillas.
 			$ret = "'".mysql_real_escape_string($ret)."'";
@@ -214,7 +232,7 @@ class Field {
 		$ret = false;
 		
 		$rx = $this->get_regex_validacion();
-		$ma = preg_match("/".$rx."/",$va);
+		$ma = preg_match("/".str_replace("/","\\/",$rx)."/",$va);
 		
 		if ($ma === false){
 			throw new Exception("<b class=\"exception_text\">Clase Field, método validate: hubo un error al intentar validad la expresión regular \"".$rx."\" contra el valor \"".$va."\". Imposible continuar.</b>");
@@ -446,83 +464,47 @@ class Field {
 		// un string con una expresión regular para validarlo en el cliente.
 		$return = "";
 		
-		switch(strtolower(trim($this->get_tipo_sql()))){
-			case "string":
-				$return = "^.*$";
-				break;
-			case "varchar":
-				$return = "^.*$";
-				break;
-			case "int":
-				$return = "^[0-9\\.\\,]*$";
-				break;
-			case "int2":
-				$return = "^[0-9\\.\\,]*$";
-				break;
-			case "int4":
-				$return = "^[0-9\\.\\,]*$";
-				break;
-			case "int8":
-				$return = "^[0-9\\.\\,]*$";
-				break;
-			case "numeric":
-				$return = "^[0-9\\.\\,]*$";
-				break;
-			case "real":
-				$return = "^[0-9\\.\\,]*$";
-				break;
-			case "float":
-				$return = "^[0-9\\.\\,]*$";
-				break;
-			case "datetime":
-				//$return = "^([0-9]{4})[-/]([0-1][0-9])[-/]([0-3][0-9])(\s[0-9]{2,2}:[0-5][0-9]:[0-5][0-9])?$"; //aaaaMMdd hh:mm:ss
-				$return = "^([0-3][0-9])[-/]([0-1][0-9])[-/]([0-9]{4})(\s[0-9]{2,2}:[0-5][0-9]:[0-5][0-9])?$"; //ddMMaaaa hh:mm:ss
-				break;
-			case "date":
-				//$return = "^([0-9]{4})[-/]([0-1][0-9])[-/]([0-3][0-9])$"; //aaaammdd
-				$return = "^([0-3][0-9])[-/]([0-1][0-9])[-/]([0-9]{4})$"; //ddmmaaaa
-				break;
-			case "time":
-				$return = "([0-9]{2,2}:[0-5][0-9]:[0-5][0-9])$";
-				break;
-			case "timestamp":
-				$return = "^[0-9\\.\\,]*$";
-				break;
-			case "timestamptz":
-				$return = "^[0-9\\.\\,]*$";
-				break;
-			case "integer":
-				$return = "^[0-9\\.\\,]*$";
-				break;
-			case "timestamp without time zone":
-				$return = "^[0-9\\.\\,]*$";
-				break;
-			case "character varying":
-				$return = "^.*$";
-				break;
-			case "smallint":
-				$return = "^[0-9\\.\\,]*$";
-				break;
-			case "bit":
-				$return = "^[0-9\\.\\,]*$";
-				break;
-			default:
-				echo "sql2regex: No encontré este tipo: ".strtolower(trim($this->get_tipo_sql()))."<br/>";
-				break;
-		}
-		
-		if ($return == ""){
-			//20120521 - Daniel Cantarín
-			//No se encontró ningún caso.
-			//Agrego algunas consultas para casos vinculados a otros motores.
-			//Por ejemplo, en Posgree me devuelve int2 o int4 para algunos int.
-			//Más información acá: http://ar2.php.net/manual/en/function.pg-field-type.php
-			$tmp_tipo = strtolower(trim($this->get_tipo_sql()));
-			if ($tmp_tipo == "int2" || $tmp_tipo == "int4" || $tmp_tipo == "int8" || $tmp_tipo == "timestamp" || $tmp_tipo == "integer"){
-				$return = "^[0-9]*$";
+		if ($this->is_number()){
+			$return = "^[0-9\\.\\,]*$";
+		} else {
+			switch(strtolower(trim($this->get_tipo_sql()))){
+				case "string":
+					$return = "^.*$";
+					break;
+				case "varchar":
+					$return = "^.*$";
+					break;
+				case "text":
+					$return = "^.*$";
+					break;
+				case "datetime":
+					//$return = "^([0-9]{4})[-/]([0-1][0-9])[-/]([0-3][0-9])(\s[0-9]{2,2}:[0-5][0-9]:[0-5][0-9])?$"; //aaaaMMdd hh:mm:ss
+					$return = "^([0-3][0-9])[-/]([0-1][0-9])[-/]([0-9]{4})(\s[0-9]{2,2}:[0-5][0-9]:[0-5][0-9])?$"; //ddMMaaaa hh:mm:ss
+					break;
+				case "date":
+					//$return = "^([0-9]{4})[-/]([0-1][0-9])[-/]([0-3][0-9])$"; //aaaammdd
+					$return = "^([0-3][0-9])[-/]([0-1][0-9])[-/]([0-9]{4})$"; //ddmmaaaa
+					break;
+				case "time":
+					$return = "([0-9]{2,2}:[0-5][0-9]:[0-5][0-9])$";
+					break;
+				case "timestamp":
+					$return = "^[0-9\\.\\,]*$";
+					break;
+				case "timestamptz":
+					$return = "^[0-9\\.\\,]*$";
+					break;
+				case "timestamp without time zone":
+					$return = "^[0-9\\.\\,]*$";
+					break;
+				case "character varying":
+					$return = "^.*$";
+					break;
+				default:
+					echo "sql2regex: No encontré este tipo: ".strtolower(trim($this->get_tipo_sql()))."<br/>";
+					break;
 			}
 		}
-		
 		
 		return $return;
 	}
@@ -622,9 +604,24 @@ class TimestampField extends Field{
 		return "";
 	}
 	
+	public function validate(){
+		return true;
+	}
+	
+	public function get_valor($corregir = true){
+		$ret = parent::get_valor($corregir);
+		
+		if ($corregir === true && !is_numeric($ret)){
+			$ret = strtotime($ret);
+		}
+		
+		return $ret;
+	}
+	
 	public function get_valor_para_sql(){
-		$ret = parent::get_valor_para_sql();
-		$ret = ($ret == '0' || $ret == '' || strtoupper($ret) == 'CURRENT_TIMESTAMP' || $ret == "''") ? "now()" : $ret;
+		//$ret = parent::get_valor_para_sql();
+		//$ret = ($ret == '0' || $ret == '' || strtoupper($ret) == 'CURRENT_TIMESTAMP' || $ret == "''") ? "now()" : $ret;
+		$ret = "now()";
 		return $ret;
 	}
 	
@@ -673,6 +670,73 @@ class BitField extends Field{
 	
 }
 
+//20130725 - Daniel Cantarín 
+//Agrego un tipo de Field especial para gestión de passwords
+class PasswordField extends Field{
+	public function __construct($id="", $rotulo="", $valor="", $tipoHTML=""){
+		parent::__construct($id, $rotulo, $valor, $tipoHTML);
+		$this->set_algorithm("md5");
+		$this->set_tipo_HTML("password");
+	}
+	
+	public function set_algorithm($val){
+		$val == strtolower($val);
+		if ($val == "md5"){
+			$this->set_largo(32);
+		} else if ("sha1"){
+			$this->set_largo(40);
+		} else {
+			throw new Exception("Class PasswordField, method set_algorithm: '".$val."' is not a valid password encryption algorithm.");
+		}
+		
+		$this->data["algorithm"] = $val;
+	}
+	
+	public function get_algorithm(){
+		return $this->data["algorithm"];
+	}
+	
+	public function set_valor($valor){
+		$tmp = $valor;
+		
+		parent::set_valor($tmp);
+	}
+	
+	public function encrypt($val){
+		$ret = "";
+		$alg = $this->get_algorithm();
+		if ($alg == "md5"){
+			$ret = md5($val);
+		} else if ($alg == "sha1") {
+			$ret = sha1($val);
+		} 
+		
+		return $ret;
+	}
+	
+	public function get_valor($corregir = true){
+		$ret = parent::get_valor($corregir);
+		if ($corregir){
+			if (strlen($ret) < $this->get_largo() && $ret != ""){
+				$ret = $this->encrypt($ret);
+			}
+		}
+		return $ret;
+	}
+	
+	
+	public function get_valor_para_sql(){
+		$ret = parent::get_valor_para_sql();
+		$largo = $this->get_largo();
+		if (strlen($ret) < $this->get_largo() && $ret != ""){
+			$ret = $this->encrypt($ret);
+		}
+		
+		return "'".$ret."'";
+	}
+	
+}
+
 class SelectField extends Field {
 	
 	public function __construct($id="", $rotulo="", $valor="", $items = null){
@@ -687,6 +751,7 @@ class SelectField extends Field {
 		$this->data["campo_indice"] = 0;
 		$this->data["campo_descriptivo"] = 1;
 	}
+	
 	
 	public function set_campo_indice($val){
 		$this->data["campo_indice"] = $val;
@@ -726,9 +791,28 @@ class SelectField extends Field {
 		return $ret;
 	}
 	
-	public function get_valor($corregir = true){
+	public function get_valor_para_sql(){
+		$ret = parent::get_valor_para_sql();
+		$items = $this->get_items();
+		$found = false;
+		foreach ($items as $nombre=>$valor){
+			if ("'".strtolower($valor[$this->get_campo_indice()])."'" == strtolower($ret)){
+				$found = true;
+				break;
+			}
+		}
 		
-		//$v = parent::getValor($corregir);
+		if ($found !== true){
+			$ret = ($this->get_requerido()) ? $items[0][$this->get_campo_indice()] : 'null';
+		} else {
+			$ret = ($ret == "''" && !$this->get_requerido()) ? 'null' : $ret;
+			
+		}
+		
+		return $ret;
+	}
+	
+	public function get_valor($corregir = true){
 		
 		//20121025 - Daniel Cantarín 
 		//Pequeño fix: cuando el campo es int, que el valor por defecto sea cero, no un string vacío.
@@ -736,14 +820,16 @@ class SelectField extends Field {
 		//y al estar guardado en la base como "0" y corregir el valor en parent::get_valor(), ese
 		//"0" que era válido se convierte en un "" inválido.
 		$tipo = strtolower($this->get_tipo_sql());
-		if (strpos($tipo,"int") !== false ){
+		$ret = null;
+		$v = null;
+		
+		if ($this->is_number()){
 			$corregir = false;
-		} 
+		}
 		
 		$v = parent::get_valor($corregir);
 		
 		if ($corregir !== false){
-			$ret = null;
 			foreach ($this->get_items() as $item){
 				if (isset($item[$this->get_campo_indice()]) && strtolower($item[$this->get_campo_indice()]) == strtolower($v)){
 					$ret = $item[$this->get_campo_indice()];
@@ -753,6 +839,9 @@ class SelectField extends Field {
 			
 			if (is_null($ret)){
 				$ret = isset($this->data["items"][0][$this->get_campo_indice()]) ? $this->data["items"][0][$this->get_campo_indice()] : "";
+				if ($this->is_number() && $ret == ""){
+					$ret = ($this->get_requerido()) ? 0 : null;
+				}
 			}
 			
 			return $ret;
@@ -843,7 +932,7 @@ class SiNoEnumField extends EnumField{
 	public function __construct($id="", $rotulo="", $valor="", $items = null){
 		parent::__construct($id, $rotulo, $valor);
 		
-		$this->data["items"] = Array(Array("S", "Si"), Array("N", "No"));
+		$this->data["items"] = Array(Array("N", "No"),Array("S", "Si"));
 		$this->set_tipo_HTML("enum");
 		$this->set_tipo_sql("varchar");
 		
@@ -854,7 +943,7 @@ class IntSiNoEnumField extends EnumField{
 	public function __construct($id="", $rotulo="", $valor="", $items = null){
 		parent::__construct($id, $rotulo, $valor);
 		
-		$this->data["items"] = Array(Array("1", "Si"), Array("0", "No"));
+		$this->data["items"] = Array(Array("0", "No"),Array("1", "Si"));
 		$this->set_tipo_HTML("enum");
 		$this->set_tipo_sql("int");
 		
@@ -879,10 +968,9 @@ class QueryEnumField extends EnumField{
 		$this->data["query"] = $query;
 		$this->data["valores"] = Array(); //fix para ConditionalQueryEnumField
 		
-		$data=new Query();
-		$data->executeQuery($this->get_query()); 
+		$c = Conexion::get_instance();
+		$this->data["items"] = $c->execute($this->get_query());
 		
-		$this->data["items"] = $data->get_data();
 	}
 	
 	public function get_query($val = null){
@@ -913,10 +1001,14 @@ class ConditionalQueryEnumField extends QueryEnumField{
 		$this->data["valores"] = $data["valores"];
 		$this->data["query"] = $data["query"];
 		
-		$data=new Query();
-		$data->executeQuery($this->get_query()); 
+		if ($valor == "" && $this->is_number()){
+			$v = ($this->get_requerido()) ? 0 : null;
+			$this->set_valor($v);
+		}
 		
-		$this->data["items"] = $data->getData();
+		$c= Conexion::get_instance();
+		$this->data["items"] = $c->execute($this->get_query());
+		
 	}
 	
 	public function get_query($val = null){
@@ -937,6 +1029,7 @@ class ConditionalQueryEnumField extends QueryEnumField{
 	public function set_valores($val=null){
 		$this->data["valores"] = $val;
 	}
+	
 }
 
 
@@ -1132,6 +1225,126 @@ class NullField extends Field{
 	public function render(){
 		return "&nbsp;";
 	}
+}
+
+class CheckboxTreeEnumField extends SelectField{
+	
+	public function __construct($id="", $rotulo="", $valor="", $items = null){
+		parent::__construct($id, $rotulo, $valor, $items);
+		$valor = (is_array($valor)) ? $valor : Array();
+		$this->set_valores($valor);
+		$this->set_campo_indice("id");
+		$this->set_campo_descriptivo("descripcion");
+		$this->set_campo_referencial("id_padre");
+		$this->set_requerido(true);
+		$this->set_items_from_array($items);
+	}
+	
+	public function set_campo_referencial($val){
+		$this->data["campo_referencial"] = $val;
+	}
+	
+	public function get_campo_referencial(){
+		return $this->data["campo_referencial"];
+	}
+	
+	public function set_items_from_array($arr){
+		$items = Array();
+		foreach ($arr as $key=>$item){
+			if (
+				array_key_exists($this->get_campo_referencial(),$item)
+				&& 
+				(
+					$item[$this->get_campo_referencial()] == 0
+					|| is_null($item[$this->get_campo_referencial()])
+				)
+			){
+				$items[] = Array( "id" => $item[$this->get_campo_indice()], "descripcion" => $item[$this->get_campo_descriptivo()], "hijos" => $this->set_items_from_array_aux($arr, $item[$this->get_campo_indice()]));
+			}
+		}
+		$this->data["items"]=$items;
+	}
+	
+	private function set_items_from_array_aux(&$arr, $id){
+		$ret = Array();
+		foreach ($arr as $key=>$item2){
+			if (array_key_exists($this->get_campo_referencial(),$item2) && $item2[$this->get_campo_referencial()] == $id){
+				$ret[] = Array( "id" => $item2[$this->get_campo_indice()], "descripcion" => $item2[$this->get_campo_descriptivo()], "hijos" => $this->set_items_from_array_aux($arr,$item2[$this->get_campo_indice()]) );
+				array_splice($arr,$key,1);
+			}
+		}
+		return $ret;
+	}
+	
+	public function render($clase = ""){
+		
+		$nombre = $this->get_id();
+		$eventos = $this->get_events();
+		$items = $this->get_items();
+		$ret = "";
+		
+		$tmp = ($this->get_primary_key() === true) ? "hidden" : $this->get_tipo_HTML() ;
+		
+		$stily = "style=\"";
+		if ($this->data["columnas"] > 0){
+			$stily .= "width:".(100 / $this->data["columnas"] / 2)."%; ";
+		}
+		
+		if ($tmp == "hidden" ){
+			$stily .= "display: none; ";
+		}
+		
+		$stily .= "\" ";
+		
+		$ret .= "<span class=\"Field_rotulo\" ".$stily.">".(($this->get_rotulo() == "" && $this->get_primary_key() === false) ? $this->get_id() : $this->get_rotulo()) ."&nbsp;</span><span class=\"Field_input\" ".$stily.">";
+		
+		$ret .= "<ul class=\"Field tree\" id=\"tree_".$nombre."\" ";
+		foreach ($eventos as $event => $code){
+			$ret .= $event."=\"".$code."\" ";
+		}
+		$ret .= ">\n";
+		foreach ($items as $item){
+			$ret .= "<li> <input type=\"checkbox\" id=\"tree_".$nombre."value_".$item["id"]."\" value=\"".$item["id"]."\" name=\"".$nombre."[]\" ";
+			
+			if (array_search($item["id"],$this->get_valores()) !== false) {
+				$ret .= " checked ";
+			}
+			if (trim($clase) != "" ){
+				$ret .= " class=\"".$clase."\" ";
+			}
+			$ret .= "><label for=\"tree_".$nombre."value_".$item["id"]."\">".$item["descripcion"]."</label>";
+			$ret .= $this->render_aux($item, $clase);
+			$ret .= "</li>";
+		}
+		$ret .= "</ul></span>";
+		
+		return $ret;
+	}
+	
+	private function render_aux($arr, $clase){
+		$ret = "";
+		$nombre = $this->get_id();
+		if ( isset($arr["hijos"]) && count($arr["hijos"]) > 0 ){
+			$ret .= "<ul>\n";
+			foreach ($arr["hijos"] as $item){
+				$ret .= "<li> <input type=\"checkbox\" name=\"".$nombre."[]\" id=\"tree_".$nombre."value_".$item["id"]."\" value=\"".$item["id"]."\" ";
+				if (array_search($item["id"],$this->get_valores()) !== false) {
+					$ret .= " checked ";
+				}
+				if (trim($clase) != "" ){
+					$ret .= " class=\"".$clase."\" ";
+				}
+				$ret .= "><label for=\"tree_".$nombre."value_".$item["id"]."\">".$item["descripcion"]."</label>";
+				$ret .= $this->render_aux($item, $clase);
+				$ret .= "</li>";
+			}
+			$ret .= "</ul>";
+			
+		}
+		
+		return $ret;
+	}
+	
 }
 
 ?>

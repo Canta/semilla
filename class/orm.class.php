@@ -75,7 +75,7 @@ class ORM {
 		$c = Conexion::get_instance();
 		
 		$qs = "select * from INFORMATION_SCHEMA.COLUMNS where table_name = '".$this->get_tabla()."' and (table_schema='".$c->get_database_name()."' or table_catalog='".$c->get_database_name()."')";
-		$r  = $c->execute($qs, $this->cache());
+		$r  = $c->execute($qs);
 		$r  = (is_null($r)) ? Array() : $r;
 		
 		$this->datos["campos"] = $r;
@@ -150,7 +150,7 @@ class ORM {
 		} else {
 			$tmp = $this->datos["campos"];
 			for ($i = 0; $i < count($tmp); $i++){
-				$ret[] = $tmp[$i]["column_name"];
+				$ret[] = isset($tmp[$i]["column_name"]) ? $tmp[$i]["column_name"] : $tmp[$i]["COLUMN_NAME"];
 			}
 		}
 		
@@ -214,7 +214,9 @@ class ORM {
 		foreach ($this->datos["constraints"] as $c){
 			if (strpos(strtolower($c["CONSTRAINT_TYPE"]),'primary') !== false){
 				$tmp = (array_key_exists(strtolower($c["COLUMN_NAME"]),$r)) ? strtolower($c["COLUMN_NAME"]) : strtoupper($c["COLUMN_NAME"]);
-				$r[$tmp]->set_primary_key(true);
+				if (isset($r[$tmp]) && $r[$tmp] instanceof Field) {
+					$r[$tmp]->set_primary_key(true);
+				}
 			}
 		}
 		
@@ -222,10 +224,15 @@ class ORM {
 		foreach ($this->datos["campos"] as $c){
 			$tmp = (array_key_exists(strtolower($c["COLUMN_NAME"]),$r)) ? strtolower($c["COLUMN_NAME"]) : strtoupper($c["COLUMN_NAME"]);
 			if (strpos(strtolower($c["IS_NULLABLE"]),'yes') !== false){
-				$r[$tmp]->set_requerido(false);
+				if (isset($r[$tmp]) && $r[$tmp] instanceof Field) {
+					$r[$tmp]->set_requerido(false);
+				}
 			} else {
-				$r[$tmp]->set_requerido(true);
+				if (isset($r[$tmp]) && $r[$tmp] instanceof Field) {
+					$r[$tmp]->set_requerido(true);
+				}
 			}
+			
 		}
 		
 		$this->datos["fields"] = $r;
@@ -262,17 +269,24 @@ class ORM {
 				$comentario = (isset($campo["COLUMN_COMMENT"])) ? $campo["COLUMN_COMMENT"] : $campo["column_comment"];
 				$default = (isset($campo["COLUMN_DEFAULT"])) ? $campo["COLUMN_DEFAULT"] : null;
 				
+				$nullable = (isset($campo["IS_NULLABLE"])) ? $campo["IS_NULLABLE"] : $campo["is_nullable"];
+				
 				$tipoSQL = (isset($campo["data_type"])) ? $campo["data_type"] : $campo["DATA_TYPE"];;
 				$tipoHTML = Field::sqltype2htmltype($tipoSQL);
+				$fk_vals = $this->get_campo_fk_values($nombre);
 				
 				if (strpos(strtolower($tipoSQL),"timestamp") !== false){
 					$ret[$nombre] = new TimestampField();
 					$default = 'now()';
 				}else if (strpos(strtolower($tipoSQL),"bit") !== false){
 					$ret[$nombre] = new BitField();
+				} else if (count($fk_vals) > 0) {
+					$ret[$nombre] = new SelectField($nombre, $comentario, "", $fk_vals);
+					$tipoHTML = "select";
 				} else {
 					$ret[$nombre] = new Field();
 				}
+				
 				//$ret[$nombre]->set_id($tipoHTML.$nombre); //por ejemplo: textLEGAJO, checkboxACTIVO, etc.
 				$ret[$nombre]->set_id($nombre); 
 				//$ret[$nombre]->set_valor($this->datos[$i][$tmp[$x]]);
@@ -280,17 +294,17 @@ class ORM {
 				$ret[$nombre]->set_tipo_sql($tipoSQL);
 				$ret[$nombre]->set_largo( $largo );
 				$ret[$nombre]->set_rotulo( $comentario );
+				$ret[$nombre]->set_requerido( (trim($nullable) === "NO") );
 				$ret[$nombre]->set_valorDefault( $default );
 				
 				//$ret[$name]->set_requerido( pg_field_is_null($this->consulta, $x) );
 				//$ret[$name]->set_primary_key( (strpos($flags, "primary_key") > -1) );
 				//$ret[$name]->set_activado( !((boolean)strpos($flags, "auto_increment")) );
-				
-				$fk_vals = $this->get_campo_fk_values($nombre);
-				if (count($fk_vals) > 0){
-					$ret[$nombre] = new SelectField($ret[$nombre]->get_id(), $ret[$nombre]->get_rotulo(), $ret[$nombre]->get_valor(), $fk_vals);
+				/*
+				if ($ret[$nombre] instanceof SelectField){
+					die(var_dump($ret[$nombre]->get_requerido()));
 				}
-				
+				*/
 			}
 			return $ret;
 		}
@@ -383,14 +397,19 @@ class ORM {
 				}
 				
 				//echo($nombre.":".$tipoSQL."<br/>");
+				$fk_vals = $this->get_campo_fk_values($nombre);
 				if (strpos(strtolower($tipoSQL),"timestamp") !== false) {
 					$ret[$i][$nombre] = new TimestampField();
-				} if (strtolower($tipoSQL) == "bit") {
+				} else if (strtolower($tipoSQL) == "bit") {
 					$ret[$i][$nombre] = new BitField();
+				} else if (count($fk_vals) > 0){
+					$ret[$i][$nombre] = new SelectField($nombre, $comentario, $valor, $fk_vals);
+					$tipoHTML = "select";
 				} else {
 					$ret[$i][$nombre] = new Field();
 				}
 				//$ret[$i][$nombre]->set_id($tipoHTML.$nombre); //por ejemplo: textLEGAJO, checkboxACTIVO, etc.
+				
 				$ret[$i][$nombre]->set_id($nombre);
 				$ret[$i][$nombre]->set_largo($largo);
 				$ret[$i][$nombre]->set_tipo_HTML($tipoHTML);
@@ -405,11 +424,6 @@ class ORM {
 				if (!$pkey){
 					$ret[$i][$nombre]->set_valorDefault( $default );
 					//echo("default: "); echo(var_dump($default)); echo("<br/>");
-				}
-				
-				$fk_vals = $this->get_campo_fk_values($nombre);
-				if (count($fk_vals) > 0){
-					$ret[$i][$nombre] = new SelectField($ret[$i][$nombre]->get_id(), $ret[$i][$nombre]->get_rotulo(), $ret[$i][$nombre]->get_valor(), $fk_vals);
 				}
 				
 			}
@@ -434,13 +448,18 @@ class ABM extends ORM{
 		$this->datos["form_descripcion"] = "";
 		$this->datos["form_operacion"] = "lista";
 		$this->datos["form_operacion_default"] = "lista";
+		$this->datos["form_mode"] = "post";
+		$this->datos["form_target"] = "";
+		$this->datos["form_action"] = "";
 		$this->datos["metodo_serializacion"] = "html";
 		$this->datos["operaciones_posibles"] = Array("alta", "baja", "modificacion", "lista", "ver");
+		$this->datos["search_options"] = Array();
 		$this->datos["request_data"] = Array();
 		$this->datos["force_insert"] = false;
 		$this->datos["campo_fecha_vigencia"] = null;
 		$this->datos["itemsxpagina"] = 10;
 		$this->datos["pagina_actual"] = 1;
+		$this->datos["parent-abm"] = null;
 		
 		
 		//Botones por defecto para el formulario.
@@ -453,7 +472,7 @@ class ABM extends ORM{
 	
 	public function add_mensaje($msg = NULL){
 		if (is_array($msg) || get_class($msg) != "MensajeOperacion"){
-			throw new Exception("Clase ABM, método add_mensaje(): se esperaba un mensaje.");
+			throw new Exception("Clase ABM, método add_mensaje(): se esperaba un objeto de tipo MensajeOperacion.");
 		}
 		
 		$this->datos["mensajes"][] = $msg;
@@ -492,6 +511,7 @@ class ABM extends ORM{
 		} else {
 			
 			$tmp_msg = "";
+			$tmp_msg_error = "";
 			
 			$pkey = null;
 			$tmp = $this->datos["constraints"];
@@ -506,6 +526,10 @@ class ABM extends ORM{
 			$qs  = "";
 			$ffkey = null;
 			$ffs = $this->datos["fields"];
+			$campos = $this->get_campos(true);
+			for ($i=0; $i <count($campos); $i++){
+				$campos[$i] = strtoupper($campos[$i]);
+			}
 			
 			if (!$es_insert){
 				//update
@@ -513,7 +537,9 @@ class ABM extends ORM{
 				$qs = "update ".$this->datos["tabla"]." set ";
 				foreach ($ffs as $key=>$ff){
 					if (strtolower($key) !== strtolower($pkey["COLUMN_NAME"])){
-						$qs .= $key . " = " .$ff->get_valor_para_sql() . ", ";
+						if (array_search($key,$campos) !== false){
+							$qs .= $key . " = " .$ff->get_valor_para_sql() . ", ";
+						}
 					} else {
 						$ffkey = $ff;
 					}
@@ -526,7 +552,9 @@ class ABM extends ORM{
 				$qs = "insert into ".$this->datos["tabla"]."(";
 				foreach ($ffs as $key=>$ff){
 					if (strtolower($key) !== strtolower($pkey["COLUMN_NAME"])){
-						$qs .= $key . ", ";
+						if (array_search($key,$campos) !== false){
+							$qs .= $key . ", ";
+						}
 					} else {
 						$ffkey = $ff;
 					}
@@ -535,7 +563,9 @@ class ABM extends ORM{
 				$qs .= ") values (";
 				foreach ($ffs as $key=>$ff){
 					if (strtolower($key) !== strtolower($pkey["COLUMN_NAME"])){
-						$qs .= $ff->get_valor_para_sql() . ", ";
+						if (array_search($key,$campos) !== false){
+							$qs .= $ff->get_valor_para_sql() . ", ";
+						}
 					}
 				}
 				$qs  = substr_replace($qs ,"",-2);
@@ -545,7 +575,13 @@ class ABM extends ORM{
 			//die(var_dump($qs));
 			//Una vez con la query construida, la ejecuto.
 			$c = Conexion::get_instance();
-			$ret = $c->execute($qs,false);
+			try{
+				$ret = $c->execute($qs,false);
+			}catch(Exception $e){
+				$ret = false;
+				//$tmp_msg_error = "Error: ".$e->getMessage();
+				$tmp_msg_error = "Error en la base de datos.";
+			}
 			
 			if ($es_insert){
 				//necesito obtener el último ID insertado
@@ -564,7 +600,7 @@ class ABM extends ORM{
 			if ($ret !== false) {
 				$msg = new MensajeOperacion("[".date('Y-m-j h:i:s')."]: ".$tmp_msg." de datos se realizó con éxito. ");
 			} else {
-				$msg = new MensajeOperacion("[".date('Y-m-j h:i:s')."]: error durante ".$tmp_msg." de datos. No se pudo completar la operación.", ABM::ERROR_SAVE);
+				$msg = new MensajeOperacion("[".date('Y-m-j h:i:s')."]: error durante ".$tmp_msg." de datos. \n".$tmp_msg_error, ABM::ERROR_SAVE);
 			}
 			$this->add_mensaje($msg);
 			
@@ -891,7 +927,7 @@ class ABM extends ORM{
 	public function render_form($data = null){
 		$metodo = (!is_null($data) && isset($data["metodo_serializacion"]) ) ? $data["metodo_serializacion"] : $this->get_metodo_serializacion();
 		$ret = null;
-		$this->setup_fields();
+		//$this->setup_fields();
 		switch ($metodo){
 			case "html":
 				$ret = $this->render_form_html($data);
@@ -917,7 +953,11 @@ class ABM extends ORM{
 		
 		$solo_con_rotulo = (!is_null($data) && isset($data["solo_con_rotulo"]) ) ? $data["solo_con_rotulo"] : True;
 		
-		$form = "<form onsubmit=\"return validafields();\" id=\"frm".$this->datos["tabla"]."\" name=\"frm".$this->datos["tabla"]."\" method=\"post\" action=\"\" class=\"frmABM\" columnas=\"".$this->datos["form_columnas"]."\" >\n";
+		$onsubmit = (strtolower($this->datos["form_mode"]) == "post") ? " onsubmit=\"return validafields();\" " : " onsubmit=\"return false;\" ";
+		$target = (trim($this->datos["form_target"]) != "") ? " target=\"".$this->datos["form_target"]."\" " : "";
+		$action = $this->datos["form_action"];
+		
+		$form = "<form ".$onsubmit." id=\"frm".$this->datos["tabla"]."\" name=\"frm".$this->datos["tabla"]."\" method=\"post\" action=\"".$action."\" class=\"frmABM\" columnas=\"".$this->datos["form_columnas"]."\" ".$target.">\n";
 		
 		$form .= "<input type=\"hidden\" name=\"form_operacion\" value=\"".$this->get_operacion()."\" />\n";
 		$form .= "<div class=\"FormTitulo\">".$this->datos["form_titulo"]."</div>\n";
@@ -940,27 +980,28 @@ class ABM extends ORM{
 			//Si se trata de un alta o modificación, dibujo los campos.
 			$cols = (isset($this->datos["form_columnas"])) ? $this->datos["form_columnas"] : 2;
 			$i = 0;
+			$limit = count($this->get_fields());
 			foreach ($this->get_fields() as $k=>$ff){
-				if (($solo_con_rotulo != true) || ($ff->get_rotulo() != "" && $solo_con_rotulo == true) || $ff->get_primary_key() === true){
-					
-					//Si el campo tiene aplicado un Foreign Key, lo convierto Field de tipo Enum
-					$fk_vals = $this->get_campo_fk_values($k);
-					if (count($fk_vals) > 0){
-						$ff = new SelectField($ff->get_id(), $ff->get_rotulo(), $ff->get_valor(), $fk_vals);
-					}
-					
+				if (($solo_con_rotulo != true) || ($ff->get_rotulo() != "" && $solo_con_rotulo == true) || $ff->get_primary_key() === true ){
 					if ($i % $cols == 0) {
 						$form .= "<div class=\"Field_Row\" >\n";
 					}
-					$i++;
 					$ff->set_columnas($cols);
 					$form .= $ff->render()."\n";
-					if ($i % $cols == 0 || $i == count($this->get_fields()))  {
+					$i++;
+					if ($i % $cols == 0) {
+						$form .= "</div>\n";
+					} else if ($i == $limit){
+						$nf = new NullField();
+						while($i % $cols != 0){
+							$i++;
+							$form .= $nf->render()."\n";
+						}
 						$form .= "</div>\n";
 					}
 				}
 			}
-		} 
+		}
 		
 		foreach ($this->datos["form_extra_code_abajo"] as $code){
 			$form .= $code;
@@ -970,7 +1011,7 @@ class ABM extends ORM{
 		foreach ($this->get_form_buttons() as $fb){
 			$form .= $fb->render()." &nbsp; ";
 		}
-		$form .= "</form>\n";
+		$form .= "</div></form>\n";
 		
 		return $form;
 	}
@@ -1041,7 +1082,12 @@ class ABM extends ORM{
 			//Grabación de datos
 			//echo("<br/>analizar_operacion: 1<br/>");
 			$this->load_fields_from_array($data);
-			$this->save();
+			if (!is_null($this->datos["parent-abm"]) && $this->datos["parent-abm"] instanceof ABM){
+				//En este caso, se trata de un abm combinado.
+				$this->datos["parent-abm"]->save();
+			} else {
+				$this->save();
+			}
 			
 			$tmpok = true;
 			$msgs = $this->get_mensajes();
@@ -1059,7 +1105,12 @@ class ABM extends ORM{
 			//Más tarde, al guardar los datos, agrega un item a la base.
 			//Para que eso funcione, el campo ID tiene que estar vacío.
 			//echo("<br/>analizar_operacion: 2<br/>");
-			$this->datos["fields"][strtoupper($this->get_campo_id())]->set_valor("");
+			if (
+					isset($this->datos["fields"][strtoupper($this->get_campo_id())])
+					&& ($this->datos["fields"][strtoupper($this->get_campo_id())] instanceof Field)
+				){
+				$this->datos["fields"][strtoupper($this->get_campo_id())]->set_valor("");
+			}
 		} else if (isset($data["update_fields"])){
 			//Si está establecido el campo "update_fields", se trata de una actualización de campos.
 			//De modo que actualizo los campos en cuestión, y devuelvo el formulario de la misma
@@ -1248,10 +1299,14 @@ class ABM extends ORM{
 			"max_pages" => (is_null($paginado)) ? null : $r["metadata"]["max_pages"],
 			"itemsxpagina" => (is_null($paginado)) ? null : $r["metadata"]["numero_items"],
 			"max_items" => (is_null($paginado)) ? null : $r["metadata"]["max_items"],
-			"campo_id" => $campo_id
+			"campo_id" => $campo_id,
+			"form_mode" => $this->datos["form_mode"],
+			"opciones" => $this->datos["search_options"],
+			"caller" => get_class($this)
 		);
 		
-		$l = new Lista($lista_parms);
+		$clase_lista = (isset($this->datos["search_results_class"])) ? $this->datos["search_results_class"] : "Lista";
+		$l = new $clase_lista($lista_parms);
 		
 		$this->datos["last_search"] = $l;
 		
@@ -1260,53 +1315,26 @@ class ABM extends ORM{
 	
 }
 
-class ClassGetter {
-	
-	public static function get_all($tabla){
-		//Devuelve un array con todos los items que tengan campo id != 0
-		$searcher = new ABM($tabla);
-		$class_name = ucwords($tabla);
-		$c = new Condicion(Condicion::TIPO_DISTINTO);
-		$c->set_comparando($searcher->get_campo_id());
-		$c->set_comparador("0");
-		$criterios = Array($c);
-		$ids = $searcher->search($criterios,Array($searcher->get_campo_id()),$searcher->get_campo_id());
-		$ret = Array();
-		
-		foreach ($ids->get_items() as $item){
-			$tmp = (class_exists($class_name)) ?  new $class_name() : new Model($tabla);
-			$c = new Condicion(Condicion::TIPO_IGUAL, Condicion::ENTRE_CAMPO_Y_VALOR);
-			$c->set_comparando($tmp->get_campo_id());
-			$c->set_comparador($item[$tmp->get_campo_id()]);
-			$tmp->load(Array($c));
-			$ret[] = $tmp;
-		}
-		
-		return $ret;
-	}
-	
-	public static function get($tabla, $criterios){
-		//Devuelve un array con todos los items que cumplan con los criterios
-		$searcher = new ABM($tabla);
-		$class_name = ucwords($tabla);
-		$ids = $searcher->search($criterios,Array($searcher->get_campo_id()),$searcher->get_campo_id());
-		$ret = Array();
-		
-		
-		foreach ($ids->get_items() as $item){
-			$tmp = (class_exists($class_name)) ?  new $class_name() : new Model($tabla);
-			$c = new Condicion(Condicion::TIPO_IGUAL, Condicion::ENTRE_CAMPO_Y_VALOR);
-			$c->set_comparando($tmp->get_campo_id());
-			$c->set_comparador($item[$tmp->get_campo_id()]);
-			$tmp->load(Array($c));
-			
-			$ret[] = $tmp;
-		}
-		return $ret;
-	}
-	
-}
-
+/**
+ * Model Class.
+ * A class for model layer abstraction generalization.
+ * It has different target use cases, more MVC "model" layer related.
+ * The strategy is to make a generic inheritable class for the model 
+ * layer, and internally re-use ABM when in need of operations like, 
+ * lets say, saving an item, without the added cumbersome requirements 
+ * ABM may have. 
+ * 
+ * For example, the ABM's "load()" method requires an array of Condition
+ * objects, where Model's "load()" takes an item id. 
+ * ABM's "search()" has been made in order to include a listing 
+ * operation as an option of the rendered output, while Model's "search"
+ * just maka a simple search. 
+ * And so on. There may be many use cases where a CRUD form differs from
+ * what a MVC model layer needs.
+ * 
+ * @author Daniel Cantarín <omega_canta@yahoo.com>
+ * @date 20110808
+ */ 
 class Model extends ORM{
 	
 	public function __construct($tabla){
@@ -1367,7 +1395,7 @@ class Model extends ORM{
 		return $ret;
 	}
 	
-	public function to_json(){
+	protected function filter_data(){
 		$tmp = clone $this;
 		
 		if (isset($tmp->datos["restricted_fields"]) && is_array($tmp->datos["restricted_fields"])){
@@ -1390,7 +1418,231 @@ class Model extends ORM{
 			}
 		}
 		
-		return json_encode($tmp);
+		return $tmp;
+	}
+	
+	public function to_json(){
+		return json_encode($this->filter_data());
+	}
+	
+	public function to_array(){
+		$tmp = $this->filter_data();
+		
+		$tmp2 = Array();
+		foreach ($tmp->datos["fields"] as $key=>$f){
+			$tmp2[$key]=$f->get_valor();
+		}
+		
+		return $tmp2;
+	}
+	
+}
+
+/**
+ * ClassGetter Class.
+ * A helper class for search handling.
+ * It makes it easy to get a collection of instances of Model classes.
+ * 
+ * @author Daniel Cantarín <omega_canta@yahoo.com>
+ * @date 20110808
+ */ 
+class ClassGetter {
+	
+	public static function get_all($tabla){
+		//Devuelve un array con todos los items que tengan campo id != 0
+		$searcher = new ABM($tabla);
+		$class_name = ucwords($tabla);
+		$c = new Condicion(Condicion::TIPO_DISTINTO);
+		$c->set_comparando($searcher->get_campo_id());
+		$c->set_comparador("0");
+		$criterios = Array($c);
+		$ids = $searcher->search($criterios,Array($searcher->get_campo_id()),$searcher->get_campo_id());
+		$ret = Array();
+		
+		foreach ($ids->get_items() as $item){
+			$tmp = (class_exists($class_name)) ?  new $class_name() : new Model($tabla);
+			$c = new Condicion(Condicion::TIPO_IGUAL, Condicion::ENTRE_CAMPO_Y_VALOR);
+			$c->set_comparando($tmp->get_campo_id());
+			$c->set_comparador($item[$tmp->get_campo_id()]);
+			$tmp->load(Array($c));
+			$ret[] = $tmp;
+		}
+		
+		return $ret;
+	}
+	
+	public static function get($tabla, $criterios){
+		//Devuelve un array con todos los items que cumplan con los criterios
+		$searcher = new ABM($tabla);
+		$class_name = ucwords($tabla);
+		$ids = $searcher->search($criterios,Array($searcher->get_campo_id()),$searcher->get_campo_id());
+		$ret = Array();
+		
+		
+		foreach ($ids->get_items() as $item){
+			$tmp = (class_exists($class_name)) ?  new $class_name() : new Model($tabla);
+			$c = new Condicion(Condicion::TIPO_IGUAL, Condicion::ENTRE_CAMPO_Y_VALOR);
+			$c->set_comparando($tmp->get_campo_id());
+			$c->set_comparador($item[$tmp->get_campo_id()]);
+			$tmp->load(Array($c));
+			
+			$ret[] = $tmp;
+		}
+		return $ret;
+	}
+	
+}
+
+
+
+/**
+ * ABMCombinado Class.
+ * An extension of the ABM class that handles multiple tables.
+ * 
+ * It's a common need in CRUD forms rendering that the form cover not 
+ * only a single table, but a combination of a few. This is usually 
+ * given the strategies behind database table normalizations.
+ * So, this recurrent use case should be automated too, and this class 
+ * takes that job.
+ * 
+ * The strategy is to define a list of tables the CRUD form must handle,
+ * and then work internally using ABM classes for those tables, 
+ * iterating through the instances and rendering a common form. This 
+ * makes easy to build custom complex CRUD forms, letting us programmers
+ * to work only in the use case business logic.
+ * 
+ * @author Daniel Cantarín <omega_canta@yahoo.com>
+ * @date 20130803
+ */ 
+class ABMCombinado extends ABM{
+	
+	public function __construct($data = null){
+		if (is_null($data) || !is_array($data)){
+			throw new Exception("ABMCombinado class: An array of strings was expected.");
+		}
+		
+		/*
+		 * I need some of the functionality of the base ABM class, and 
+		 * for that i need to instantiate it in the common way, even 
+		 * when ABMCombinado works in another way (ABM requires a table).
+		 * So, in order to make it transparent to the programmer, i 
+		 * just call the constructor of ABM with the first table stated
+		 * for ABMCombinado. It should work without big trouble.
+		 */
+		parent::__construct($data[0]); 
+		
+		$this->datos["tablas"] = $data;
+		$this->datos["abms"] = Array();
+		$this->datos["default_abm_class"] = "ABM";
+		$this->datos["already_saved"] = false;
+		
+		$this->create_abms();
+		
+	}
+	
+	protected function create_abms(){
+		foreach ($this->datos["tablas"] as $nombre){
+			$clase_abm = (class_exists("ABM".$nombre)) ?  "ABM".$nombre : null;
+			$clase_abm = (class_exists($nombre."ABM")) ?  $nombre."ABM" : $clase_abm;
+			$abm = (!is_null($clase_abm)) ?  new $clase_abm() : new $this->datos["default_abm_class"]($nombre);
+			
+			/*
+			 * When you mix multiple classes in a single form, there may
+			 * be conflict between field names. 
+			 * To handle this, i created a mechanism of field aliases.
+			 * Here, i state that no ID field will be handled by itself, 
+			 * but by using its alias field, that should not present 
+			 * name conflicts.
+			 * Other conflictive fields should be handled in a similar 
+			 * way in extended custom classes.
+			 */
+			
+			$id = strtoupper($abm->get_campo_id());
+			$clase_field = get_class($abm->datos["fields"][$id]);
+			$id_alias = "ORM-ALIAS-".strtoupper(md5($nombre."-".$id));
+			$alias = new $clase_field(
+				$id_alias,
+				$abm->datos["fields"][$id]->get_valor(),
+				$abm->datos["fields"][$id]->get_rotulo()
+			);
+			$alias->set_primary_key(true);
+			$abm->datos["fields"][$id_alias] = $alias;
+			$abm->datos["fields"][$id]->data["alias"] = $abm->datos["fields"][$id_alias];
+			$abm->datos["fields"][$id]->set_primary_key(false);
+			$abm->datos["parent-abm"] = $this;
+			
+			$this->datos["abms"][strtoupper($nombre)] = $abm;
+		}
+	}
+	
+	public function analizar_operacion($data){
+		parent::analizar_operacion($data);
+		foreach($this->datos["abms"] as $nombre=>$abm){
+			$this->datos["abms"][$nombre]->analizar_operacion($data);
+		}
+		
+	}
+	
+	public function load_fields_from_array($arr){
+		parent::load_fields_from_array($arr);
+		foreach($this->datos["abms"] as $nombre=>$abm){
+			$this->datos["abms"][$nombre]->load_fields_from_array($arr);
+		}
+		
+	}
+	
+	public function validate(){
+		$ret = true;
+		foreach($this->datos["abms"] as $nombre=>$abm){
+			if (!$this->datos["abms"][$nombre]->validate()){
+				$ret = false;
+			}
+		}
+		return $ret;
+	}
+	
+	public function save(){
+		if (!$this->datos["already_saved"]){
+			if ($this->validate() === true){
+				foreach($this->datos["abms"] as $nombre=>$abm){
+					$this->datos["abms"][$nombre]->datos["mensajes"] = Array();
+					$this->datos["abms"][$nombre]->save();
+				}
+			} else {
+				$msg = new MensajeOperacion("[".date('Y-m-j h:i:s')."]: no se pudieron guardar los datos porque fallaron las validaciones. ",ABM::ERROR_VALIDACION);
+				$this->datos["abms"][strtoupper($this->datos["tablas"][0])]->add_mensaje($msg);
+			}
+			$this->datos["already_saved"] = true;
+		}
+	}
+	
+	public function render_form($data = null){
+		$metodo = (!is_null($data) && isset($data["metodo_serializacion"]) ) ? $data["metodo_serializacion"] : $this->get_metodo_serializacion();
+		$ret = null;
+		switch ($metodo){
+			case "html":
+				$ret  = "<form onsubmit=\"return validafields();\" id=\"form_combinado\" name=\"form_combinado\" method=\"post\" action=\"\" class=\"frmABM\" columnas=\"".$this->datos["form_columnas"]."\" >\n";
+				foreach($this->datos["abms"] as $nombre=>$abm){
+					$tmp_form = $abm->render_form($data);
+					$tmp_form = preg_replace("/\<\/form\>\n$/","",$tmp_form);
+					$tmp_form = preg_replace("/\<form .+?\>\n$/","",$tmp_form);
+					$ret .= $tmp_form."\n";
+				}
+				$ret .= "</form>\n";
+				
+				break;
+			case "json":
+				$ret  = "";
+				foreach($this->datos["abms"] as $nombre=>$abm){
+					$ret .= $abm->render_form($data);
+				}
+				break;
+			default:
+				throw new Exception("<b class=\"exception_text\">Clase ABM, método render_form(): método inválido (\"".$metodo."\").</b>");
+				break;
+		}
+		
+		return $ret;
 		
 	}
 	

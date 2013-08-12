@@ -57,23 +57,38 @@ var App = (function() {
 		$("body").append($tmp_html);
 		$(".cubre-cuerpo").fadeIn(250);
 		$(".modal").fadeIn(500);
+		app.modal_ok = true;
+		
+		if ($data.ok instanceof Array){
+			for (var $i = 0; $i < $data.ok.length; $i++){
+				$("#modal_button_aceptar").bind("click",$data.ok[$i]);
+			}
+		} else if ($data.success instanceof Function) {
+			$("#modal_button_aceptar").bind("click",$data.ok);
+		}
+		
+		if ($data.cancel instanceof Array){
+			for (var $i = 0; $i < $data.cancel.length; $i++){
+				$("#modal_button_aceptar").bind("click",$data.cancel[$i]);
+			}
+		} else if ($data.cancel instanceof Function) {
+			$("#modal_button_aceptar").bind("click",$data.cancel);
+		}
 		
 		$("#modal_button_cancelar, #modal_button_aceptar").bind("click",app.hide_modal);
 		
-		for (var $i = 0; $i < $data.ok.length; $i++){
-			$("#modal_button_aceptar").bind("click",$data.ok[$i]);
-		}
-		for (var $i = 0; $i < $data.cancel.length; $i++){
-			$("#modal_button_cancelar").bind("click",$data.cancel[$i]);
-		}
 	}
 
 	app.hide_modal = function(){
-		$(".cubre-cuerpo").fadeOut(500);
-		$(".modal").fadeOut(250);
-		window.setTimeout(function(){
-			$(".cubre-cuerpo, .modal").remove();
-		},100);
+		if ($(this).attr("id") == "modal_button_aceptar" && app.modal_ok != true){
+			return false;
+		}
+		$(".cubre-cuerpo").fadeOut(500, function(){
+			$(this).remove();
+		});
+		$(".modal").fadeOut(250, function(){
+			$(this).remove();
+		});
 	}
 
 
@@ -88,7 +103,7 @@ var App = (function() {
 			$("body").append("<div class=\"cubre-cuerpo\" tyle=\"display:none\"></div>");
 		}
 		if ($("body > .modal").length == 0){
-			$("body").append("<div class=\"modal\" tyle=\"display:none\"><div class=\"descripciones\"></div></div>");
+			$("body").append("<div class=\"modal espere\" tyle=\"display:none\"><div class=\"descripciones\"></div></div>");
 		}
 		
 		if (app.esperando.length == 0 || $("body > .cubre-cuerpo").css("display") == "none"){
@@ -106,14 +121,14 @@ var App = (function() {
 			if (app.esperando.length > 0){
 				$desc = app.esperando[0][0];
 				var $id = "espere-" + app._str_to_id($desc);
-				$("body > .modal .descripciones #"+$id).append("<span>..." + app.esperando[0][1] + "</span>");
+				$("body > .espere .descripciones #"+$id).removeClass("waiting-text").addClass("ready-text").append("<span>..." + app.esperando[0][1] + "</span>");
 				app.esperando.splice(0,1);
 			}
 		} else {
 			for ($i in app.esperando){
 				if (app.esperando[$i][0] == $desc){
 					var $id = "espere-" + app._str_to_id($desc);
-					$("body > .modal .descripciones #"+$id).append("<span>..." + app.esperando[$i][1] + "</span>");
+					$("body > .espere .descripciones #"+$id).removeClass("waiting-text").addClass("ready-text").append("<span>..." + app.esperando[$i][1] + "</span>");
 					app.esperando.splice($i,1);
 					break;
 				}
@@ -121,9 +136,12 @@ var App = (function() {
 		}
 	   
 		if (app.esperando.length == 0){
-			$(".cubre-cuerpo").fadeOut(500);
-			$("body > .modal").fadeOut(500);
-			window.setTimeout(function(){$("body > .modal .descripciones > p").remove();},600);
+			$(".cubre-cuerpo").fadeOut(500, function(){
+				$(this).remove();
+			});
+			$("body > .espere").fadeOut(500, function(){
+				$(this).remove();
+			});
 		}
 	   
 	}
@@ -193,7 +211,7 @@ var App = (function() {
 		if (typeof $parms.data.verb !== "string"){
 			throw "app.api: verb string expected in data.";
 		}
-		if ($parms.on_success !== undefined && typeof $parms.on_success !== "function"){
+		if ($parms.on_success !== undefined && !($parms.on_success instanceof Function)){
 			throw "app.api: success handler must be a function.";
 		} else if ($parms.on_success === undefined){
 			$parms.on_success = function($resp, $status, $xhr){
@@ -206,7 +224,7 @@ var App = (function() {
 			throw "app.api: error handler must be a function.";
 		} else if ($parms.on_error === undefined){
 			$parms.on_error = function($xhr, $status, $error){
-				throw "app.api:\n"+this.verb+"\n"+$error;
+				app.mostrar_error("app.api: Error: "+$error+" ("+$status+").\nPor favor, vuelva a intentar, o comuníquese con el administrador del sistema.");
 			};
 		}
 		

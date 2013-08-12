@@ -161,8 +161,10 @@ class Lista {
 		$this->datos["max_pages"] = (isset($data["max_pages"])) ? $data["max_pages"] : null;
 		$this->datos["max_items"] = (isset($data["max_items"])) ? $data["max_items"] : null;
 		
-		$this->datos["query"] = (isset($data["query"])) ? $data["query"] : null;
+		$this->datos["form_mode"] = (isset($data["form_mode"])) ? $data["form_mode"] : "post";
 		
+		$this->datos["query"] = (isset($data["query"])) ? $data["query"] : null;
+		$this->datos["caller"] = (isset($data["caller"])) ? $data["caller"] : "";
 	}
 	
 	public function set_campos($arr){
@@ -218,24 +220,7 @@ class Lista {
 					}
 				}
 			}
-			foreach($this->datos["acciones"] as $nombre){
-				$renderizar = true;
-				//La acción "activar" tiene un comportamiento especial,
-				//determinado por el campo "activo".
-				if ($nombre == "activar"){
-					$renderizar = (isset($row["activo"])) ? true : false;
-				}
-				//las acciones eliminar y modificar están determinadas por los permisos del usuario
-				if ($nombre == "modificar"){
-					$nombre = (isset($_SESSION["user"]) && $_SESSION["user"]->puede($this->get_tabla(), "UPDATE")) ? "modificar" : "ver";                                      
-				}
-				if ($nombre == "eliminar"){
-					$renderizar = (isset($_SESSION["user"]) && $_SESSION["user"]->puede($this->get_tabla(), "DELETE")) ? true : false;
-				}
-				if ($renderizar === true){
-					$ret .= "<td class=\"lista_accion\">".$nombre."</td>";
-				}
-			}
+			$ret .= $this->render_opciones_headers();
 			//Agrego un td para el campo ID
 			$ret .= "<td class=\"lista_item_id\"></td>";
 		}
@@ -272,40 +257,13 @@ class Lista {
 						}
 					}
 				}
-				foreach($this->datos["acciones"] as $nombre){
-					$tmp_item_id = isset($row[$this->datos["campo_id"]]) ? $row[$this->datos["campo_id"]] : null;
-					if (is_null($tmp_item_id)){
-						$tmp_item_id = isset($row[strtoupper($this->datos["campo_id"])]) ? $row[strtoupper($this->datos["campo_id"])] : null;
-						$tmp_item_id = (is_null($tmp_item_id) && isset($row[strtolower($this->datos["campo_id"])])) ? $row[strtolower($this->datos["campo_id"])] : "";
-					}
-					
-					
-					$renderizar = true;
-					//La acción "activar" tiene un comportamiento especial, determinado por el campo "activo".
-					if ($nombre == "activar"){
-						$nombre = (isset($row["activo"]) && $row["activo"] == "0") ? "activar" : "desactivar";
-						$renderizar = (isset($row["activo"])) ? true : false;
-					}
-					
-					//Las acciones "modificar" y "eliminar" están determinadas por los permisos del usuario.
-					if ($nombre == "modificar"){
-						$nombre = (isset($_SESSION["user"]) && $_SESSION["user"]->puede($this->get_tabla(), "UPDATE")) ? "modificar" : "ver";
-                    }
-					if ($nombre == "eliminar"){
-						$renderizar = (isset($_SESSION["user"]) && $_SESSION["user"]->puede($this->get_tabla(), "DELETE")) ? true : false;
-					}
-					
-					if ($renderizar === true){
-						$ret .= "<td class=\"lista_accion\"><input type=\"submit\" value=\"".$nombre."\" name=\"boton_".$nombre."\" item_id=\"".$tmp_item_id."\" onclick=\"accion_".$nombre."(this);\" /></td>";
-					}
-				}
+				$ret .= $this->render_opciones($row);
 				//Agrego un td para el campo ID
 				$ret .= "<td class=\"lista_item_id\"><input type=\"checkbox\" id=\"campo_id_".$row[$this->datos["campo_id"]]."\" name=\"".$this->datos["campo_id"]."[]\" value=\"".$row[$this->datos["campo_id"]]."\" /></td>";
 				
 				$ret .= "</tr>\n";
 				$i++;
-			}
-			
+			} 
 		}
 		
 		if (count($this->datos["items"]) <= 0){
@@ -315,8 +273,8 @@ class Lista {
 		
 		if ($this->datos["paginado"] !== false && count($this->datos["items"]) > 0){
 			
-			$boton_siguiente = "<input type=\"submit\" value=\" siguiente -> \" onclick=\"accion_siguiente();\" ".(($this->datos["pagina_actual"] < $this->datos["max_pages"]) ? "" : " disabled ")." />";
-			$boton_anterior = "<input type=\"submit\" value=\" <- anterior \" onclick=\"accion_anterior();\" ".(($this->datos["pagina_actual"] > 1) ? "" : " disabled ")." />";
+			$boton_siguiente = "<input type=\"submit\" name=\"boton_siguiente\" value=\" siguiente -> \" onclick=\"accion_siguiente();\" ".(($this->datos["pagina_actual"] < $this->datos["max_pages"]) ? "" : " disabled ")." />";
+			$boton_anterior = "<input type=\"submit\" name=\"boton_anterior\" value=\" <- anterior \" onclick=\"accion_anterior();\" ".(($this->datos["pagina_actual"] > 1) ? "" : " disabled ")." />";
 			$itemsxpagina = "";
 			$select_pagina = "";
 			if ((int)$this->datos["max_pages"] > 2) {
@@ -353,6 +311,61 @@ class Lista {
 	
 	public function get_campos(){
 		return $this->datos["campos"];
+	}
+	
+	public function render_opciones_headers(){
+		$ret = "";
+		foreach($this->datos["acciones"] as $nombre){
+			$renderizar = true;
+			//La acción "activar" tiene un comportamiento especial,
+			//determinado por el campo "activo".
+			if ($nombre == "activar"){
+				$renderizar = (isset($row["activo"])) ? true : false;
+			}
+			//las acciones eliminar y modificar están determinadas por los permisos del usuario
+			if ($nombre == "modificar"){
+				$nombre = (isset($_SESSION["user"]) && $_SESSION["user"]->puede($this->get_tabla(), "UPDATE")) ? "modificar" : "ver";
+			}
+			if ($nombre == "eliminar"){
+				$renderizar = (isset($_SESSION["user"]) && $_SESSION["user"]->puede($this->get_tabla(), "DELETE")) ? true : false;
+			}
+			if ($renderizar === true){
+				$ret .= "<td class=\"lista_accion\">".$nombre."</td>";
+			}
+		}
+		return $ret;
+	}
+	
+	public function render_opciones($row){
+		$ret = "";
+		foreach($this->datos["acciones"] as $nombre){
+			$tmp_item_id = isset($row[$this->datos["campo_id"]]) ? $row[$this->datos["campo_id"]] : null;
+			if (is_null($tmp_item_id)){
+				$tmp_item_id = isset($row[strtoupper($this->datos["campo_id"])]) ? $row[strtoupper($this->datos["campo_id"])] : null;
+				$tmp_item_id = (is_null($tmp_item_id) && isset($row[strtolower($this->datos["campo_id"])])) ? $row[strtolower($this->datos["campo_id"])] : "";
+			}
+			
+			$renderizar = true;
+			//La acción "activar" tiene un comportamiento especial, determinado por el campo "activo".
+			if ($nombre == "activar"){
+				$nombre = (isset($row["activo"]) && $row["activo"] == "0") ? "activar" : "desactivar";
+				$renderizar = (isset($row["activo"])) ? true : false;
+			}
+			
+			//Las acciones "modificar" y "eliminar" están determinadas por los permisos del usuario.
+			if ($nombre == "modificar"){
+				$nombre = (isset($_SESSION["user"]) && $_SESSION["user"]->puede($this->get_tabla(), "UPDATE")) ? "modificar" : "ver";
+			}
+			if ($nombre == "eliminar"){
+				$renderizar = (isset($_SESSION["user"]) && $_SESSION["user"]->puede($this->get_tabla(), "DELETE")) ? true : false;
+			}
+			
+			if ($renderizar === true){
+				$type = (strtolower($this->datos["form_mode"]) == "post") ? "submit" : "button";
+				$ret .= "<td class=\"lista_accion\"><input type=\"".$type."\" value=\"".$nombre."\" name=\"boton_".$nombre."\" item_id=\"".$tmp_item_id."\" onclick=\"accion_".$nombre."(this);\" /></td>";
+			}
+		}
+		return $ret;
 	}
 	
 }
