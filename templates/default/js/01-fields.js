@@ -36,9 +36,7 @@ app.ui.setup_fields = function($id_container) {
 					}
 				}
 				obj.val(obj.val().substring(0,obj.val().length-1));
-				
 			});
-			
 		}
 	);
 	
@@ -112,6 +110,36 @@ app.ui.setup_fields = function($id_container) {
 		}
 	);
 	
+	//20130804 - Daniel Cantarín
+	//Agregada la lógica para la gestión de trees.
+	$trees = $(".tree");
+	if ($trees.length > 0){
+		$trees.collapsibleCheckboxTree();
+		
+		$trees.find("input[type='checkbox']").bind("change",function(evt){
+			$checked = !($(this).attr("checked") == undefined);
+			if ($checked){
+				$(this).parent().find("ul input[type='checkbox']").attr("checked","checked");
+			} else {
+				$(this).parent().find("ul input[type='checkbox']").removeAttr("checked");
+			}
+		});
+		
+	}
+	
+	
+	//20130805 - Daniel Cantarín
+	//Agrego una pequeña lógica para gestión de listas multiselect.
+	$(".multiselect tr").bind("click", function(evt){
+		$checked = !($(this).find("input[type='checkbox']").attr("checked") == undefined);
+		if ($checked){
+			$(this).find("input[type='checkbox']").removeAttr("checked");
+			$(this).removeAttr("selected");
+		} else {
+			$(this).find("input[type='checkbox']").attr("checked","checked");
+			$(this).attr("selected","selected");
+		}
+	});
 };
 
 
@@ -238,6 +266,13 @@ function validafields($obj) {
 	//Luego, recurro a los métodos del browser para validar.
 	if ($obj.find("form").length > 0){
 		if ($obj.find("form.frmABM")[0].checkValidity && !$obj.find("form.frmABM")[0].checkValidity()){
+			$obj.find("form.frmABM .Field").each(function(){
+				if(!this.validity || !this.validity.valid){
+					$(this).focus();
+					$(this).select();
+					return false;
+				}
+			});
 			return false;
 		}
 	}
@@ -293,6 +328,14 @@ function accion_ver($obj){
 	
 	$("#campo_id_"+$id).attr("checked","checked");
 	$("input[name='form_operacion']").val("ver");
+	
+	var clase = $obj.parents("form").attr("id").replace("frm");
+	try{
+		eval(clase+".ver("+$id+");");
+	} catch(e){
+		a = new ABM(clase);
+		a.ver();
+	}
 }
 
 function accion_modificar($obj){
@@ -301,6 +344,15 @@ function accion_modificar($obj){
 	
 	$("#campo_id_"+$id).attr("checked","checked");
 	$("input[name='form_operacion']").val("modificacion");
+	
+	var clase = $obj.parents("form").attr("id").replace("frm","");
+	
+	try{
+		eval(clase+".modificacion("+$id+");");
+	} catch(e){
+		a = new ABM(clase);
+		a.modificacion();
+	}
 }
 
 function accion_baja($obj){
@@ -377,10 +429,10 @@ function accion_update_fields($arr, $url){
 				set_valores_defecto_enum();
 			}
 		}
-		desespere(0);
+		app.desespere("Actualizando campos.");
 	}
 	
-	espere("Actualizando campos.");
+	app.espere("Actualizando campos.","listo");
 	$.ajax({
 		data: $data,
 		success: $tmp,

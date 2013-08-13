@@ -27,7 +27,7 @@ class Field {
 		$this->data["primaryKey"] = false;
 		$this->data["columnas"] = 0;
 		$this->data["clase_css"] = "Field";
-		$this->data["alias"] = null;
+		$this->data["alias"] = "";
 		
 		//$this->data["valor_default"] = null; //FIX: no lo seteo.
 		
