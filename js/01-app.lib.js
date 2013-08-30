@@ -484,9 +484,10 @@ jQuery.unserialize = function(str){
 		var index = "";
 		for (var i = 0; i < items.length; i++) {
 			var parts = items[i].split(/=/);
-			if (parts[0].indexOf("%5B") > -1){
+			//console.log(parts[0], parts[0].indexOf("%5B"),  parts[0].indexOf("["));
+			if (parts[0].indexOf("%5B") > -1 || parts[0].indexOf("[") > -1){
 				//Array serializado
-				index = parts[0].replace("%5B","").replace("%5D","");
+				index = (parts[0].indexOf("%5B") > -1) ? parts[0].replace("%5B","").replace("%5D","") : parts[0].replace("[","").replace("]","");
 				if (arrays[index] === undefined){
 					arrays[index] = [];
 				}
@@ -501,7 +502,7 @@ jQuery.unserialize = function(str){
 		};
 		
 		ret = (ret != "{") ? ret.substr(0,ret.length-2) + "}" : ret + "}";
-		
+		//console.log(ret, arrays);
 		var ret2 = JSON.parse(ret);
 		//proceso los arrays
 		for (arr in arrays){

@@ -4,12 +4,14 @@ require_once("fields.class.php");
 require_once("buttons.class.php");
 require_once("extra.class.php");
 
+$GLOBALS["ORM_CACHE_DEFAULT"] = false; //Default value for cache operations.
 
 /**
  * ORM Class.
  * It's the core of the ORM abstraction layer. 
  * It handles any database table and automatically instantiates fields 
- * according to the table's setup. 
+ * according to the table's setu
+ * p. 
  * 
  * @author Daniel Cantarín <omega_canta@yahoo.com>
  * @date 20110808
@@ -31,14 +33,12 @@ class ORM {
 		$this->datos["fields"] = Array();
 		$this->datos["last_search"] = new Lista();
 		$this->datos["campo_id"] = "id";
-		$this->datos["cache"] = true;
+		$this->datos["cache"] = $GLOBALS["ORM_CACHE_DEFAULT"];
 		
 		if ($tabla != "" && !is_null($tabla)){
 			$this->check_tabla_existe();
 			$this->load_campos();
-		}
-		
-		
+		}		
 	}
 	
 	public function get_tabla(){
@@ -320,7 +320,7 @@ class ORM {
 			$largo = (isset($campo["CHARACTER_MAXIMUM_LENGTH"]) && (int)$campo["CHARACTER_MAXIMUM_LENGTH"] > 0) ? (int)$campo["CHARACTER_MAXIMUM_LENGTH"] : 0;
 			$largo = ($largo <= 0 && isset($campo["character_maximum_length"])) ? (int)$campo["character_maximum_length"] : $largo;
 			
-			$tipoSQL = (isset($campo["data_type"])) ? $campo["data_type"] : $campo["DATA_TYPE"];;
+			$tipoSQL = (isset($campo["data_type"])) ? $campo["data_type"] : $campo["DATA_TYPE"];
 			
 			$comentario = (isset($campo["COLUMN_COMMENT"])) ? $campo["COLUMN_COMMENT"] : $campo["column_comment"];
 			
@@ -464,8 +464,9 @@ class ABM extends ORM{
 		
 		//Botones por defecto para el formulario.
 		//$boton_ok	  = new FormButton("btnGuardar", "", " Guardar datos ", "submit");
-		$boton_cancel = new FormButton("btnCancel", "", " Cancelar ", "button", Array("onclick" => "accion_cancelar();"));
-		$this->set_form_buttons(Array($boton_cancel));
+		
+		//$boton_cancel = new FormButton("btnCancel", "", " Cancelar ", "button", Array("onclick" => "accion_cancelar();"));
+		//$this->set_form_buttons(Array($boton_cancel));
 		
 		$this->setup_fields();
 	}

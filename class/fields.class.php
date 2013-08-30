@@ -27,7 +27,7 @@ class Field {
 		$this->data["primaryKey"] = false;
 		$this->data["columnas"] = 0;
 		$this->data["clase_css"] = "Field";
-		$this->data["alias"] = "";
+		$this->data["alias"] = null;
 		
 		//$this->data["valor_default"] = null; //FIX: no lo seteo.
 		
@@ -98,7 +98,7 @@ class Field {
 		//20130803 - Daniel Cantarín 
 		//Agrego la gestión de aliases para los fields.
 		//Esta funcionalidad es muy útil para abms combinados.
-		$tmp = (!is_null($this->data["alias"]) && $this->data["alias"] instanceof Field) ? $this->data["alias"]->get_valor() : implode($this->data["valor"]);
+		$tmp = (!is_null($this->data["alias"]) && $this->data["alias"] instanceof Field) ? $this->data["alias"]->get_valor($corregir) : implode($this->data["valor"]);
 		
 		if ($corregir){
 			if (strpos(strtolower($this->data["tipoSQL"]),"date") > -1 ){
@@ -169,6 +169,9 @@ class Field {
 			//Idem campos BIT
 		} else if ($this instanceof PasswordField){
 			//Idem PasswordFields
+		} else if (strpos(strtolower($tipo),"date") > -1 ) {
+			//Datetimes necesitan conversión, caso contrario fallan.
+			$ret = "'".date("Y-m-d H:i:s", strtotime($ret))."'";
 		} else {
 			//Para cualquier otro caso, el valor va entre comillas.
 			$ret = "'".mysql_real_escape_string($ret)."'";
@@ -284,7 +287,7 @@ class Field {
 	}
 	
 	public function set_requerido($val){
-		$this->data["requerido"] = (boolean)$val;
+		$this->data["requerido"] = (boolean)$val;		
 	}
 	
 	public function set_largo($val){
@@ -745,6 +748,8 @@ class SelectField extends Field {
 		if (is_null($items) || !is_array($items)){
 			$items = Array();
 		}
+		
+			
 		$this->data["items"] = $items;
 		$this->set_tipo_HTML("select");
 		$this->set_tipo_sql("varchar");
