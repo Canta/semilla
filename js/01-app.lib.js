@@ -520,7 +520,18 @@ jQuery.fn.unserialize = function(str){
 					obj = this.parent().find('[name='+ parts[0] +']');
 				} catch(e){}
 			}
-			obj.val(decodeURIComponent(parts[1].replace(/\+/g," ")));
+			if (typeof obj.attr("type") == "string" && ( obj.attr("type").toLowerCase() == "radio" || obj.attr("type").toLowerCase() == "checkbox")){
+				 obj.each(function(index, coso) {
+					coso = $(coso);
+					if (coso.attr("value") == decodeURIComponent(parts[1].replace(/\+/g," "))){
+						 coso.prop("checked",true);
+					} else {
+						 coso.prop("checked",false);
+					}
+				 });
+			} else {
+				 obj.val(decodeURIComponent(parts[1].replace(/\+/g," ")));
+			}
 		};
 		return this;
 }
