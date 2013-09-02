@@ -600,7 +600,10 @@ que queremos es poder rendir con los pedidos de los usuarios. Y esto se
 traduce en complejidad agregada al proyecto.
 
 Teniendo en cuenta todos estos problemas solamente vinculados a los 
-formatos de archivos, 
+formatos de archivos, evalué que lo mejor es utilizar para los 
+repositorios un formato intermedio, que permita convertir desde y hasta 
+cualquier otro formato de archivos.
+Si además ese formato intermedio consiste en texto plano, 
 
 
 
