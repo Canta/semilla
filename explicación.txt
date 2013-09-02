@@ -501,7 +501,7 @@ desarrollo complejo.
 
 Los primeros problemas que encaré fueron los tecnológicos, aquellos 
 vinculados a las condiciones técnicas de los textos.
-Teniendo en cuenta que, según especulo, por empiria y de acuerdo a 
+Teniendo en cuenta que, según especulo, por experiencia y de acuerdo a 
 mi contacto periférico con la organización de Publicaciones, la mayor
 cantidad de los textos se gestionan en formato PDF, exploré y 
 eventualmente aprendí detalles técnicos y pormenores de la 
@@ -544,6 +544,19 @@ Sí, desde el vamos, toda esta iniciativa se ampara en una condición
 de crisis frente al trabajo de imprimir textos, evaluando alternativas,
 lograr escapar al formato PDF es vital.
 
+La buena noticia es que, pese a sus problemas, PDF es un formato con 
+bastante soporte práctico. Buena parte de los dispositivos disponibles 
+en la actualidad lo leen sin mayores consecuencias.  
+Pero continúa siendo un formato muy problemático para otros contextos.
+Por ejemplo, realizar búsquedas masivas en un repositorio de textos 
+intentando ubicar sentencias o fragmentos (tarea para nada exótica), 
+la diferencia de peso entre un archivo PDF con gráficos a uno de texto
+puro (que impacta en el espacio requerido para los repositorios, los 
+tiempos de transmisión vía internet, los costos de mantener eso en 
+servidores tercerizados, la dificultad para mantener tanto material 
+online, la dinámica de copias de seguridad), saciar la eventual 
+necesidad de edición de un texto, etc.
+
 Pero, si bien tal vez podría idearse un circuito de entrada de textos 
 que no implique generar PDFs como materia prima, de una manera u otra 
 la situación es que actualmente se cuenta con miles de PDFs que no 
@@ -561,15 +574,41 @@ texto a otro formato más manipulable; pero esa exportación, como conté,
 es falible e imprecisa, dada la naturaleza innata de la información que
 guarda un PDF.
 
-La buena noticia es que, mal que mal, PDF es un formato con bastante 
-soporte práctico. Buena parte de los dispositivos disponibles en la 
-actualidad lo leen sin mayores problemas.  
-Pero continúa siendo un formato muy problemático para otros contextos.
-Por ejemplo, realizar búsquedas masivas en un repositorio de textos 
-intetentando ubicar sentencias o fragmentos (tarea para nada exótica), 
-la diferencia de peso entre un archivo PDF con gráficos a uno de texto
-puro (que impacta en el espacio requerido para los repositorios, los 
-tiempos de transmisión vía internet, los costos de mantener eso en 
-servidores tercerizados, la dificultad para mantener tanto material 
-online, 
+Además de PDF, seguramente también se cuentan con otros formatos 
+populares. Estoy pensando en archivos de Microsoft Word, por ejemplo.
+Idealmente esos archivos también debería ser posible integrarlos a los 
+repositorios del CEFyL, de modo tal que "el texto esté".
 
+Y al mismo tiempo, estamos atravezando un momento histórico de 
+transición, donde confluyen tres gigantezcos problemas que impactan en
+la gestión de textos en digital hoy por hoy: la agresiva implementación 
+de HTML5, la juventud de los e-readers y sus formatos de archivo, y la 
+inestabilidad de viejos estándares de-facto (concretamente, al caso de 
+este relevamiento, la suite ofimática Microsoft Office).
+Sin entrar en mucho detalle, básicamente está prosperando la 
+estandarización del "texto enriquecido" y/o "el hipertexto" de cara a la
+longevidad de los contenidos y la experiencia de las décadas pasadas (en
+donde decisiones empresariales sobre sus formatos privativos generaron
+costos enormes para consumidores, desarrolladores, e implementadores de 
+tecnología, debido a obsolecencia programada y la falta de acceso a la
+descripción del funcionamiento de los formatos); pero no es un proceso 
+aún finalizado, los e-readers todavía viven en un ecosistema paralelo a 
+ese proceso, y entonces todavía no se puede hablar de un sólo formato de
+documento suficientemente estandar y definitivo. Lo cuál nos deja en la 
+situación de tener que adaptarnos a múltiples posibles formatos si lo 
+que queremos es poder rendir con los pedidos de los usuarios. Y esto se 
+traduce en complejidad agregada al proyecto.
+
+Teniendo en cuenta todos estos problemas solamente vinculados a los 
+formatos de archivos, 
+
+
+
+Notas sobre longevidad y el texto plano:
+http://www.w3.org/People/Bos/DesignGuide/longevity.html
+http://www.c2.com/cgi/wiki?PowerOfPlainText
+https://en.wikipedia.org/wiki/Text_file
+http://lawyerist.com/document-longevity/
+http://www.mikeshea.net/More_on_OpenDocument_RTF_.html
+http://stackoverflow.com/questions/4171998/longevity-of-using-the-delphi-text-dfm-format-for-my-own-store-and-retrieve
+http://ask.metafilter.com/176247/Should-I-have-any-longevity-concerns-about-epub-files
