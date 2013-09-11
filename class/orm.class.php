@@ -1075,13 +1075,18 @@ class ABM extends ORM{
 		$this->set_request_data($data);
 		
 		//La variable $id la utilizo más tarde para determinar algunos comportamientos.
-		$id = isset($data[$this->get_campo_id()]) ? $data[$this->get_campo_id()] : null;
+		$id = isset($data[strtoupper($this->get_campo_id())]) ? $data[strtoupper($this->get_campo_id())] : null;
 		
 		//Acá analizo las diferentes operaciones del ABM y ejecuto los 
 		//procesos que corresponde a cada acción.
 		if(isset($data['btnGuardar']) && ($op == "alta" || $op == "modificacion")){
 			//Grabación de datos
 			//echo("<br/>analizar_operacion: 1<br/>");
+			if ($op == "modificacion" && !is_null($id)){
+				$tmp_model = new Model($this->get_tabla());
+				$tmp_model->load($id);
+				$this->load_fields_from_array($tmp_model->to_array());
+			}
 			$this->load_fields_from_array($data);
 			if (!is_null($this->datos["parent-abm"]) && $this->datos["parent-abm"] instanceof ABM){
 				//En este caso, se trata de un abm combinado.
@@ -1227,6 +1232,10 @@ class ABM extends ORM{
 			array_unshift($campos, $campo_id);
 		}
 		
+		//Obtengo los campos de la tabla, para después asegurarme que 
+		//los especificados existen y no son campos custom o erroneos.
+		$campos2 = $this->get_campos(true);
+		
 		//Si solamente está establecido el campo id, entiendo que no se 
 		//establecieron campos en la consulta, razón por la cual
 		//selecciono todos los campos. Caso contrario, me queda una lista
@@ -1235,10 +1244,14 @@ class ABM extends ORM{
 		$fs = Array();
 		foreach ($campos as $nombre => $item){
 			if ($item instanceOf Field){
-				$fs[] = $nombre;
+				if (in_array($nombre, $campos2)){
+					$fs[] = $nombre;
+				}
 			} else {
 				//Se asume String cuando no es Field
-				$fs[] = $item;
+				if (in_array($item, $campos2)){
+					$fs[] = $item;
+				}
 			}
 		}
 		//die(var_dump($fs));

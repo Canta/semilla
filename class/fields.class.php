@@ -909,7 +909,13 @@ class SelectField extends Field {
 			
 			$ret2 .= " enum /> ";
 			
-			$ret2 .=  "<select id=\"desc_".$this->get_id()."\" enum_desc class=\"enum_desc\" >";
+			$ret2 .=  "<select id=\"desc_".$this->get_id()."\" enum_desc class=\"enum_desc\" ";
+			
+			if ($this->get_activado() !== TRUE){
+				$ret2 .= " disabled ";
+			}
+			$ret2 .= " > ";
+			
 			$tmp_items = $this->get_items();
 			foreach ($tmp_items as $item){
 				$ret2 .=  "<option value=\"".$item[$this->get_campo_indice()]."\">(".$item[$this->get_campo_indice()].") - \"".$item[$this->get_campo_descriptivo()]."\"</option>";
