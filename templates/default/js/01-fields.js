@@ -399,7 +399,6 @@ function accion_activar($obj){
 
 
 function accion_update_fields($arr, $url){
-	
 	if ($arr === undefined){
 		$arr = Array();
 	}
@@ -408,38 +407,47 @@ function accion_update_fields($arr, $url){
 		$url = ".";
 	}
 	
-	$data = $("form[class='frmABM']:visible").serialize();
+	$selector = "input";
+	for(var i = 0; i < $arr.length; i++){
+		$selector += "[name!='"+$arr[i]+"']";
+	}
+	//console.debug($arr);
+	$data = $("form[class='frmABM']:visible "+$selector).serialize();
 	for (var $i = 0; $i < $arr.length; $i++){
 		$data += "&update_fields[]="+$arr[$i];
 	}
-	$data += "&metodo_serializacion=json";
+	$data += "&metodo_serializacion=json&verb=crud&opcion="+$("form[class='frmABM']").attr("name").replace("frm","");
 	
-	$tmp = function($ret, $status, $obj){
-		for (var $i = 0; $i < $ret.length; $i++){
-			$item = $ret[$i];
-			$("#"+$item.data.id).val($item.data.valor);
-			$desc = $("#desc_"+$item.data.id);
-			
-			if ($desc.length > 0){
-				$tmp_html = "";
-				for (var $i2 = 0; $i2 < $item.data.items.length; $i2++){
-					$tmp_html += "<option value=\""+$item.data.items[$i2][$item.data.campo_indice]+"\">"+$item.data.items[$i2][$item.data.campo_descriptivo]+"</option>\n";
+	
+	$tmp = function($resp, $status, $obj){
+		if ($resp.success){
+			$res = JSON.parse($resp.data.resultado);
+			//console.debug($res);
+			for (var $i = 0; $i < $res.length; $i++){
+				$item = $res[$i];
+				//console.debug($item);
+				$("#"+$item.data.id).val($item.data.valor);
+				$desc = $("#desc_"+$item.data.id);
+				
+				if ($desc.length > 0){
+					$tmp_html = "";
+					for (var $i2 = 0; $i2 < $item.data.items.length; $i2++){
+						$tmp_html += "<option value=\""+$item.data.items[$i2][$item.data.campo_indice]+"\">"+$item.data.items[$i2][$item.data.campo_descriptivo]+"</option>\n";
+					}
+					$desc.html($tmp_html);
+					set_valores_defecto_enum();
 				}
-				$desc.html($tmp_html);
-				set_valores_defecto_enum();
 			}
+		} else {
+			app.mostrar_error($resp.data.message);
 		}
 		app.desespere("Actualizando campos.");
 	}
 	
-	app.espere("Actualizando campos.","listo");
-	$.ajax({
-		data: $data,
-		success: $tmp,
-		url: $url,
-		async: true,
-		cache: false,
-		dataType: "json"
+	app.espere("Actualizando campos.","listo.");
+	app.api({
+		data: $.unserialize($data),
+		on_success: $tmp
 	});
 }
 
