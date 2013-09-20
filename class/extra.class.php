@@ -151,6 +151,7 @@ class Lista {
 		$this->datos["exclude"] = (isset($data["exclude"])) ? $data["exclude"] : Array();
 		$this->datos["items"] = (isset($data["items"])) ? $data["items"] : Array();
 		$this->datos["campo_id"] = (isset($data["campo_id"])) ? $data["campo_id"] : "id";
+		$this->datos["indice_campo_id"] = (isset($data["indice_campo_id"])) ? $data["indice_campo_id"] : 0;
 		$this->datos["tabla"] = (isset($data["tabla"])) ? $data["tabla"] : "";
 		$this->datos["opciones"] = (isset($data["opciones"])) ? $data["opciones"] : Array();
 		$this->datos["acciones"] = (isset($data["acciones"])) ? $data["acciones"] : Array("activar","modificar", "eliminar");
@@ -200,9 +201,13 @@ class Lista {
 		}
 		$ret .= "\">\n<thead><tr>";
 		
+		$indice = 0;
 		if (count($this->datos["items"]) > 0){
 			foreach($this->datos["campos"] as $nombre => $item){
-				
+				if (is_numeric($nombre) && $item instanceof Field){
+					$indice = $nombre;
+					$nombre = $item->get_id();
+				}
 				if (array_search($nombre, $this->datos["exclude"]) === false){
 					if ($item instanceOf Field ){
 						if (trim(strtolower($this->datos["campo_id"])) != trim(strtolower($nombre)) ){
@@ -211,11 +216,15 @@ class Lista {
 							}else {
 								$ret .= "<td>".$item->get_id()."</td>";
 							}
+						} else {
+							$this->datos["indice_campo_id"] = $indice;
 						}
 					} else {
 						//Si no es un Field, se asume String
 						if (trim(strtolower($this->datos["campo_id"])) != trim(strtolower($item)) ){
 							$ret .= "<td>".$item."</td>";
+						} else {
+							$this->datos["indice_campo_id"] = $indice;
 						}
 					}
 				}
@@ -237,13 +246,21 @@ class Lista {
 				
 				foreach ($row as $nombre=>$valor){
 					if (
-						trim(strtolower($this->datos["campo_id"])) != trim(strtolower($nombre)) 
+						trim(strtolower($this->datos["campo_id"])) != trim(strtolower($nombre))
 						&& isset($campos[$nombre])
+						&& (
+							is_numeric($nombre)
+							&& (int)$nombre != $this->datos["indice_campo_id"]
+						)
 						&& (
 							(
 								is_string($campos[$nombre])
 								&& trim(strtolower($this->datos["campo_id"])) != trim(strtolower($campos[$nombre]))
-							) || !is_string($campos[$nombre])
+							) 
+							|| 
+							(
+								!is_string($campos[$nombre])
+							)
 						)
 						&& array_search($nombre, $this->datos["exclude"]) === false 
 					){
@@ -259,7 +276,11 @@ class Lista {
 				}
 				$ret .= $this->render_opciones($row);
 				//Agrego un td para el campo ID
-				$ret .= "<td class=\"lista_item_id\"><input type=\"checkbox\" id=\"campo_id_".$row[$this->datos["campo_id"]]."\" name=\"".$this->datos["campo_id"]."[]\" value=\"".$row[$this->datos["campo_id"]]."\" /></td>";
+				$tmp_campo_id = isset($row[$this->datos["campo_id"]]) ? $this->datos["campo_id"] : null;
+				if (is_null($tmp_campo_id)){
+					$tmp_campo_id = isset($row[strtolower($this->datos["campo_id"])]) ? strtolower($this->datos["campo_id"]) : strtoupper($this->datos["campo_id"]);
+				}
+				$ret .= "<td class=\"lista_item_id\"><input type=\"checkbox\" id=\"campo_id_".$row[$tmp_campo_id]."\" name=\"".$tmp_campo_id."[]\" value=\"".$row[$tmp_campo_id]."\" /></td>";
 				
 				$ret .= "</tr>\n";
 				$i++;

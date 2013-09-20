@@ -1228,8 +1228,17 @@ class ABM extends ORM{
 		$campo_id = is_null($campo_id) ? $this->datos["campo_id"] : $campo_id;
 		$order_by = is_null($order_by) ? $this->datos["campo_id"] : $order_by;
 		//Me aseguro de que siempre esté el ID en la lista de campos
-		if (!in_array($campo_id, $campos)){
-			array_unshift($campos, $campo_id);
+		if (!in_array($campo_id, $campos) && !isset($campos[$campo_id])){
+			$found = false;
+			foreach($campos as $item){
+				if ($item instanceof Field && strtolower($item->get_id()) == strtolower($campo_id)){
+					$found = true;
+					break;
+				}
+			}
+			if ($found === false){
+				array_unshift($campos, $campo_id);
+			}
 		}
 		
 		//Obtengo los campos de la tabla, para después asegurarme que 
@@ -1241,21 +1250,24 @@ class ABM extends ORM{
 		//selecciono todos los campos. Caso contrario, me queda una lista
 		//de los campos establecidos, separados por coma, lista para sql.
 		
-		$fs = Array();
+		$nombres_campos_validos = Array();
+		$campos_validos = Array();
 		foreach ($campos as $nombre => $item){
 			if ($item instanceOf Field){
-				if (in_array($nombre, $campos2)){
-					$fs[] = $nombre;
+				if (in_array($item->get_id(), $campos2) || in_array(strtolower($item->get_id()), $campos2) || in_array(strtoupper($item->get_id()), $campos2)){
+					$nombres_campos_validos[] = $item->get_id();
+					$campos_validos[] = $item;
 				}
 			} else {
 				//Se asume String cuando no es Field
-				if (in_array($item, $campos2)){
-					$fs[] = $item;
+				if (in_array($item, $campos2) || in_array(strtolower($item), $campos2) || in_array(strtoupper($item), $campos2)){
+					$nombres_campos_validos[] = $item;
+					$campos_validos[] = $item;
 				}
 			}
 		}
-		//die(var_dump($fs));
-		$fs = implode(",", $fs);
+		//die(var_dump($campos_validos));
+		$fs = implode(",", $nombres_campos_validos);
 		if ($fs == $campo_id . "," || $fs == $campo_id ){
 			$fs = " * ";
 		}
@@ -1275,7 +1287,7 @@ class ABM extends ORM{
 		$c = Conexion::get_instance();
 		$row = null;
 		$items = null;
-		if (is_null($paginado)){
+		if ($paginado !== true){
 			$r = $c->execute($qs,false);
 			$r = (is_null($r) || $r === false) ? Array(Array()) : $r;
 			$row = (count($r) > 0) ? $r[0] : Array();
@@ -1300,19 +1312,19 @@ class ABM extends ORM{
 				}
 			}
 		}
-		
+		//die(var_dump($campos));
 		//Utilizo los rotulos para los campos, en caso de que los tengan
-		$campos = $this->get_rotulos_from_field_names($campos);
+		$campos = $this->get_rotulos_from_field_names($campos_validos);
 		
 		$lista_parms = Array(
 			"campos"=>$campos, 
 			"items"=>$items, 
 			"tabla"=>$this->get_tabla(),
-			"paginado" => (is_null($paginado)) ? false : true,
-			"pagina_actual" => (is_null($paginado)) ? null : $r["metadata"]["pagina_actual"],
-			"max_pages" => (is_null($paginado)) ? null : $r["metadata"]["max_pages"],
-			"itemsxpagina" => (is_null($paginado)) ? null : $r["metadata"]["numero_items"],
-			"max_items" => (is_null($paginado)) ? null : $r["metadata"]["max_items"],
+			"paginado" => ($paginado !== true) ? false : true,
+			"pagina_actual" => ($paginado !== true) ? null : $r["metadata"]["pagina_actual"],
+			"max_pages" => ($paginado !== true) ? null : $r["metadata"]["max_pages"],
+			"itemsxpagina" => ($paginado !== true) ? null : $r["metadata"]["numero_items"],
+			"max_items" => ($paginado !== true) ? null : $r["metadata"]["max_items"],
 			"campo_id" => $campo_id,
 			"form_mode" => $this->datos["form_mode"],
 			"opciones" => $this->datos["search_options"],

@@ -49,46 +49,60 @@ var App = (function() {
 			$data.cancel = [];
 		}
 		
-		$tmp_html  = "<div class=\"cubre-cuerpo\"></div><div class=\"modal\">";
-		$tmp_html += "<div class=\"modal-html\" >"+$data.html+"</div>";
-		$tmp_html += "<div class=\"botonera\"><button id=\"modal_button_cancelar\"> Cancelar </button> <button id=\"modal_button_aceptar\"> Aceptar </button></div>";
-		$tmp_html += "</div>";
 		
-		$("body").append($tmp_html);
-		$(".cubre-cuerpo").fadeIn(250);
-		$(".modal").fadeIn(500);
-		app.modal_ok = true;
+		var $tmp_done = function(){
+			$tmp_html  = "<div class=\"cubre-cuerpo\"></div><div class=\"modal\">";
+			$tmp_html += "<div class=\"modal-html\" >"+$data.html+"</div>";
+			$tmp_html += "<div class=\"botonera\"><button id=\"modal_button_cancelar\"> Cancelar </button> <button id=\"modal_button_aceptar\" onclick=\"$(this).attr('disabled','disabled')\"> Aceptar </button></div>";
+			$tmp_html += "</div>";
+			
+			$("body").append($tmp_html);
+			$(".cubre-cuerpo").fadeIn(250);
+			$(".modal:not(.espere)").fadeIn(500);
+			app.modal_ok = true;
+			
+			setTimeout(function(){
+				if ($data.ok instanceof Array){
+					for (var $i = 0; $i < $data.ok.length; $i++){
+						$("#modal_button_aceptar:visible").bind("click",$data.ok[$i]);
+					}
+				} else if ($data.success instanceof Function) {
+					$("#modal_button_aceptar:visible").bind("click",$data.ok);
+				}
+				
+				if ($data.cancel instanceof Array){
+					for (var $i = 0; $i < $data.cancel.length; $i++){
+						$("#modal_button_aceptar:visible").bind("click",$data.cancel[$i]);
+					}
+				} else if ($data.cancel instanceof Function) {
+					$("#modal_button_aceptar:visible").bind("click",$data.cancel);
+				}
+				
+				$("#modal_button_cancelar:visible, #modal_button_aceptar:visible").bind("click",app.hide_modal);
+			},500);
+		};
 		
-		if ($data.ok instanceof Array){
-			for (var $i = 0; $i < $data.ok.length; $i++){
-				$("#modal_button_aceptar").bind("click",$data.ok[$i]);
-			}
-		} else if ($data.success instanceof Function) {
-			$("#modal_button_aceptar").bind("click",$data.ok);
+		if ($(".modal:not(.espere)").length > 0 ){
+			app.hide_modal().then($tmp_done);
+		} else {
+			$tmp_done();
 		}
-		
-		if ($data.cancel instanceof Array){
-			for (var $i = 0; $i < $data.cancel.length; $i++){
-				$("#modal_button_aceptar").bind("click",$data.cancel[$i]);
-			}
-		} else if ($data.cancel instanceof Function) {
-			$("#modal_button_aceptar").bind("click",$data.cancel);
-		}
-		
-		$("#modal_button_cancelar, #modal_button_aceptar").bind("click",app.hide_modal);
-		
 	}
-
+	
+	app.deferred_hide_modal = null;
 	app.hide_modal = function(){
+		app.deferred_hide_modal = new $.Deferred();
 		if ($(this).attr("id") == "modal_button_aceptar" && app.modal_ok != true){
-			return false;
+			app.deferred_hide_modal.fail();
 		}
 		$(".cubre-cuerpo").fadeOut(500, function(){
 			$(this).remove();
 		});
 		$(".modal").fadeOut(250, function(){
+			app.deferred_hide_modal.resolve("hide_modal resuelto");
 			$(this).remove();
 		});
+		return app.deferred_hide_modal;
 	}
 
 
@@ -201,6 +215,7 @@ var App = (function() {
 		window.clearInterval($id_timer);
 	}
 	
+	app.deferred_api = null;
 	app.api = function($parms){
 		if ($parms === undefined || typeof $parms !== "object"){
 			throw "app.api: object expected.";
@@ -228,21 +243,23 @@ var App = (function() {
 			};
 		}
 		
-		$resp = $.ajax({
+		app.deferred_api = $.ajax({
 			url: app.path + "/api/",
 			type:"POST",
 			dataType:"JSON",
 			data: $parms.data,
 			varb: $parms.data.verb,
 			cache: ($parms.cache === undefined) ? false : $parms.cache,
-			async: ($parms.async === undefined) ? true : $parms.async,
-			success: $parms.on_success,
-			error: $parms.on_error
-		});
+			async: ($parms.async === undefined) ? true : $parms.async
+		}).done($parms.on_success).fail($parms.on_error);
+		
+		var p = app.deferred_api.promise();
 		
 		if ($parms.async === false){
-			return JSON.parse($resp.responseText);
+			p.response = JSON.parse($resp.responseText);
 		}
+		
+		return p;
 	}
 	
 	app.ui.change_section = function($val){
