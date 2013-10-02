@@ -974,8 +974,8 @@ class QueryEnumField extends EnumField{
 		$this->data["items"] = Array();
 		$this->set_tipo_HTML("enum");
 		$this->set_tipo_sql("varchar");
-		$this->data["campo_descriptivo"] = "";
-		$this->data["campo_indice"] = "";
+		$this->data["campo_descriptivo"] = 1;
+		$this->data["campo_indice"] = 0;
 		$this->data["query"] = $query;
 		$this->data["valores"] = Array(); //fix para ConditionalQueryEnumField
 		

@@ -181,6 +181,10 @@ class Lista {
 		}
 		$this->datos["exclude"] = $arr;
 	}
+    
+    public function remove_acciones(){
+        $this->datos["acciones"] = array();
+    }
 	
 	public function set_items($arr){
 		if (!is_array($arr)){
@@ -363,7 +367,9 @@ class Lista {
 			$tmp_item_id = isset($row[$this->datos["campo_id"]]) ? $row[$this->datos["campo_id"]] : null;
 			if (is_null($tmp_item_id)){
 				$tmp_item_id = isset($row[strtoupper($this->datos["campo_id"])]) ? $row[strtoupper($this->datos["campo_id"])] : null;
-				$tmp_item_id = (is_null($tmp_item_id) && isset($row[strtolower($this->datos["campo_id"])])) ? $row[strtolower($this->datos["campo_id"])] : "";
+				if (is_null($tmp_item_id)){ 
+					$tmp_item_id = isset($row[strtolower($this->datos["campo_id"])]) ? $row[strtolower($this->datos["campo_id"])] : "";
+				}
 			}
 			
 			$renderizar = true;
