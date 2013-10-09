@@ -1,12 +1,20 @@
+(function() {
+
 // Guardamos la función hasOwnProperty porque es posible
 // crear una propiedad con el mismo nombre
 
 var hasOwnProperty = Object.prototype.hasOwnProperty;
 
+var extend = function(proto) {
+	
+	return lang.declare(this, proto);
+};
+
 /**
  * Funciones de utilidad general.
+ * @author Gonzalo <gbedani@commsursrl.com.ar>
  */
-lang = {
+var lang = {
 	
 	/**
 	 * Asegura que las expresiones sean verdaderas
@@ -137,9 +145,28 @@ lang = {
 					Array.prototype.slice.call(arguments, 1));
 			};
 		}
+		
+		// agregamos un Class.extend á la Ember.js
+		ctor.extend = extend;
 
 		this.mixin(ctor.prototype, proto);
 		return ctor;
+	},
+ 
+	/**
+	 * Deriva una clase y devuelve una instancia de ella.
+	 * @param Function base
+	 * @param Object proto
+	 * @return Object
+	 * @see declare
+	 */
+	singleton: function(base, proto) {
+		
+		return new (this.declare(base, proto));
 	}
 
 };
+
+window.lang = lang;
+
+})();
