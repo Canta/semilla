@@ -215,8 +215,10 @@ var App = (function() {
 		window.clearInterval($id_timer);
 	}
 	
-	app.deferred_api = null;
 	app.api = function($parms){
+		var deferred_api_ajax = null;
+		var deferred_api = new $.Deferred();
+		
 		if ($parms === undefined || typeof $parms !== "object"){
 			throw "app.api: object expected.";
 		}
@@ -228,22 +230,21 @@ var App = (function() {
 		}
 		if ($parms.on_success !== undefined && !($parms.on_success instanceof Function)){
 			throw "app.api: success handler must be a function.";
-		} else if ($parms.on_success === undefined){
-			$parms.on_success = function($resp, $status, $xhr){
-				if (!$resp.success){
-					app.mostrar_error("El servidor respondió:\n"+$resp.data.message);
-				}
-			};
-		}
-		if ($parms.on_error !== undefined && typeof $parms.on_error !== "function"){
-			throw "app.api: error handler must be a function.";
-		} else if ($parms.on_error === undefined){
-			$parms.on_error = function($xhr, $status, $error){
-				app.mostrar_error("app.api: Error: "+$error+" ("+$status+").\nPor favor, vuelva a intentar, o comuníquese con el administrador del sistema.");
-			};
 		}
 		
-		app.deferred_api = $.ajax({
+		if ($parms.on_error !== undefined && typeof $parms.on_error !== "function"){
+			throw "app.api: error handler must be a function.";
+		}
+		
+		if ($parms.on_success === undefined){
+			$parms.on_success = function(){};
+		}
+		
+		if ($parms.on_error === undefined){
+			$parms.on_error = function(){};
+		}
+		
+		deferred_api_ajax = $.ajax({
 			url: app.path + "/api/",
 			type:"POST",
 			dataType:"JSON",
@@ -251,15 +252,31 @@ var App = (function() {
 			varb: $parms.data.verb,
 			cache: ($parms.cache === undefined) ? false : $parms.cache,
 			async: ($parms.async === undefined) ? true : $parms.async
-		}).done($parms.on_success).fail($parms.on_error);
+		}).done(
+			function($resp, $status, $xhr){
+				deferred_api_ajax.xhr = $xhr;
+				if ($resp.success){
+					deferred_api.resolve($resp.data);
+				} else {
+					deferred_api.reject($resp.data)
+				}
+			}
+		).fail(
+			function($xhr, $status, $error){
+				deferred_api_ajax.xhr = $xhr;
+				deferred_api.reject({message:$error});
+			}
+		);
 		
-		var p = app.deferred_api.promise();
+		deferred_api.done($parms.on_success).fail($parms.on_error);
+		var p = deferred_api;
 		
 		if ($parms.async === false){
-			p.response = JSON.parse($resp.responseText);
+			p.response = JSON.parse(deferred_api_ajax.xhr.responseText);
 		}
 		
 		return p;
+		
 	}
 	
 	app.ui.change_section = function($val){
@@ -302,13 +319,16 @@ var App = (function() {
 			}
 		}
 		
-		app.sections.fadeOut(300);
+		app.sections.fadeOut(300).promise().then(
+			function(){
+				app.current_section = $sec;
+				if ($sec.attr("onshow") != undefined){
+					eval($sec.attr("onshow"));
+				}
+				$sec.fadeIn(300);
+			}
+		);
 		
-		if ($sec.attr("onshow") != undefined){
-			eval($sec.attr("onshow"));
-		}
-		setTimeout(function(){$sec.fadeIn(300);},350);
-		app.current_section = $sec;
 	}
 	
 	app.ui.get_object = function($str){
@@ -443,7 +463,6 @@ var Wizard = function($obj){
 	return self;
 }
 
-
 $(document).ready(
 	function(){
 		$(".draggable").mousedown(function(e){
@@ -552,3 +571,5 @@ jQuery.fn.unserialize = function(str){
 		};
 		return this;
 }
+
+jQuery.fn.emit = jQuery.fn.trigger;
