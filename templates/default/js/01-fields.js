@@ -140,6 +140,20 @@ app.ui.setup_fields = function($id_container) {
 			$(this).attr("selected","selected");
 		}
 	});
+	
+	//20130810 - Mariano Filipoff - pequeño fix para ocultar los espacios en blanco de los formularios
+	$('.Field_Row').each(function(indice, elemento){
+		if (indice > 0) {
+			var item = $(elemento);
+			
+			if (item.is(':hidden') || item.children().length == 0) {
+				item.hide();
+			} else if (item.children().length > 0 && item.find('> :first-child').is(':hidden')) {
+				item.hide();
+			}
+		}
+	});
+	
 };
 
 
@@ -407,40 +421,38 @@ function accion_update_fields($arr, $url){
 		$url = ".";
 	}
 	
-	$selector = "input";
+	var $selector = "input";
 	for(var i = 0; i < $arr.length; i++){
 		$selector += "[name!='"+$arr[i]+"']";
 	}
 	//console.debug($arr);
-	$data = $("form[class='frmABM']:visible "+$selector).serialize();
+	var $data = $("form[class='frmABM']:visible "+$selector).serialize();
 	for (var $i = 0; $i < $arr.length; $i++){
 		$data += "&update_fields[]="+$arr[$i];
 	}
 	$data += "&metodo_serializacion=json&verb=crud&opcion="+$("form[class='frmABM']").attr("name").replace("frm","");
 	
 	
-	$tmp = function($resp, $status, $obj){
-		if ($resp.success){
-			$res = JSON.parse($resp.data.resultado);
-			//console.debug($res);
-			for (var $i = 0; $i < $res.length; $i++){
-				$item = $res[$i];
-				//console.debug($item);
-				$("#"+$item.data.id).val($item.data.valor);
-				$desc = $("#desc_"+$item.data.id);
-				
-				if ($desc.length > 0){
-					$tmp_html = "";
-					for (var $i2 = 0; $i2 < $item.data.items.length; $i2++){
-						$tmp_html += "<option value=\""+$item.data.items[$i2][$item.data.campo_indice]+"\">"+$item.data.items[$i2][$item.data.campo_descriptivo]+"</option>\n";
-					}
-					$desc.html($tmp_html);
-					set_valores_defecto_enum();
+	var $tmp = function($resp, $status, $obj){
+		
+		var $res = JSON.parse($resp.resultado);
+		//console.debug($res);
+		for (var $i = 0; $i < $res.length; $i++){
+			var $item = $res[$i];
+			//console.debug($item);
+			$("#"+$item.data.id).val($item.data.valor);
+			var $desc = $("#desc_"+$item.data.id);
+			
+			if ($desc.length > 0){
+				var $tmp_html = "";
+				for (var $i2 = 0; $i2 < $item.data.items.length; $i2++){
+					$tmp_html += "<option value=\""+$item.data.items[$i2][$item.data.campo_indice]+"\">"+$item.data.items[$i2][$item.data.campo_descriptivo]+"</option>\n";
 				}
+				$desc.html($tmp_html);
+				set_valores_defecto_enum();
 			}
-		} else {
-			app.mostrar_error($resp.data.message);
 		}
+		 
 		app.desespere("Actualizando campos.");
 	}
 	
