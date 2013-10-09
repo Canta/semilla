@@ -61,29 +61,24 @@ app.ABM = lang.declare(null, {
 			delete(temp_abm.data.btnGuardar);
 		}
 		
-		var $tmp = function(resp, status, xhr){
+		var $tmp = function(resp){
 			app.desespere(temp_desc);
-			if (resp.success){
-				if (temp_abm.modal){
-					app.show_modal({
-						html:resp.data.resultado,
-						ok: [function(){
-								temp_abm.save({
-									success: $after_success
-								});
-							}
-						]
-					});
-				} else {
-					$(temp_abm.container).html(resp.data.resultado).fadeIn(500);
-				}
-				$obj = (temp_abm.modal) ? $(".modal .frmABM") : $(temp_abm.container) ;
-				temp_abm.after_alta($obj);
-				temp_abm.deferred_alta.resolve();
+			if (temp_abm.modal){
+				app.show_modal({
+					html:resp.resultado,
+					ok: [function(){
+							temp_abm.save({
+								success: $after_success
+							});
+						}
+					]
+				});
 			} else {
-				app.mostrar_error("Hubo un error en la operación:\n"+resp.data.message);
-				temp_abm.deferred_alta.fail("Hubo un error en la operación:\n"+resp.data.message);
+				$(temp_abm.container).html(resp.resultado).fadeIn(500);
 			}
+			$obj = (temp_abm.modal) ? $(".modal .frmABM") : $(temp_abm.container) ;
+			temp_abm.after_alta($obj);
+			temp_abm.deferred_alta.resolve();
 		}
 		
 		this.data.verb = "crud";
@@ -169,22 +164,17 @@ app.ABM = lang.declare(null, {
 		
 		var $tmp = function(resp, status, xhr){
 			app.desespere("Cargando listado...");
-			
-			if (resp.success){
-				if (temp_abm.modal){
-					app.show_modal({
-						html:resp.data.resultado
-					});
-				} else {
-					$(temp_abm.container).html(resp.data.resultado).fadeIn(500);
-				}
-				$obj = (temp_abm.modal) ? $(".modal .frmABM") : $(temp_abm.container) ;
-				temp_abm.after_lista($obj);
-				temp_abm.deferred_lista.resolve();
+			if (temp_abm.modal){
+				app.show_modal({
+					html:resp.resultado
+				});
 			} else {
-				app.mostrar_error("Hubo un error en la operación:\n"+resp.data.message);
-				temp_abm.deferred_lista.fail("Hubo un error en la operación:\n"+resp.data.message);
+				$(temp_abm.container).html(resp.resultado).fadeIn(500);
 			}
+			$obj = (temp_abm.modal) ? $(".modal .frmABM") : $(temp_abm.container) ;
+			temp_abm.after_lista($obj);
+			temp_abm.deferred_lista.resolve();
+			
 		}
 		
 		
@@ -250,27 +240,22 @@ app.ABM = lang.declare(null, {
 		
 		var $tmp = function(resp, status, xhr){
 			app.desespere(temp_desc);
-			if (resp.success){
-				if (temp_abm.modal){
-					app.show_modal({
-						html:resp.data.resultado,
-						ok: [function(){
-								temp_abm.save({
-									success: $after_success
-								});
-							}
-						]
-					});
-				} else {
-					$(temp_abm.container).html(resp.data.resultado).fadeIn(500);
-				}
-				$obj = (temp_abm.modal) ? $(".modal .frmABM") : $(temp_abm.container) ;
-				temp_abm.after_modificacion($obj);
-				temp_abm.deferred_modificacion.resolve();
+			if (temp_abm.modal){
+				app.show_modal({
+					html:resp.resultado,
+					ok: [function(){
+							temp_abm.save({
+								success: $after_success
+							});
+						}
+					]
+				});
 			} else {
-				app.mostrar_error("Hubo un error en la operación:\n"+resp.data.message);
-				temp_abm.deferred_modificacion.fail("Hubo un error en la operación:\n"+resp.data.message);
+				$(temp_abm.container).html(resp.resultado).fadeIn(500);
 			}
+			$obj = (temp_abm.modal) ? $(".modal .frmABM") : $(temp_abm.container) ;
+			temp_abm.after_modificacion($obj);
+			temp_abm.deferred_modificacion.resolve();
 		}
 		
 		this.data.verb = "crud";
@@ -400,8 +385,7 @@ app.ABM = lang.declare(null, {
 		setTimeout(function(){
 			app.ui.setup_fields((tmp_abm.modal) ? ".modal .frmABM" : tmp_abm.container);
 			tmp_abm.deferred_setup_fields.resolve("setup_fields resuelto");
-		},100);
-		
+		},250);
 		return this.deferred_setup_fields;
 	}
 	
