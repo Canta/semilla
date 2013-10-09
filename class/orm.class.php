@@ -1244,6 +1244,9 @@ class ABM extends ORM{
 		//Obtengo los campos de la tabla, para después asegurarme que 
 		//los especificados existen y no son campos custom o erroneos.
 		$campos2 = $this->get_campos(true);
+		for($i=0; $i < count($campos2); $i++){
+			$campos2[$i] = strtolower($campos2[$i]);
+		}
 		
 		//Si solamente está establecido el campo id, entiendo que no se 
 		//establecieron campos en la consulta, razón por la cual
@@ -1266,7 +1269,7 @@ class ABM extends ORM{
 				}
 			}
 		}
-		//die(var_dump($campos_validos));
+		//echo(var_dump($campos_validos));
 		$fs = implode(",", $nombres_campos_validos);
 		if ($fs == $campo_id . "," || $fs == $campo_id ){
 			$fs = " * ";
@@ -1448,7 +1451,8 @@ class Model extends ORM{
 	}
 	
 	public function to_json(){
-		return json_encode($this->filter_data());
+	   $tmp = $this->filter_data();
+	   return json_encode($tmp->to_array());
 	}
 	
 	public function to_array(){

@@ -396,7 +396,7 @@ class Field {
 					$ret2 .= " datetime ";
 				}
 				
-				$ret2 .=  "/> ";
+				$ret2 .= $stily." /> ";
 				
 			}
 			
@@ -409,6 +409,14 @@ class Field {
 				
 				if ($this->get_largo() > 0){
 					$ret2 .= " maxlength=".$this->get_largo()." ";
+				}
+				
+				if ($this->get_requerido() === TRUE){
+					$ret2 .= " required ";
+				}
+				
+				if ($this->get_activado() !== TRUE && $type != "hidden"){
+					$ret2 .= " disabled ";
 				}
 				
 				$ret2 .= ">".$valores[$v]."</textarea>";
