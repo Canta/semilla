@@ -30,17 +30,13 @@ app.ABM = lang.declare(null, {
 	
 	deferred_alta: null,
 	alta: function() {
+		var temp_desc = "";
 		if (Object.keys(this.data).length > 0 ){
 			temp_desc = "Guardando datos..."; 
 		} else{
 			temp_desc = "Cargando formulario de alta...";
 		}
 		
-		if (this.modal){
-			app.hide_modal();
-		}
-		
-		app.espere(temp_desc, "listo.");
 		this.deferred_alta = new $.Deferred();
 		var temp_abm = this;
 		
@@ -53,7 +49,6 @@ app.ABM = lang.declare(null, {
 			}
 			
 			if ($obj.find(".error, .erroneo").length <= 0){
-				//console.debug(["alta - after success", $obj, $obj.find(".error, .erroneo")]);
 				if (temp_abm.modal){
 					setTimeout(app.hide_modal,3000);
 				}
@@ -86,12 +81,19 @@ app.ABM = lang.declare(null, {
 		this.data.form_operacion = "alta";
 		if (this.data.btnGuardar == undefined){
 			this.data.boton_nuevo_item = "1";
-		}
+		} 
 		
-		app.api({
-			data: this.data,
-			on_success : $tmp
-		});
+		var tmpdata = this.data;
+		var tmp2 = function(txt){
+			app.espere(temp_desc, "listo.");
+			app.api({data: tmpdata}).then($tmp);
+		};
+		
+		if (this.modal){
+			app.hide_modal().then(tmp2);
+		} else {
+			tmp2();
+		}
 		
 		temp_abm.deferred_alta.then(temp_abm.setup_fields);
 		return temp_abm.deferred_alta;
@@ -107,37 +109,24 @@ app.ABM = lang.declare(null, {
 		$data = (typeof $data == "undefined") ? {} : $data;
 		$selector = (this.modal === true) ? ".modal .frmABM" : this.container + " .frmABM";
 		
-		ret = this.validate($selector);
-		if (ret === true){
+		$data.success = (typeof $data.success == "undefined") ? function(){} : $data.success;
+		$data.error = (typeof $data.error == "undefined") ? function(){} : $data.error;
+		
+		ret = new $.Deferred();
+		valid = this.validate($selector);
+		if (valid === true){
 			$datos = $.unserialize($($selector).serialize());
 			$datos.btnGuardar = "1";
 			this.data = $datos;
 			if (this.data.form_operacion == "alta"){
-				this.alta();
+				ret = this.alta().then($data.success,$data.error);
 			} else {
-				this.modificacion(this.data.ID);
+				ret = this.modificacion(this.data.ID).then($data.success,$data.error);
 			}
 		}
-		app.modal_ok = ret;
-		this.datos_ok = ret;
-		
-		if (typeof $data.success != "undefined" && ret === true){
-			if ($data.success instanceof Array){
-				for (i in $data.success){
-					$data.success[i]();
-				}
-			} else if ($data.success instanceof Function) {
-				$data.success();
-			}
-		} else if (typeof $data.error != "undefined" && ret === false){
-			if ($data.error instanceof Array){
-				for (i in $data.error){
-					$data.error[i]();
-				}
-			} else if ($data.error instanceof Function) {
-				$data.error();
-			}
-		}
+		app.modal_ok = valid;
+		this.datos_ok = valid;
+		return ret;
 	},
 	
 	deferred_lista:null,
@@ -154,13 +143,9 @@ app.ABM = lang.declare(null, {
 	 * @author Daniel Cantarín <omega_canta@yahoo.com>
 	 */
 	lista: function(){
-		app.espere("Cargando listado...", "listo.");
+		
 		this.deferred_lista = new $.Deferred();
 		var temp_abm = this;
-		
-		if (this.modal){
-			app.hide_modal();
-		}
 		
 		var $tmp = function(resp, status, xhr){
 			app.desespere("Cargando listado...");
@@ -177,15 +162,24 @@ app.ABM = lang.declare(null, {
 			
 		}
 		
-		
 		this.data.verb = "crud";
 		this.data.opcion = this.tabla;
 		this.data.form_operacion = "lista";
 		
-		app.api({
-			data: this.data,
-			on_success : $tmp
-		});
+		var tmpdata = this.data;
+		var tmp2 = function(){
+			app.espere("Cargando listado...", "listo.");
+			app.api({
+				data: tmpdata,
+				on_success : $tmp
+			});
+		}
+		
+		if (this.modal){
+			app.hide_modal().then(tmp2);
+		} else {
+			tmp2();
+		}
 		
 		this.deferred_lista.then(temp_abm.setup_fields);
 		return this.deferred_lista;
@@ -213,11 +207,7 @@ app.ABM = lang.declare(null, {
 			temp_desc = "Cargando formulario de modificación...";
 		}
 		
-		if (this.modal){
-			app.hide_modal();
-		}
 		
-		app.espere(temp_desc, "listo.");
 		this.deferred_modificacion = $.Deferred();
 		var temp_abm = this;
 		
@@ -262,10 +252,20 @@ app.ABM = lang.declare(null, {
 		this.data.opcion = this.tabla;
 		this.data.form_operacion = "modificacion";
 		
-		app.api({
-			data: this.data,
-			on_success : $tmp
-		});
+		var tmpdata = this.data;
+		var tmp2 = function(){
+			app.espere(temp_desc, "listo.");
+			app.api({
+				data: tmpdata,
+				on_success : $tmp
+			});
+		};
+		
+		if (this.modal){
+			app.hide_modal().then(tmp2);
+		} else {
+			tmp2();
+		}
 		
 		this.deferred_modificacion.then(temp_abm.setup_fields);
 		return this.deferred_modificacion;
