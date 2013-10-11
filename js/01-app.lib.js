@@ -89,20 +89,20 @@ var App = (function() {
 		}
 	}
 	
-	app.deferred_hide_modal = null;
 	app.hide_modal = function(){
-		app.deferred_hide_modal = new $.Deferred();
+		var def = new $.Deferred();
 		if ($(this).attr("id") == "modal_button_aceptar" && app.modal_ok != true){
-			app.deferred_hide_modal.fail();
+			def.fail("Error al intentar cerrar un modal");
 		}
-		$(".cubre-cuerpo").fadeOut(500, function(){
+		$(".cubre-cuerpo").fadeOut(300, function(){
 			$(this).remove();
 		});
-		$(".modal").fadeOut(250, function(){
-			app.deferred_hide_modal.resolve("hide_modal resuelto");
+		$(".modal").fadeOut(250).promise().then(function(){
+			//console.log("modal cerrado");
+			def.resolve("hide_modal resuelto");
 			$(this).remove();
 		});
-		return app.deferred_hide_modal;
+		return def;
 	}
 
 
@@ -319,7 +319,7 @@ var App = (function() {
 			}
 		}
 		
-		app.sections.fadeOut(300).promise().then(
+		app.sections.fadeOut(100).promise().then(
 			function(){
 				app.current_section = $sec;
 				if ($sec.attr("onshow") != undefined){
