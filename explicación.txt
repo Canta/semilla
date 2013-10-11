@@ -528,6 +528,7 @@ Es por esto que los PDF se imprimen bien, se leen bien, pero cuando se
 pretende hacer cosas como "copiar y pegar" desde un PDF hacia otro 
 software, usualmente hay problemas: porque eso involucra mecanismos de 
 conversión entre glyphs y caracteres, y esos mecanismos son falibles.
+
 Además, un PDF no registra abstracciones básicas de la gestión de textos
 como ser "párrafo", por ejemplo, o "retorno de carro" (la tecla "enter"); 
 registra conjuntos de glyphs con coordenadas bidimencionales (X e Y) que 
@@ -603,7 +604,12 @@ Teniendo en cuenta todos estos problemas solamente vinculados a los
 formatos de archivos, evalué que lo mejor es utilizar para los 
 repositorios un formato intermedio, que permita convertir desde y hasta 
 cualquier otro formato de archivos.
-Si además ese formato intermedio consiste en texto plano, 
+Si además ese formato intermedio consiste en texto plano, siempre va a 
+ser posible que sea analizado por terceros y adaptado a necesidades 
+puntuales de cada caso de uso. Al final de este texto dejo algunos links 
+donde se habla un poco sobre los formatos de texto plano y su relación 
+con la longevidad de la información.
+
 
 
 
