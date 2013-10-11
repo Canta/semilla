@@ -28,6 +28,9 @@ class Field {
 		$this->data["columnas"] = 0;
 		$this->data["clase_css"] = "Field";
 		$this->data["alias"] = null;
+		$this->data["referidos"] = Array();
+		$this->data["referente"] = null;
+        $this->data["tabla"] = "";
 		
 		//$this->data["valor_default"] = null; //FIX: no lo seteo.
 		
@@ -76,6 +79,50 @@ class Field {
 		return $this->data["rotulo"];
 	}
 	
+	public function add_referido($f){
+		if ($f instanceof Field){
+			$this->data["referidos"][] = $f;
+			$f->set_referente($this);
+		} else {
+			throw new Exception("Class Field, method add_referido: Field expected.");
+		}
+	}
+	
+	public function add_referidos($fs){
+		if (is_array($fs)){
+			foreach($fs as $f){
+				$this->add_referido($f);
+			}
+		} else {
+			throw new Exception("Class Field, method add_referidos: Array expected.");
+		}
+	}
+	
+	public function remove_referido_by_name($f){
+		//Se asume String cuando no es un Field.
+		$nombre = ($f instanceof Field) ? $f->get_id() : $f;
+		for( $i = count($this->data["referidos"]) - 1 ; $i > -1; $i--){
+			$r = $this->data["referidos"][$i];
+			if ($r->get_id() == $nombre){
+				unset($this->data["referidos"][$i]);
+			}
+		}
+	}
+	
+	public function remove_referido($i){
+		if (!is_numeric($i)){
+			throw new Exception("Class Field, method remove_referido: number expected.");
+		}
+		unset($this->data["referidos"][(int)$i]);
+	}
+	
+	public function set_referente($f){
+		if ($f instanceof Field){
+			$this->data["referente"] = $f;
+		} else {
+			throw new Exception("Class Field, method set_referente: Field expected.");
+		}
+	}
 	
 	public function is_number(){
 		$ret = false;
@@ -99,6 +146,11 @@ class Field {
 		//Agrego la gestión de aliases para los fields.
 		//Esta funcionalidad es muy útil para abms combinados.
 		$tmp = (!is_null($this->data["alias"]) && $this->data["alias"] instanceof Field) ? $this->data["alias"]->get_valor($corregir) : implode($this->data["valor"]);
+		//20131011 - Daniel Cantarín 
+		//Agrego la gestión de referidos para los fields
+		//Esta funcionalidad es muy útil para abms combinados.
+		$tmp = (is_null($this->data["referente"])) ? $tmp : $this->data["referente"]->get_valor($corregir);
+		
 		
 		if ($corregir){
 			if (strpos(strtolower($this->data["tipoSQL"]),"date") > -1 ){
@@ -152,13 +204,13 @@ class Field {
 		$ret = $this->get_valor(false);
 		$def = $this->get_valor_default();;
 		$requerido = $this->get_requerido();
-		
-		if ($requerido) {
+        
+		if ($requerido || $this->is_number()) {
 			$ret = (strlen($ret) > 0) ? $ret : $def;
 			$ret = is_null($ret) ? 'null' : $ret;
 		}
 		
-		$tipo = $this->get_tipo_sql();
+        $tipo = $this->get_tipo_sql();
 		if (strpos(strtolower($tipo),"timestamp") !== false && ($ret == "now()" || $ret == "0")){
 			//No agrego las comillas
 			//Esto porque en caso de timestamp, el valor default es una función.
@@ -201,7 +253,8 @@ class Field {
 	}
 	
 	public function get_primary_key(){
-		return (boolean)$this->data["primaryKey"];
+        $f = (!is_null($this->data["referente"])) ? $this->data["referente"] : $this;
+		return (boolean)$f->data["primaryKey"];
 	}
 	
 	
@@ -224,6 +277,11 @@ class Field {
 	
 	public function validate(){
 		
+        if (!is_null($this->data["referente"])){
+            //echo($this->get_id() . " es en reaidad " . $this->data["referente"]->get_id() . ", que me devuelve ".$this->data["referente"]->validate() . "<br/>");
+            return $this->data["referente"]->validate();
+        }
+        
 		$va = $this->get_valor();
 		
 		if ($this->get_requerido() === true && ($va === "" || is_null($va))){
@@ -263,6 +321,12 @@ class Field {
 		//20120810 - Daniel Cantarín 
 		//Agrego tratamiento para valores que sean arrays.
 		$this->data["valor"] = Array($valor);
+		//20131011 - Daniel Cantarín 
+		//Agrego la gestión de referidos para los fields
+		//Esta funcionalidad es muy útil para abms combinados.
+		foreach ($this->data["referidos"] as $f){
+			$f->set_valor($valor);
+		}
 	}
 	
 	//20120810 - Daniel Cantarín 
@@ -295,6 +359,10 @@ class Field {
 	}
 	
 	public function set_primary_key($val){
+	    //if ($this->data["primaryKey"] === true){
+           //echo("Se está cambiando el status de la pkey ".$this->get_id()."(".$this->data["tabla"].") a ");
+           //echo(var_dump($val));
+	    //}
 		$this->data["primaryKey"] = (boolean)$val;
 	}
 	
@@ -1237,6 +1305,26 @@ class HRField extends Field{
 	public function render(){
 		return "<p class=\"HRField\">".$this->get_valor()."</p>";
 	}
+}
+
+class HeaderField extends Field{
+    
+    public function __construct($id = "", $rotulo="", $valor="", $items = null){
+        parent::__construct($id, $rotulo, $valor, $items);
+        $this->set_caption($valor);
+    }
+    
+    public function set_caption($caption){
+        $this->data["caption"] = $caption;
+    }
+    
+    public function get_caption(){
+        return $this->data["caption"];
+    }
+    
+    public function render(){
+        return "<div class=\"form_header_field\">".$this->get_caption()."</div>";
+    }
 }
 
 class NullField extends Field{

@@ -258,7 +258,8 @@ class ORM {
 				echo("<br/>");
 				*/
 				$nombre = (isset($campo["COLUMN_NAME"])) ? strtoupper($campo["COLUMN_NAME"]) : strtoupper($campo["column_name"]);
-				
+				$nombre2 = (isset($campo["COLUMN_NAME"])) ? $campo["COLUMN_NAME"] : $campo["column_name"];
+                
 				$largo = (isset($campo["CHARACTER_MAXIMUM_LENGTH"]) && (int)$campo["CHARACTER_MAXIMUM_LENGTH"] > 0) ? (int)$campo["CHARACTER_MAXIMUM_LENGTH"] : 0;
 				$largo = ($largo <= 0 && isset($campo["character_maximum_length"]) ) ? (int)$campo["character_maximum_length"] : $largo;
 				if ($largo == 0 || $largo == '' || is_null($largo)){
@@ -275,6 +276,19 @@ class ORM {
 				$tipoHTML = Field::sqltype2htmltype($tipoSQL);
 				$fk_vals = $this->get_campo_fk_values($nombre);
 				
+                $cc = $this->datos["constraints"];
+                
+                $pkey = false;
+				foreach ($cc as $constraint){
+					$cctype = (isset($constraint["CONSTRAINT_TYPE"])) ? $constraint["CONSTRAINT_TYPE"] : $constraint["constraint_type"];
+					$ccfield = (isset($constraint["COLUMN_NAME"])) ? $constraint["COLUMN_NAME"] : $constraint["column_name"];
+					if (($ccfield == $nombre || $ccfield == $nombre2) && strtoupper($cctype) == "PRIMARY KEY"){
+						$pkey = true;
+						break;
+					}
+				}
+                
+                
 				if (strpos(strtolower($tipoSQL),"timestamp") !== false){
 					$ret[$nombre] = new TimestampField();
 					$default = 'now()';
@@ -296,7 +310,8 @@ class ORM {
 				$ret[$nombre]->set_rotulo( $comentario );
 				$ret[$nombre]->set_requerido( (trim($nullable) === "NO") );
 				$ret[$nombre]->set_valorDefault( $default );
-				
+                $ret[$nombre]->set_primary_key( $pkey );
+				$ret[$nombre]->data["tabla"] = $this->get_tabla();
 				//$ret[$name]->set_requerido( pg_field_is_null($this->consulta, $x) );
 				//$ret[$name]->set_primary_key( (strpos($flags, "primary_key") > -1) );
 				//$ret[$name]->set_activado( !((boolean)strpos($flags, "auto_increment")) );
@@ -417,7 +432,7 @@ class ORM {
 				$ret[$i][$nombre]->set_rotulo($comentario);
 				$ret[$i][$nombre]->set_requerido( (trim($nullable) === "NO") );
 				$ret[$i][$nombre]->set_valor($valor);
-				
+				$ret[$nombre]->data["tabla"] = $this->get_tabla();
 				//echo(var_dump($pkey)); echo("<br>");
 				$ret[$i][$nombre]->set_primary_key( $pkey );
 				//$ret[$i][$nombre]->set_activado( !((boolean)strpos($flags, "auto_increment")) );
@@ -581,7 +596,8 @@ class ABM extends ORM{
 			}catch(Exception $e){
 				$ret = false;
 				//$tmp_msg_error = "Error: ".$e->getMessage();
-				$tmp_msg_error = "Error en la base de datos.";
+				$tmp_msg_error = "Error en la base de datos. ";
+                
 			}
 			
 			if ($es_insert){
@@ -592,7 +608,12 @@ class ABM extends ORM{
 				foreach ($ffs as $key=>$ff){
 					if (strtolower($key) == strtolower($pkey["COLUMN_NAME"])){
 						$tmp_valor = isset($ret2[0][strtoupper($key)]) ? $ret2[0][strtoupper($key)] : $ret2[0][strtolower($key)];
+                        //echo(var_dump($tmp_valor));
 						$this->datos["fields"][$key]->set_valor($tmp_valor);
+                        if (!is_null($this->datos["fields"][$key]->data["alias"]) && $this->datos["fields"][$key]->data["alias"] instanceof Field) {
+                            $this->datos["fields"][$key]->data["alias"]->set_valor($tmp_valor);
+                        }
+                        //echo(var_dump($this->datos["fields"][$key]->get_valor()));
 					}
 				}
 			}
@@ -820,12 +841,14 @@ class ABM extends ORM{
 		
 		foreach ($fs as $nombre => $f){
 			
-			if (!($new && $id == strtoupper($nombre))){
-				if (!$f->validate()){
+			//if (!($new && $id == strtoupper($nombre))){
+			if (!($new && $f->get_primary_key())){
+                //if ($f->get_id() == $id) {echo(var_dump($f->get_primary_key()));}
+            	if (!$f->validate()){
 					$ret = false;
 					$rot = $f->get_rotulo();
 					$f->add_clase_CSS("erroneo");
-					$msg = new MensajeOperacion("El valor del campo ".(($rot == "") ? $nombre : $rot)." es inválido. ",ABM::ERROR_VALIDACION);
+					$msg = new MensajeOperacion("El valor del campo ".(($rot == "") ? $nombre : $rot)." (\"".$f->get_valor()."\") es inválido. ",ABM::ERROR_VALIDACION);
 					$this->add_mensaje($msg);
 				}
 			}
@@ -1088,12 +1111,12 @@ class ABM extends ORM{
 				$this->load_fields_from_array($tmp_model->to_array());
 			}
 			$this->load_fields_from_array($data);
-			if (!is_null($this->datos["parent-abm"]) && $this->datos["parent-abm"] instanceof ABM){
+			//if (!is_null($this->datos["parent-abm"]) && $this->datos["parent-abm"] instanceof ABM){
 				//En este caso, se trata de un abm combinado.
-				$this->datos["parent-abm"]->save();
-			} else {
+			//	$this->datos["parent-abm"]->save();
+			//} else {
 				$this->save();
-			}
+			//}
 			
 			$tmpok = true;
 			$msgs = $this->get_mensajes();
@@ -1567,10 +1590,10 @@ class ABMCombinado extends ABM{
 		$this->datos["already_saved"] = false;
 		
 		$this->create_abms();
-		
+		$this->setup_fields();
 	}
-	
-	protected function create_abms(){
+    
+    protected function create_abms(){
 		foreach ($this->datos["tablas"] as $nombre){
 			$clase_abm = (class_exists("ABM".$nombre)) ?  "ABM".$nombre : null;
 			$clase_abm = (class_exists($nombre."ABM")) ?  $nombre."ABM" : $clase_abm;
@@ -1598,7 +1621,7 @@ class ABMCombinado extends ABM{
 			$alias->set_primary_key(true);
 			$abm->datos["fields"][$id_alias] = $alias;
 			$abm->datos["fields"][$id]->data["alias"] = $abm->datos["fields"][$id_alias];
-			$abm->datos["fields"][$id]->set_primary_key(false);
+			//$abm->datos["fields"][$id]->set_primary_key(false);
 			$abm->datos["parent-abm"] = $this;
 			
 			$this->datos["abms"][strtoupper($nombre)] = $abm;
@@ -1606,21 +1629,21 @@ class ABMCombinado extends ABM{
 	}
 	
 	public function analizar_operacion($data){
-		parent::analizar_operacion($data);
+		//parent::analizar_operacion($data);
 		foreach($this->datos["abms"] as $nombre=>$abm){
-			$this->datos["abms"][$nombre]->analizar_operacion($data);
+			$abm->analizar_operacion($data);
 		}
 		
 	}
 	
 	public function load_fields_from_array($arr){
-		parent::load_fields_from_array($arr);
+		//parent::load_fields_from_array($arr);
 		foreach($this->datos["abms"] as $nombre=>$abm){
-			$this->datos["abms"][$nombre]->load_fields_from_array($arr);
+			$abm->load_fields_from_array($arr);
 		}
 		
 	}
-	
+    
 	public function validate(){
 		$ret = true;
 		foreach($this->datos["abms"] as $nombre=>$abm){
