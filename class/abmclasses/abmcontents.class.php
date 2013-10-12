@@ -34,20 +34,22 @@ class ABMcontents extends ABM{
 	
 	public function save(){
 		parent::save();
-		try{
-			for ($i = 0; $i < count($this->datos["raws"]); $i++){
-				$raw = new ABM("raws");
-				$raw->datos["fields"]["URL"]->set_valor( $this->datos["raws"][$i]);
-				$raw->datos["fields"]["ID_CONTENT"]->set_valor($this->datos["fields"]["ID"]->get_valor());
-				$raw->save();
+		if (!$this->tiene_errores()){
+			try{
+				for ($i = 0; $i < count($this->datos["raws"]); $i++){
+					$raw = new ABM("raws");
+					$raw->datos["fields"]["URL"]->set_valor( $this->datos["raws"][$i]);
+					$raw->datos["fields"]["ID_CONTENT"]->set_valor($this->datos["fields"]["ID"]->get_valor());
+					$raw->save();
+				}
+				
+				$c = new Content($this->datos["processed"]);
+				$c->data["id"] = $this->get("ID");
+				$c->save_processed();
+				
+			} catch(Exception $e){
+				$this->baja($this->datos["fields"]["ID"]->get_valor(), false);
 			}
-			
-			$c = new Content($this->datos["processed"]);
-			$c->data["id"] = $this->get("ID");
-			$c->save_processed();
-			
-		} catch(Exception $e){
-			$this->baja($this->datos["fields"]["ID"]->get_valor(), false);
 		}
 	}
 }
