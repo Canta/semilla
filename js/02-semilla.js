@@ -36,8 +36,8 @@ Function.prototype.def = function(obj){
 	}
 	
 	/**
-	 * add_event_handler function.
-	 * Its name is quite self descriptive :P
+	 * on function.
+	 * Used to add event handlers.
 	 * 
 	 * @author Daniel Cantarín <omega_canta@yahoo.com>
 	 * @param {String} en 
@@ -46,9 +46,9 @@ Function.prototype.def = function(obj){
 	 * A function to execute when the event happens.
 	 * @this {Function}
 	 */
-	this.prototype["add_event_handler"] = function(en, f){
+	this.prototype["on"] = function(en, f){
 		if (typeof f === "undefined" || ! (f instanceof Function) ){
-			throw "[Semilla] add_event_handler: Function expected.";
+			throw "[Semilla] on: Function expected.";
 		}
 		
 		if ( 
@@ -61,7 +61,7 @@ Function.prototype.def = function(obj){
 	}
 	
 	/**
-	 * fire_event function.
+	 * emit function.
 	 * Common function for event handlers.
 	 * Given an event name, it checks for its existance, and in case 
 	 * it's there, this function fires all its handler functions.
@@ -74,7 +74,7 @@ Function.prototype.def = function(obj){
 	 * structure it's going to receive given the event.
 	 * @this {Function}
 	 */
-	this.prototype["fire_event"] = function(en, data){
+	this.prototype["emit"] = function(en, data){
 		
 		if ( 
 			this.events === undefined 
@@ -88,7 +88,7 @@ Function.prototype.def = function(obj){
 			try{
 				this.events[en][i](data, this);
 			} catch(e){
-				console.debug("[Semilla] fire_event: problem calling index "+ i +" in '"+en+"' event handlers list:\n"+e);
+				console.debug("[Semilla] emit: problem calling index "+ i +" in '"+en+"' event handlers list:\n"+e);
 			}
 		}
 	}
@@ -152,9 +152,9 @@ Semilla = (function($fn){
 					var tmp = c.origin.raw;
 					c.origin.raw = "";
 					c.load(tmp);
-					obj.fire_event("parse_progress",{progress: 100});
+					obj.emit("parse_progress",{progress: 100});
 					r.add_content(c);
-					obj.fire_event("file_parsed",c);
+					obj.emit("file_parsed",c);
 				} else {
 					setTimeout(function(){$tmp1(obj);},100);
 				}
@@ -233,10 +233,10 @@ Semilla = (function($fn){
 		this.__parse = function(c){
 			var out = "";
 			this.content = c;
-			this.fire_event("parse_start");
+			this.emit("parse_start");
 			out = JSON.stringify(c);
 			this.output = out;
-			this.fire_event("parse_end");
+			this.emit("parse_end");
 			return this;
 		}
 		
@@ -356,7 +356,7 @@ Semilla = (function($fn){
 		
 		this.__add_content = function(c){
 			this.contents.push(c);
-			this.fire_event("new_content", {content:c});
+			this.emit("new_content", {content:c});
 		}
 		
 		
@@ -403,7 +403,7 @@ Semilla = (function($fn){
 				throw "Semilla.Repo.save_correction: No content found.";
 			}
 			c.fragments[i].corrections.push(f);
-			this.fire_event("new_correction", {content:c, fragment: i, correction: f});
+			this.emit("new_correction", {content:c, fragment: i, correction: f});
 		}
 		
 		/**
@@ -427,7 +427,7 @@ Semilla = (function($fn){
 		
 		this.__search = function(s){
 			
-			this.fire_event("search_end", {search_string:s});
+			this.emit("search_end", {search_string:s});
 		}
 		
 		/**
@@ -472,7 +472,7 @@ Semilla = (function($fn){
 			if (f !== undefined){
 				f(o,this);
 			} else {
-				this.fire_event("content_get_end", {"object":o});
+				this.emit("content_get_end", {"object":o});
 			}
 		}
 		
@@ -1103,7 +1103,7 @@ Semilla.HTTPRepo.def({
 				var r = JSON.parse(evt.target.responseText);
 				var data = new FormData();
 				if (r.success){
-					this.repo.fire_event("upload_progress", {progress: (r.data.chunk_count * 100 / this.maximo)});
+					this.repo.emit("upload_progress", {progress: (r.data.chunk_count * 100 / this.maximo)});
 					if (r.data.finished){
 						/* upload complete. Now, i fire the content creation */
 						data.append("verb", "new_content");
@@ -1114,7 +1114,7 @@ Semilla.HTTPRepo.def({
 						resp = JSON.parse(xhr2.responseText);
 						this.content.id = resp.data.id;
 						this.repo.contents.push(this.content);
-						this.repo.fire_event("new_content", {content:this.content});
+						this.repo.emit("new_content", {content:this.content});
 					} else {
 						this.indice = r.data.chunk_count;
 						data.append("verb", "upload");
@@ -1133,7 +1133,7 @@ Semilla.HTTPRepo.def({
 		xhr.upload.onprogress = function(evt) {
 			var loaded = (evt.loaded / evt.total);
 			if (loaded < 1) {
-				this.repo.fire_event("upload_progress", {progress:(loaded * 100)});
+				this.repo.emit("upload_progress", {progress:(loaded * 100)});
 			}
 		};
 		*/
@@ -1142,7 +1142,7 @@ Semilla.HTTPRepo.def({
 		data.append("token", token);
 		data.append("chunk", xhr.content_text.substr(0,this.chunksize));
 		xhr.open("POST", this.endpoint, true);
-		this.fire_event("upload_progress", {progress:0});
+		this.emit("upload_progress", {progress:0});
 		setTimeout(function(){xhr.send(data);},100);
 	},
 	// __save_correction is called by the public inherited save_correction
@@ -1166,11 +1166,11 @@ Semilla.HTTPRepo.def({
 		xhr.onreadystatechange = function(evt){
 			if (evt.target.readyState == 4){
 				var r = JSON.parse(evt.target.responseText);
-				this.repo.fire_event("save_progress", {progress:100});
+				this.repo.emit("save_progress", {progress:100});
 				if (r.success){
 					var co = JSON.parse(r.data.correction);
 					Semilla.Util.find(this.repo.contents,{id:this.cid})[0].fragments[this.fragment].corrections.push(co);
-					this.repo.fire_event("new_correction", {
+					this.repo.emit("new_correction", {
 						content:this.content, 
 						fragment:this.fragment,
 						correction: this.correction
@@ -1184,7 +1184,7 @@ Semilla.HTTPRepo.def({
 		xhr.upload.onprogress = function(evt) {
 			var loaded = (evt.loaded / evt.total);
 			if (loaded < 1) {
-				this.repo.fire_event("save_progress", {progress:(loaded * 100)});
+				this.repo.emit("save_progress", {progress:(loaded * 100)});
 			}
 		};
 		
@@ -1193,7 +1193,7 @@ Semilla.HTTPRepo.def({
 		data.append("fragment", i);
 		data.append("data", JSON.stringify(f));
 		xhr.open("POST", this.endpoint,true);
-		this.fire_event("save_progress", {progress:0});
+		this.emit("save_progress", {progress:0});
 		setTimeout(function(){xhr.send(data);},100);
 	},
 	__search : function(s){
@@ -1205,10 +1205,10 @@ Semilla.HTTPRepo.def({
 		xhr.onreadystatechange = function(evt){
 			if (evt.target.readyState == 4){
 				var r = JSON.parse(evt.target.responseText);
-				this.repo.fire_event("search_progress", {progress:100});
+				this.repo.emit("search_progress", {progress:100});
 				if (r.success){
 					this.repo.search_results = r.data.contents;
-					this.repo.fire_event("search_end", {
+					this.repo.emit("search_end", {
 						"search_string" : s
 					});
 				} else {
@@ -1220,7 +1220,7 @@ Semilla.HTTPRepo.def({
 		data.append("verb", "search_contents");
 		data.append("search_string", s);
 		xhr.open("POST", this.endpoint);
-		this.fire_event("search_start", {"search_string" : s });
+		this.emit("search_start", {"search_string" : s });
 		xhr.send(data);
 	},
 	__get_content : function(o,f){
@@ -1241,7 +1241,7 @@ Semilla.HTTPRepo.def({
 			if (evt.target.readyState == 4){
 				var r = JSON.parse(evt.target.responseText);
 				if (this.callback === undefined){
-					this.repo.fire_event("search_progress", {progress:100});
+					this.repo.emit("search_progress", {progress:100});
 				}
 				if (r.success){
 					
@@ -1252,10 +1252,10 @@ Semilla.HTTPRepo.def({
 					if (this.callback !== undefined){
 						this.callback(c,this.repo);
 					} else {
-						this.repo.fire_event("content_get_end", {"object":this.search, "content":r.data.content});
+						this.repo.emit("content_get_end", {"object":this.search, "content":r.data.content});
 					}
 				} else {
-					this.repo.fire_event("content_get_end", {"object":this.search, "content":this.content});
+					this.repo.emit("content_get_end", {"object":this.search, "content":this.content});
 					throw "Semilla.HTTPRepo ("+this.repo.name+") - Error while getting content:\n"+r.data.message;
 				}
 			}
@@ -1265,7 +1265,7 @@ Semilla.HTTPRepo.def({
 		data.append("search", JSON.stringify(o));
 		xhr.open("POST", this.endpoint);
 		if (f === undefined){
-			this.fire_event("content_get_start", {"object":o});
+			this.emit("content_get_start", {"object":o});
 		}
 		xhr.send(data);
 		
@@ -1318,7 +1318,7 @@ Semilla.MP3Importer.def({
 				c = new Semilla.Content();
 				c.read_raw(f);
 				c.kind = "audio";
-				imp.fire_event("parse_progress", {progress: 0});
+				imp.emit("parse_progress", {progress: 0});
 				var $tmp = function(i, duration){
 					
 					var fr = new Semilla.Fragment();
@@ -1327,12 +1327,12 @@ Semilla.MP3Importer.def({
 					fr.from = i;
 					fr.to   = ((i + 5000) < duration) ? (i + 5000) : duration;
 					c.add_fragment(fr);
-					imp.fire_event("parse_progress", {progress: (i * 100 / duration)});
+					imp.emit("parse_progress", {progress: (i * 100 / duration)});
 					
 					if ((i + 5000) < duration) {
 						setTimeout(function(){$tmp(i + 5000,duration);},10);
 					} else {
-						imp.fire_event("parse_progress", {progress: 100});
+						imp.emit("parse_progress", {progress: 100});
 						r.add_content(c);
 					}
 				}
@@ -1394,7 +1394,7 @@ Semilla.PDFImporter.def({
 				if (evt.target.readyState == FileReader.DONE) { // DONE == 2
 					var p = new Uint8Array(evt.target.result);
 					PDFJS.getDocument(p).then(function(pdf) {
-						imp.fire_event("parse_progress", {progress: 0});
+						imp.emit("parse_progress", {progress: 0});
 						var canvas = document.createElement("canvas");
 						//$("#content-create-process-output").append(canvas)
 						var context = canvas.getContext('2d');
@@ -1453,10 +1453,10 @@ Semilla.PDFImporter.def({
 										
 										if (pdf.pdfInfo.numPages == $curr_page){
 											c.origin = f;
-											imp.fire_event("parse_progress", {progress: 100});
+											imp.emit("parse_progress", {progress: 100});
 											r.add_content(c);
 										} else {
-											imp.fire_event("parse_progress", {progress: ($curr_page * 100 / pdf.pdfInfo.numPages)});
+											imp.emit("parse_progress", {progress: ($curr_page * 100 / pdf.pdfInfo.numPages)});
 											$curr_page++;
 											fun($curr_page);
 										}
@@ -1501,12 +1501,12 @@ Semilla.TXTExporter.def({
 	__parse : function(c){
 		var out = "";
 		this.content = c;
-		this.fire_event("parse_start");
+		this.emit("parse_start");
 		for (var i = 0; i < c.fragments.length; i++){
 			out += c.fragments[i].load_latest_correction().text;
 		}
 		this.output = out;
-		this.fire_event("parse_end");
+		this.emit("parse_end");
 	}
 	
 });
@@ -1531,12 +1531,12 @@ Semilla.HTMLExporter.def({
 	__parse : function(c){
 		var out = "";
 		this.content = c;
-		this.fire_event("parse_start");
+		this.emit("parse_start");
 		for (var i = 0; i < c.fragments.length; i++){
 			out += c.fragments[i].load_latest_correction().html;
 		}
 		this.output = out;
-		this.fire_event("parse_end");
+		this.emit("parse_end");
 	}
 	
 });
@@ -1575,7 +1575,7 @@ Semilla.CBZExporter.def({
 		this.load_libs();
 		var out = "";
 		this.content = c;
-		this.fire_event("parse_start");
+		this.emit("parse_start");
 		zip.current_content = c;
 		zip.current_exporter = this;
 		
@@ -1598,7 +1598,7 @@ Semilla.CBZExporter.def({
 					writer.close(function(blob) {
 						e.output = blob;
 					});
-					e.fire_event("parse_end");
+					e.emit("parse_end");
 				}
 			}, function(currentIndex, totalIndex) {
 				// onprogress callback

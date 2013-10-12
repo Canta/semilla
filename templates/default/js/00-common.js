@@ -487,7 +487,7 @@ $(document).ready(
 	function(){
 		
 		for (var i in Semilla.importers){
-			Semilla.importers[i].add_event_handler("parse_progress",
+			Semilla.importers[i].on("parse_progress",
 				function(data){
 					$("#content-create-import-progress").val(data.progress);
 				}
@@ -495,13 +495,13 @@ $(document).ready(
 		}
 		
 		for (var i in Semilla.exporters){
-			Semilla.exporters[i].add_event_handler("parse_start",
+			Semilla.exporters[i].on("parse_start",
 				function(data, exp){
 					app.espere("Exportando contenido a "+exp.extension+"...","listo.");
 				}
 			);
 			
-			Semilla.exporters[i].add_event_handler("parse_end",
+			Semilla.exporters[i].on("parse_end",
 				function(data, exp){
 					app.desespere("Exportando contenido a "+exp.extension+"...");
 					var u = URL.createObjectURL(new Blob([exp.output]));
@@ -521,7 +521,7 @@ $(document).ready(
 			);
 		}
 		
-		Semilla.repos[0].add_event_handler("new_content",
+		Semilla.repos[0].on("new_content",
 			function(d){
 				app.contents.creation.processed = d.content;
 			}
@@ -531,21 +531,21 @@ $(document).ready(
 		Semilla.repos[1].description="Desgrabaciones Comunitarias, versión Alfa";
 		Semilla.repos[1].endpoint="./api/";
 		
-		Semilla.repos[1].add_event_handler("search_end",
+		Semilla.repos[1].on("search_end",
 			function(data,repo){
 				app.contents.show_in_search_list(repo.search_results, repo);
 				app.desespere("Buscando contenidos en "+repo.name+"...");
 			}
 		);
 		
-		Semilla.repos[1].add_event_handler("search_start",
+		Semilla.repos[1].on("search_start",
 			function(data,repo){
 				app.espere("Buscando contenidos en "+repo.name+"...", "listo.");
 			}
 		);
 		
 		for (var i = 1; i < Semilla.repos.length; i++){
-			Semilla.repos[i].add_event_handler("upload_progress",
+			Semilla.repos[i].on("upload_progress",
 				function(data, repo){
 					if (data.progress == 0){
 						var $desc = "Compartiendo en " + repo.name + "...";
@@ -560,7 +560,7 @@ $(document).ready(
 				}
 			);
 			
-			Semilla.repos[i].add_event_handler("save_progress",
+			Semilla.repos[i].on("save_progress",
 				function(data, repo){
 					if (data.progress == 0){
 						var $desc = "Guardando fragmento en " + repo.name + "...";
@@ -575,7 +575,7 @@ $(document).ready(
 				}
 			);
 			
-			Semilla.repos[i].add_event_handler("new_correction",
+			Semilla.repos[i].on("new_correction",
 				function(data,repo){
 					
 					var co = (typeof data.correction == "string") ? JSON.parse(data.correction) : data.correction;
