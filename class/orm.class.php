@@ -499,6 +499,19 @@ class ABM extends ORM{
 		return $this->datos["mensajes"];
 	}
 	
+	public function tiene_errores(){
+		$ret = false;
+		
+		foreach($this->get_mensajes() as $m){
+			if ($m->isError()){
+				$ret = true;
+				break;
+			}
+		}
+		
+		return $ret;
+	}
+	
 	public function get_pagina_actual(){
 		return $this->datos["pagina_actual"];
 	}

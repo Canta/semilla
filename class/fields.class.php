@@ -202,7 +202,7 @@ class Field {
 	//Agrego un método útil para la construcción de sentencias SQL.
 	public function get_valor_para_sql(){
 		$ret = $this->get_valor(false);
-		$def = $this->get_valor_default();;
+		$def = $this->get_valor_default();
 		$requerido = $this->get_requerido();
         
 		if ($requerido || $this->is_number()) {
@@ -282,7 +282,8 @@ class Field {
             return $this->data["referente"]->validate();
         }
         
-		$va = $this->get_valor();
+		$corregir = ($this->is_number()) ? false : true;
+		$va = $this->get_valor($corregir);
 		
 		if ($this->get_requerido() === true && ($va === "" || is_null($va))){
 			//echo($this->get_HTML_name() . " es requerido y el valor es \"".$va."\"<br/>");
