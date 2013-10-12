@@ -1384,7 +1384,7 @@ Semilla.PDFImporter.def({
 		
 		this.load_libs();
 		try{
-			PDFJS.workerSrc = "./js/libs/pdf.js";
+			PDFJS.workerSrc = "./js/libs/pdf.worker.js";
 			a = new FileReader();
 			c = new Semilla.Content();
 			c.read_raw(f);
@@ -1426,28 +1426,30 @@ Semilla.PDFImporter.def({
 										var b = canvas.toDataURL("image/jpeg",imp.output_quality);
 										fr.set_content(b);
 										
-										pdf.getPage($curr_page).data.getTextContent().then(
-											function(text){
-												textin = $.makeArray($(text.bidiTexts).map(function(element,value){return value.str})).join('\n'); 
-												fr.text = textin;
-												fr.parsed = (textin !== "");
-												fr.html = "<div class=\"page\">";
-												var minSize = 8;
-												
-												for (var i in text.bidiTexts){
-													var g = tl.geoms[i];
-													if (g){
-														fr.html += "<p class=\"bidi\" style=\"left:"+
-															g.x+"px; top:"+g.y+"px; font-family:"+g.fontFamily+
-															"; font-size:"+((g.fontSize != 1) ? g.fontSize : minSize)+"px;\">"+text.bidiTexts[i].str+"</p>";
-													} else {
-														fr.html += text.bidiTexts[i].str;
+										pdf.getPage($curr_page).then(function(page){
+											page.getTextContent().then(
+												function(text){
+													textin = $.makeArray($(text.bidiTexts).map(function(element,value){return value.str})).join('\n'); 
+													fr.text = textin;
+													fr.parsed = (textin !== "");
+													fr.html = "<div class=\"page\">";
+													var minSize = 8;
+													
+													for (var i in text.bidiTexts){
+														var g = tl.geoms[i];
+														if (g){
+															fr.html += "<p class=\"bidi\" style=\"left:"+
+																g.x+"px; top:"+g.y+"px; font-family:"+g.fontFamily+
+																"; font-size:"+((g.fontSize != 1) ? g.fontSize : minSize)+"px;\">"+text.bidiTexts[i].str+"</p>";
+														} else {
+															fr.html += text.bidiTexts[i].str;
+														}
 													}
+													fr.html += "</div>";
+													c.add_fragment(fr);
 												}
-												fr.html += "</div>";
-												c.add_fragment(fr);
-											}
-										);
+											);
+										});
 										
 										if (pdf.pdfInfo.numPages == $curr_page){
 											c.origin = f;
