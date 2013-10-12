@@ -61,10 +61,14 @@ class new_content extends API{
 		$arr["parsed"] = $stats["parsed"];
 		$arr["empty"] = $stats["empty"];
 		
-		$newc = new ABMcontents();
-		$newc->cache(false);
-		$newc->load_fields_from_array($arr);
-		$newc->save();
+		try{
+			$newc = new ABMcontents();
+			$newc->cache(false);
+			$newc->load_fields_from_array($arr);
+			$newc->save();
+		} catch(Exception $e){
+			return APIResponse::fail("Error parsing content data:\n".$e->getMessage());
+		}
 		
 		$this->data["response"]->data["id"] = $newc->get("ID");
 		$this->data["response"]->data["length"] = strlen($newc->datos["processed"]);
