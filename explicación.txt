@@ -610,6 +610,20 @@ puntuales de cada caso de uso. Al final de este texto dejo algunos links
 donde se habla un poco sobre los formatos de texto plano y su relación 
 con la longevidad de la información.
 
+Las tecnologías de "formatos intermedios" ya están maduras, y actualmente
+ contamos con dos grandes herramientas posibles: XML, y JSON.
+No voy a profundizar en detalles técnicos acerca de cada uno, esa 
+información se puede conseguir visitando Wikipedia. Sí me interesa 
+marcar que para este desarrollo elegí un formato en JSON, y dejar anotado
+el por qué.
+Si bien XML me parece más poderoso que JSON (dado que incluye un motor 
+de búsqueda y otro de transformaciones), JSON es nativo de JavaScript, 
+lo cuál combinado con tecnologías como JavaScript del lado del servidor 
+y bases de datos nosql se vuelve mucho más eficiente. Y si bien esto es 
+discutible, es una discusión que prefiero mantener fuera de este 
+documento. Ambas tecnologías son igualmente válidas para encarar este 
+desarrollo, y cada una tiene sus virtudes y defectos. Yo elegí JSON.
+
 
 
 
