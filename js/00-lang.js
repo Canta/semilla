@@ -140,7 +140,7 @@ var lang = {
 			
 			ctor.prototype.super = function(method) {
 				
-				base.prototype[method].apply(
+				return base.prototype[method].apply(
 					this,
 					Array.prototype.slice.call(arguments, 1));
 			};

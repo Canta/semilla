@@ -675,8 +675,7 @@ var ID3v22Stream = ID3v23Stream.extend({
             data: 'binary'
         }
     }
-});//import "id3.js"
-
+});
 var MP3Demuxer = AV.Demuxer.extend(function() {
     AV.Demuxer.register(this);
     
@@ -841,8 +840,7 @@ var MP3Demuxer = AV.Demuxer.extend(function() {
             this.emit('data', buffer);
         }
     };
-});//import "src/demuxer.js"
-function MP3Stream(stream) {
+});function MP3Stream(stream) {
     this.stream = stream;                     // actual bitstream
     this.sync = false;                        // stream sync found
     this.freerate = 0;                        // free bitrate (fixed)
@@ -887,8 +885,7 @@ MP3Stream.prototype.reset = function(byteOffset) {
     this.seek(byteOffset * 8);
     this.next_frame = byteOffset;
     this.sync = true;
-};//import "stream.js"
-const BITRATES = [
+};const BITRATES = [
     // MPEG-1
     [ 0,  32000,  64000,  96000, 128000, 160000, 192000, 224000,  // Layer I
          256000, 288000, 320000, 352000, 384000, 416000, 448000 ],
@@ -1203,8 +1200,7 @@ MP3FrameHeader.free_bitrate = function(stream, header) {
         throw new AV.UnderflowError(); // LOSTSYNC
     
     stream.freerate = rate * 1000;
-};//import "header.js"
-
+};
 function MP3Frame() {
     this.header = null;                     // MPEG audio header
     this.options = 0;                       // decoding options (from stream)
@@ -1250,8 +1246,7 @@ MP3Frame.prototype.decode = function(stream) {
     }
     
     decoder.decode(stream, this);
-};//import "frame.js"
-function MP3Synth() {
+};function MP3Synth() {
     this.filter = makeArray([2, 2, 2, 16, 8]); // polyphase filterbank outputs
     this.phase = 0;
     
@@ -2355,8 +2350,7 @@ MP3Synth.prototype.frame = function (frame) {
 
     this.full(frame, nch, ns);
     this.phase = (this.phase + ns) % 16;
-};//import "synth.js"
-
+};
 /*
  * These are the scalefactor values for Layer I and Layer II.
  * The values are from Table B.1 of ISO/IEC 11172-3.
@@ -2729,8 +2723,7 @@ const NSFB_TABLE = [
     [ [  8,  8,  5, 0 ],
       [ 15, 12,  9, 0 ],
       [  6, 18,  9, 0 ] ]
- ];//import "tables.js"
-
+ ];
 function Layer1() {    
     this.allocation = makeArray([2, 32], Uint8Array);
     this.scalefactor = makeArray([2, 32], Uint8Array);
@@ -2836,9 +2829,7 @@ Layer1.prototype.sample = function(stream, nb) {
     // s'' = (2^nb / (2^nb - 1)) * (s''' + 2^(-nb + 1))
     sample += 1 >> (nb - 1);
     return sample * LINEAR_TABLE[nb - 2];
-};//import "layer1.js"
-//import "tables.js"
-
+};
 function Layer2() {    
     this.samples = new Float64Array(3);
     this.allocation = makeArray([2, 32], Uint8Array);
@@ -3113,10 +3104,7 @@ Layer2.prototype.decodeSamples = function(stream, quantclass) {
         // requantize the sample
         sample[s] = (requantized + quantclass.D) * quantclass.C;
     }
-};//import "layer2.js"
-//import "tables.js"
-
-/*
+};/*
  * These are the Huffman code words for Layer III.
  * The data for these tables are derived from Table B.7 of ISO/IEC 11172-3.
  *
@@ -3140,7 +3128,8 @@ var huffquad_V = function (v, w, x, y, hlen) {
             v: v,
             w: w,
             x: x,
-            y: y
+            y: y,
+            hlen: hlen
         }
     };
 };
@@ -6101,7 +6090,6 @@ const huff_pair_table = [
   /* 30 */ new MP3Hufftable(hufftab24, 11, 4),
   /* 31 */ new MP3Hufftable(hufftab24, 13, 4)
 ];
-//import "huffman.js"
 var IMDCT = (function() {
 
     function IMDCT() {
@@ -6290,8 +6278,7 @@ const IMDCT_S = [
               -0.608761429,
               -0.382683432,
               -0.130526192 ]
-];//import "imdct.js"
-
+];
 function MP3SideInfo() {
     this.main_data_begin = null;
     this.private_bits = null;
@@ -7516,8 +7503,7 @@ Layer3.prototype.reorder = function (xr, channel, sfbwidth) {
     for (var i = 0; i < len; i++) {
         xr[18 * sb + i] = tmp2[sb + i];
     }
-};//import "layer3.js"
-
+};
 var MP3Decoder = AV.Decoder.extend(function() {
     AV.Decoder.register('mp3', this);
     
@@ -7621,6 +7607,5 @@ var MP3Decoder = AV.Decoder.extend(function() {
         this.seeking = true;
         return timestamp;
     };
-});//import "src/decoder.js"
-
+});
 })();

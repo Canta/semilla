@@ -113,7 +113,7 @@ class Content {
 		
 		$content = "";
 		foreach ($items as $item){
-			$content .= $item["chunk"];
+			$content .= $item["CHUNK"];
 		}
 		
 		unset($lista);

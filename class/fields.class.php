@@ -31,6 +31,9 @@ class Field {
 		$this->data["referidos"] = Array();
 		$this->data["referente"] = null;
         $this->data["tabla"] = "";
+        $this->data["es_original"] = false;
+		$this->data["config"] = Array();
+		$this->data["ayuda"] = "";
 		
 		//$this->data["valor_default"] = null; //FIX: no lo seteo.
 		
@@ -71,6 +74,23 @@ class Field {
 	
 	/* getters y setters */
 	
+	public function config($var=null, $val=null){
+		if (is_null($var)){
+			return $this->data["config"];
+		}
+		
+		$this->data["config"][$var] = $val;
+	}
+	
+	public function get_original(){
+		return $this->data["es_original"];
+	}
+	
+	public function set_original($val = false){
+		$this->data["es_original"] = (bool)$val;
+		return $this;
+	}
+	
 	public function get_id(){
 		return $this->data["id"];
 	}
@@ -86,6 +106,7 @@ class Field {
 		} else {
 			throw new Exception("Class Field, method add_referido: Field expected.");
 		}
+		return $this;
 	}
 	
 	public function add_referidos($fs){
@@ -96,6 +117,7 @@ class Field {
 		} else {
 			throw new Exception("Class Field, method add_referidos: Array expected.");
 		}
+		return $this;
 	}
 	
 	public function remove_referido_by_name($f){
@@ -107,6 +129,7 @@ class Field {
 				unset($this->data["referidos"][$i]);
 			}
 		}
+		return $this;
 	}
 	
 	public function remove_referido($i){
@@ -114,6 +137,7 @@ class Field {
 			throw new Exception("Class Field, method remove_referido: number expected.");
 		}
 		unset($this->data["referidos"][(int)$i]);
+		return $this;
 	}
 	
 	public function set_referente($f){
@@ -122,6 +146,7 @@ class Field {
 		} else {
 			throw new Exception("Class Field, method set_referente: Field expected.");
 		}
+		return $this;
 	}
 	
 	public function is_number(){
@@ -162,6 +187,9 @@ class Field {
 			if (strpos(strtolower($this->data["tipoSQL"]),"int") !== false ){
 				$tmp = ((int)trim($tmp) == 0) ? "" : $tmp;
 			}
+			
+			//Protección XSS
+			$tmp = htmlentities($tmp, ENT_QUOTES,'UTF-8');
 		}
 		
 		return $tmp;
@@ -202,7 +230,7 @@ class Field {
 	//Agrego un método útil para la construcción de sentencias SQL.
 	public function get_valor_para_sql(){
 		$ret = $this->get_valor(false);
-		$def = $this->get_valor_default();
+		$def = $this->get_valor_default();;
 		$requerido = $this->get_requerido();
         
 		if ($requerido || $this->is_number()) {
@@ -226,7 +254,7 @@ class Field {
 			$ret = "'".date("Y-m-d H:i:s", strtotime($ret))."'";
 		} else {
 			//Para cualquier otro caso, el valor va entre comillas.
-			$ret = "'".mysql_real_escape_string($ret)."'";
+			$ret = "'".mysql_escape_string($ret)."'";
 		}
 		
 		return $ret;
@@ -282,8 +310,7 @@ class Field {
             return $this->data["referente"]->validate();
         }
         
-		$corregir = ($this->is_number()) ? false : true;
-		$va = $this->get_valor($corregir);
+		$va = $this->get_valor();
 		
 		if ($this->get_requerido() === true && ($va === "" || is_null($va))){
 			//echo($this->get_HTML_name() . " es requerido y el valor es \"".$va."\"<br/>");
@@ -313,10 +340,12 @@ class Field {
 	
 	public function set_id($valor){
 		$this->data["id"] = $valor;
+		return $this;
 	}
 	
 	public function set_rotulo($valor){
 		$this->data["rotulo"] = $valor;
+		return $this;
 	}
 	public function set_valor($valor){
 		//20120810 - Daniel Cantarín 
@@ -328,6 +357,7 @@ class Field {
 		foreach ($this->data["referidos"] as $f){
 			$f->set_valor($valor);
 		}
+		return $this;
 	}
 	
 	//20120810 - Daniel Cantarín 
@@ -337,26 +367,32 @@ class Field {
 			throw new Exception("<b class=\"exception_text\">Clase ".get_class($this).", método set_valores(): se esperaba un Array.</b>");
 		}
 		$this->data["valor"] = $arr;
+		return $this;
 	}
 	
 	public function set_tipo_HTML($valor){
 		$this->data["tipoHTML"] = $valor;
+		return $this;
 	}
 	
 	public function set_events($arr){
 		$this->data["events"] = $arr;
+		return $this;
 	}
 	
 	public function set_activado($val){
 		$this->data["activado"] = (boolean)$val;
+		return $this;
 	}
 	
 	public function set_requerido($val){
-		$this->data["requerido"] = (boolean)$val;		
+		$this->data["requerido"] = (boolean)$val;
+		return $this;
 	}
 	
 	public function set_largo($val){
 		$this->data["largo"] = (int)$val;
+		return $this;
 	}
 	
 	public function set_primary_key($val){
@@ -365,14 +401,17 @@ class Field {
            //echo(var_dump($val));
 	    //}
 		$this->data["primaryKey"] = (boolean)$val;
+		return $this;
 	}
 	
 	public function set_tipo_sql($valor){
 		$this->data["tipoSQL"] = $valor;
+		return $this;
 	}
 	
 	public function set_regex_validacion($valor){
 		$this->data["regexValidacion"] = $valor;
+		return $this;
 	}
 	
 	public function get_clase_CSS(){
@@ -387,9 +426,13 @@ class Field {
 	
 	public function add_clase_CSS($val){
 		$this->data["clase_css"] = $this->data["clase_css"] . " " . $val;
+		return $this;
 	}
 	
-	
+	public function set_ayuda($val = ""){
+		$this->data["ayuda"] = $val;
+		return $this;
+	}
 	
 	//20120522 - Daniel Cantarín
 	//De acuerdo a problemas de implementación en múltiples motores de bases de datos,
@@ -411,9 +454,15 @@ class Field {
 		}
 		$stily .= "\" ";
 		
-		$ret .= "<span class=\"Field_rotulo\" ".$stily.">".(($this->get_rotulo() == "" && $this->get_primary_key() === false) ? $this->get_id() : $this->get_rotulo()) ."&nbsp;</span><span class=\"Field_input\" ".$stily.">";
+		$ayuda = ($this->data["ayuda"] == "") ? "" : "<div class=\"ayudin\" texto=\"".htmlentities($this->data["ayuda"], ENT_QUOTES, "UTF-8")."\"></div>";
+		
+		$ret .= "<span class=\"Field_rotulo\" ".$stily.">".(($this->get_rotulo() == "" && $this->get_primary_key() === false) ? $this->get_id() : $this->get_rotulo()) ."&nbsp;".$ayuda."</span><span class=\"Field_input\" ".$stily.">";
 		$ret2 = "";
 		$valores = $this->get_valores();
+		
+		$type = ($this->get_primary_key() === true) ? "hidden" : $this->get_tipo_HTML() ;
+		$type = ($type=="select") ? "hidden" : $type;
+		$type = str_replace("enum","text",$type);
 		
 		for ($v = 0; $v < count($valores); $v++){
 		
@@ -429,9 +478,6 @@ class Field {
 				
 				$datetime  = (boolean)(strpos(strtolower($this->get_tipo_sql()),"date") > -1);
 				
-				$type = ($this->get_primary_key() === true) ? "hidden" : $this->get_tipo_HTML() ;
-				$type = ($type=="select") ? "hidden" : $type;
-				$type = str_replace("enum","text",$type);
 				$clase_css = $this->get_clase_CSS();
 				
 				$ret2 .= "<input class='".$clase_css."' id='".$this->get_id()."' name='".$this->get_HTML_name()."' type='".$type."' value='".$valores[$v]."' pattern='".$this->get_regex_validacion($autoregex)."' alt='".str_replace("'","`",$this->get_rotulo())."' ";
@@ -501,6 +547,7 @@ class Field {
 	
 	public function set_columnas($cols = 0){
 		$this->data["columnas"] = $cols;
+		return $this;
 	}
 	
 	//20120810 - Daniel Cantarín 
@@ -551,6 +598,9 @@ class Field {
 				case "string":
 					$return = "^.*$";
 					break;
+				case "char":
+					$return = "^.*$";
+					break;
 				case "varchar":
 					$return = "^.*$";
 					break;
@@ -599,6 +649,9 @@ class Field {
 				$ret = "";
 				break;
 			case "varchar":
+				$ret = "";
+				break;
+			case "char":
 				$ret = "";
 				break;
 			case "int":
@@ -665,6 +718,7 @@ class Field {
 	
 	public function set_valorDefault($val = "null"){
 		$this->data["valor_default"] = $val;
+		return $this;
 	}
 	
 }
@@ -730,7 +784,7 @@ class BitField extends Field{
 			$largo = $this->get_largo();
 			$tmp = (is_numeric($tmp)) ? "b'".decbin($tmp)."'" : "b'".$this->encerar(decbin(hexdec(bin2hex($valor))),$largo)."'";
 		}
-		parent::set_valor($tmp);
+		return parent::set_valor($tmp);
 	}
 	
 	public function get_valor($corregir = true){
@@ -770,6 +824,7 @@ class PasswordField extends Field{
 		}
 		
 		$this->data["algorithm"] = $val;
+		return $this;
 	}
 	
 	public function get_algorithm(){
@@ -779,7 +834,7 @@ class PasswordField extends Field{
 	public function set_valor($valor){
 		$tmp = $valor;
 		
-		parent::set_valor($tmp);
+		return parent::set_valor($tmp);
 	}
 	
 	public function encrypt($val){
@@ -832,22 +887,26 @@ class SelectField extends Field {
 		$this->set_tipo_sql("varchar");
 		$this->data["campo_indice"] = 0;
 		$this->data["campo_descriptivo"] = 1;
+		$this->data["config"]["mostrar_id"] = true;
+		$this->data["config"]["encomillar"] = true;
 	}
 	
 	
 	public function set_campo_indice($val){
 		$this->data["campo_indice"] = $val;
+		return $this;
 	}
 	
 	public function set_campo_descriptivo($val){
 		$this->data["campo_descriptivo"] = $val;
+		return $this;
 	}
 	
 	public function get_items(){
 		$arr = is_array($this->data["items"]) ? $this->data["items"] : Array();
 		
 		if ($this->get_requerido() !== true){
-			$arr2 =  Array($this->get_campo_indice() => "", $this->get_campo_descriptivo() => "Nulo / Sin datos");
+			$arr2 =  Array(strtoupper($this->get_campo_indice()) => "", strtoupper($this->get_campo_descriptivo()) => "Nulo / Sin datos");
 			array_unshift($arr, $arr2);
 		}
 		return $arr;
@@ -865,8 +924,8 @@ class SelectField extends Field {
 		$valor = (is_null($valor)) ? $this->get_valor() : $valor;
 		$ret = "";
 		foreach ($this->get_items() as $item){
-			if (strtolower($item[$this->get_campo_indice()]) == strtolower($valor)){
-				$ret = $item[$this->get_campo_descriptivo()];
+			if (strtolower($item[strtoupper($this->get_campo_indice())]) == strtolower($valor)){
+				$ret = $item[strtoupper($this->get_campo_descriptivo())];
 				break;
 			}
 		}
@@ -878,14 +937,14 @@ class SelectField extends Field {
 		$items = $this->get_items();
 		$found = false;
 		foreach ($items as $nombre=>$valor){
-			if ("'".strtolower($valor[$this->get_campo_indice()])."'" == strtolower($ret)){
+			if ("'".strtolower($valor[strtoupper($this->get_campo_indice())])."'" == strtolower($ret)){
 				$found = true;
 				break;
 			}
 		}
 		
 		if ($found !== true){
-			$ret = ($this->get_requerido()) ? $items[0][$this->get_campo_indice()] : 'null';
+			$ret = ($this->get_requerido()) ? $items[0][strtoupper($this->get_campo_indice())] : 'null';
 		} else {
 			$ret = ($ret == "''" && !$this->get_requerido()) ? 'null' : $ret;
 			
@@ -913,14 +972,14 @@ class SelectField extends Field {
 		
 		if ($corregir !== false){
 			foreach ($this->get_items() as $item){
-				if (isset($item[$this->get_campo_indice()]) && strtolower($item[$this->get_campo_indice()]) == strtolower($v)){
-					$ret = $item[$this->get_campo_indice()];
+				if (isset($item[strtoupper($this->get_campo_indice())]) && strtolower($item[strtoupper($this->get_campo_indice())]) == strtolower($v)){
+					$ret = $item[strtoupper($this->get_campo_indice())];
 					break;
 				}
 			}
 			
 			if (is_null($ret)){
-				$ret = isset($this->data["items"][0][$this->get_campo_indice()]) ? $this->data["items"][0][$this->get_campo_indice()] : "";
+				$ret = isset($this->data["items"][0][strtoupper($this->get_campo_indice())]) ? $this->data["items"][0][strtoupper($this->get_campo_indice())] : "";
 				if ($this->is_number() && $ret == ""){
 					$ret = ($this->get_requerido()) ? 0 : null;
 				}
@@ -986,7 +1045,7 @@ class SelectField extends Field {
 			
 			$ret2 .= " enum /> ";
 			
-			$ret2 .=  "<select id=\"desc_".$this->get_id()."\" enum_desc class=\"enum_desc\" ";
+			$ret2 .=  "<select id=\"desc_".$this->get_id()."\" enum_desc class=\"enum_desc ".$clase_css."\" ";
 			
 			if ($this->get_activado() !== TRUE){
 				$ret2 .= " disabled ";
@@ -995,7 +1054,13 @@ class SelectField extends Field {
 			
 			$tmp_items = $this->get_items();
 			foreach ($tmp_items as $item){
-				$ret2 .=  "<option value=\"".$item[$this->get_campo_indice()]."\">(".$item[$this->get_campo_indice()].") - \"".$item[$this->get_campo_descriptivo()]."\"</option>";
+				$selected = ($this->get_valor() == $item[strtoupper($this->get_campo_indice())]) ? " selected " : "";
+				
+				$tmp_value  = "";
+				$tmp_value .= ($this->data["config"]["mostrar_id"] === true) ? "(".$item[strtoupper($this->get_campo_indice())].") - " : "";
+				$tmp_value .= ($this->data["config"]["encomillar"] === true) ? "\"".$item[strtoupper($this->get_campo_descriptivo())]."\"" : $item[strtoupper($this->get_campo_descriptivo())];
+				
+				$ret2 .=  "<option ".$selected." value=\"".$item[strtoupper($this->get_campo_indice())]."\">".$tmp_value."</option>";
 			}
 			$ret2 .= "</select>";
 			
@@ -1055,9 +1120,9 @@ class QueryEnumField extends EnumField{
 		$this->data["campo_indice"] = 0;
 		$this->data["query"] = $query;
 		$this->data["valores"] = Array(); //fix para ConditionalQueryEnumField
-		
+		//die(var_dump($this->get_query()));
 		$c = Conexion::get_instance();
-		$this->data["items"] = $c->execute($this->get_query());
+		$this->data["items"] = $c->execute($this->get_query(),false);
 		
 	}
 	
@@ -1116,6 +1181,7 @@ class ConditionalQueryEnumField extends QueryEnumField{
 	
 	public function set_valores($val=null){
 		$this->data["valores"] = $val;
+		return $this;
 	}
 	
 }
@@ -1135,6 +1201,7 @@ class OptionalListField extends SelectField{
 	
 	public function set_separador($val){
 		$this->data["separador"] = $val;
+		return $this;
 	}
 	
 	public function get_separador(){
@@ -1317,14 +1384,26 @@ class HeaderField extends Field{
     
     public function set_caption($caption){
         $this->data["caption"] = $caption;
+        return $this;
     }
     
     public function get_caption(){
         return $this->data["caption"];
     }
     
+    public function add_sub_text($txt){
+        $this->data["sub_text"] = $txt;
+        return $this;
+    }
+    
     public function render(){
-        return "<div class=\"form_header_field\">".$this->get_caption()."</div>";
+        if(isset($this->data["sub_text"]) && is_string($this->data["sub_text"]) && strlen($this->data["sub_text"]) > 0){
+            $sub_text = "<p class='form_header_sub_text'> " . $this->data["sub_text"] . " </p>";
+        }
+        
+        $fld = "<div class=\"form_header_field\"><span>".$this->get_caption()."</span><div>".$this->data["sub_text"]."</div></div>";
+        
+        return $fld;
     }
 }
 
@@ -1341,15 +1420,16 @@ class CheckboxTreeEnumField extends SelectField{
 		parent::__construct($id, $rotulo, $valor, $items);
 		$valor = (is_array($valor)) ? $valor : Array();
 		$this->set_valores($valor);
-		$this->set_campo_indice("id");
-		$this->set_campo_descriptivo("descripcion");
-		$this->set_campo_referencial("id_padre");
+		$this->set_campo_indice("ID");
+		$this->set_campo_descriptivo("DESCRIPCION");
+		$this->set_campo_referencial("ID_PADRE");
 		$this->set_requerido(true);
 		$this->set_items_from_array($items);
 	}
 	
 	public function set_campo_referencial($val){
 		$this->data["campo_referencial"] = $val;
+		return $this;
 	}
 	
 	public function get_campo_referencial(){
@@ -1367,17 +1447,20 @@ class CheckboxTreeEnumField extends SelectField{
 					|| is_null($item[$this->get_campo_referencial()])
 				)
 			){
-				$items[] = Array( "id" => $item[$this->get_campo_indice()], "descripcion" => $item[$this->get_campo_descriptivo()], "hijos" => $this->set_items_from_array_aux($arr, $item[$this->get_campo_indice()]));
+				$id      = (isset($item[$this->get_campo_indice()])) ? $item[$this->get_campo_indice()] : $item[strtoupper($this->get_campo_indice())];
+				$desc    = (isset($item[$this->get_campo_descriptivo()])) ? $item[$this->get_campo_descriptivo()] : $item[strtoupper($this->get_campo_descriptivo())];
+				$items[] = Array( "ID" => $id, "DESCRIPCION" => $desc, "HIJOS" => $this->set_items_from_array_aux($arr, $id));
 			}
 		}
 		$this->data["items"]=$items;
+		return $this;
 	}
 	
 	private function set_items_from_array_aux(&$arr, $id){
 		$ret = Array();
 		foreach ($arr as $key=>$item2){
-			if (array_key_exists($this->get_campo_referencial(),$item2) && $item2[$this->get_campo_referencial()] == $id){
-				$ret[] = Array( "id" => $item2[$this->get_campo_indice()], "descripcion" => $item2[$this->get_campo_descriptivo()], "hijos" => $this->set_items_from_array_aux($arr,$item2[$this->get_campo_indice()]) );
+			if (array_key_exists(strtoupper($this->get_campo_referencial()),$item2) && $item2[strtoupper($this->get_campo_referencial())] == $id){
+				$ret[] = Array( "ID" => $item2[strtoupper($this->get_campo_indice())], "DESCRIPCION" => $item2[strtoupper($this->get_campo_descriptivo())], "HIJOS" => $this->set_items_from_array_aux($arr,$item2[strtoupper($this->get_campo_indice())]) );
 				array_splice($arr,$key,1);
 			}
 		}
@@ -1412,15 +1495,15 @@ class CheckboxTreeEnumField extends SelectField{
 		}
 		$ret .= ">\n";
 		foreach ($items as $item){
-			$ret .= "<li> <input type=\"checkbox\" id=\"tree_".$nombre."value_".$item["id"]."\" value=\"".$item["id"]."\" name=\"".$nombre."[]\" ";
+			$ret .= "<li> <input type=\"checkbox\" id=\"tree_".$nombre."value_".$item["ID"]."\" value=\"".$item["ID"]."\" name=\"".$nombre."[]\" ";
 			
-			if (array_search($item["id"],$this->get_valores()) !== false) {
+			if (array_search($item["ID"],$this->get_valores()) !== false) {
 				$ret .= " checked ";
 			}
 			if (trim($clase) != "" ){
 				$ret .= " class=\"".$clase."\" ";
 			}
-			$ret .= "><label for=\"tree_".$nombre."value_".$item["id"]."\">".$item["descripcion"]."</label>";
+			$ret .= "><label for=\"tree_".$nombre."value_".$item["ID"]."\">".$item["DESCRIPCION"]."</label>";
 			$ret .= $this->render_aux($item, $clase);
 			$ret .= "</li>";
 		}
@@ -1432,17 +1515,17 @@ class CheckboxTreeEnumField extends SelectField{
 	private function render_aux($arr, $clase){
 		$ret = "";
 		$nombre = $this->get_id();
-		if ( isset($arr["hijos"]) && count($arr["hijos"]) > 0 ){
+		if ( isset($arr["HIJOS"]) && count($arr["HIJOS"]) > 0 ){
 			$ret .= "<ul>\n";
-			foreach ($arr["hijos"] as $item){
-				$ret .= "<li> <input type=\"checkbox\" name=\"".$nombre."[]\" id=\"tree_".$nombre."value_".$item["id"]."\" value=\"".$item["id"]."\" ";
-				if (array_search($item["id"],$this->get_valores()) !== false) {
+			foreach ($arr["HIJOS"] as $item){
+				$ret .= "<li> <input type=\"checkbox\" name=\"".$nombre."[]\" id=\"tree_".$nombre."value_".$item["ID"]."\" value=\"".$item["ID"]."\" ";
+				if (array_search($item["ID"],$this->get_valores()) !== false) {
 					$ret .= " checked ";
 				}
 				if (trim($clase) != "" ){
 					$ret .= " class=\"".$clase."\" ";
 				}
-				$ret .= "><label for=\"tree_".$nombre."value_".$item["id"]."\">".$item["descripcion"]."</label>";
+				$ret .= "><label for=\"tree_".$nombre."value_".$item["ID"]."\">".$item["DESCRIPCION"]."</label>";
 				$ret .= $this->render_aux($item, $clase);
 				$ret .= "</li>";
 			}

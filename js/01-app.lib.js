@@ -36,21 +36,23 @@ var App = (function() {
 	
 	app.show_modal = function($data){
 		
+		var def = new $.Deferred();
 		if ($data === undefined){
 			$data = {};
 		}
 		if ($data.html === undefined){
 			$data.html = "";
 		}
-		if ($data.ok === undefined || !($data.ok instanceof Array) ){
+		if ($data.ok === undefined){
 			$data.ok = [];
 		}
-		if ($data.cancel === undefined || !($data.cancel instanceof Array) ){
+		if ($data.cancel === undefined){
 			$data.cancel = [];
 		}
 		
 		
 		var $tmp_done = function(){
+			var $tmp_html = "";
 			$tmp_html  = "<div class=\"cubre-cuerpo\"></div><div class=\"modal\">";
 			$tmp_html += "<div class=\"modal-html\" >"+$data.html+"</div>";
 			$tmp_html += "<div class=\"botonera\"><button id=\"modal_button_cancelar\"> Cancelar </button> <button id=\"modal_button_aceptar\" onclick=\"$(this).attr('disabled','disabled')\"> Aceptar </button></div>";
@@ -58,28 +60,37 @@ var App = (function() {
 			
 			$("body").append($tmp_html);
 			$(".cubre-cuerpo").fadeIn(250);
-			$(".modal:not(.espere)").fadeIn(500);
-			app.modal_ok = true;
+			$(".modal:not(.espere)").fadeIn(500).promise().then(
+				function(){
+					if ($data.ok instanceof Array){
+						for (var $i = 0; $i < $data.ok.length; $i++){
+							$("#modal_button_aceptar:visible").on("click",$data.ok[$i]);
+						}
+					} else if ($data.success instanceof Function) {
+						$("#modal_button_aceptar:visible").on("click",$data.ok);
+					}
+					
+					if ($data.cancel instanceof Array){
+						for (var $i = 0; $i < $data.cancel.length; $i++){
+							$("#modal_button_aceptar:visible").on("click",$data.cancel[$i]);
+						}
+					} else if ($data.cancel instanceof Function) {
+						$("#modal_button_aceptar:visible").on("click",$data.cancel);
+					}
+					
+					$("#modal_button_cancelar:visible").on("click",app.hide_modal);
+					
+					$("#modal_button_aceptar:visible").on("click",function(){
+						if (app.modal_ok){
+							app.hide_modal();
+						}
+					});
+					
+					def.resolve("modal listo");
+				}
+			);
 			
-			setTimeout(function(){
-				if ($data.ok instanceof Array){
-					for (var $i = 0; $i < $data.ok.length; $i++){
-						$("#modal_button_aceptar:visible").bind("click",$data.ok[$i]);
-					}
-				} else if ($data.success instanceof Function) {
-					$("#modal_button_aceptar:visible").bind("click",$data.ok);
-				}
-				
-				if ($data.cancel instanceof Array){
-					for (var $i = 0; $i < $data.cancel.length; $i++){
-						$("#modal_button_aceptar:visible").bind("click",$data.cancel[$i]);
-					}
-				} else if ($data.cancel instanceof Function) {
-					$("#modal_button_aceptar:visible").bind("click",$data.cancel);
-				}
-				
-				$("#modal_button_cancelar:visible, #modal_button_aceptar:visible").bind("click",app.hide_modal);
-			},500);
+			app.modal_ok = true;
 		};
 		
 		if ($(".modal:not(.espere)").length > 0 ){
@@ -87,6 +98,8 @@ var App = (function() {
 		} else {
 			$tmp_done();
 		}
+		
+		return def;
 	}
 	
 	app.hide_modal = function(){
@@ -98,9 +111,13 @@ var App = (function() {
 			$(this).remove();
 		});
 		$(".modal").fadeOut(250).promise().then(function(){
-			//console.log("modal cerrado");
+			var t = $(this);
+			if (t.attr("onhide") !== undefined && t.attr("onhide") !== ""){
+				eval(t.attr("onhide"));
+			}
+			t.remove();
+			
 			def.resolve("hide_modal resuelto");
-			$(this).remove();
 		});
 		return def;
 	}
@@ -173,6 +190,10 @@ var App = (function() {
 		alert($msg);
 	}
 	
+	app.confirmar = function(msg){
+		return window.confirm(msg);
+	}
+	
 	app.start_drag = function($e){
 		$random = Math.round(Math.random() * 999999);
 		if ($e[0].className.indexOf("draggable") <= -1){
@@ -216,7 +237,7 @@ var App = (function() {
 	}
 	
 	app.api = function($parms){
-		var deferred_api_ajax = null;
+		var deferred_api_ajax = {};
 		var deferred_api = new $.Deferred();
 		
 		if ($parms === undefined || typeof $parms !== "object"){
@@ -272,7 +293,7 @@ var App = (function() {
 		var p = deferred_api;
 		
 		if ($parms.async === false){
-			p.response = JSON.parse(deferred_api_ajax.xhr.responseText);
+			p.response = JSON.parse(deferred_api_ajax.responseText);
 		}
 		
 		return p;
@@ -514,62 +535,111 @@ $(document).ready(
 
 /* jQuery extension: deserializing. */
 jQuery.unserialize = function(str){
-		var items = str.split('&');
-		var ret = "{";
-		var arrays = [];
-		var index = "";
-		for (var i = 0; i < items.length; i++) {
-			var parts = items[i].split(/=/);
-			//console.log(parts[0], parts[0].indexOf("%5B"),  parts[0].indexOf("["));
-			if (parts[0].indexOf("%5B") > -1 || parts[0].indexOf("[") > -1){
-				//Array serializado
-				index = (parts[0].indexOf("%5B") > -1) ? parts[0].replace("%5B","").replace("%5D","") : parts[0].replace("[","").replace("]","");
-				if (arrays[index] === undefined){
-					arrays[index] = [];
-				}
-				arrays[index].push( decodeURIComponent(parts[1].replace(/\+/g," ")));
-				
-			} else {
-				if (parts.length > 1){
-					ret += "\""+parts[0] + "\": \"" + decodeURIComponent(parts[1].replace(/\+/g," ")) + "\", ";
-				}
+	var items = str.split('&');
+	var ret = "{";
+	var arrays = [];
+	var index = "";
+	for (var i = 0; i < items.length; i++) {
+		var parts = items[i].split(/=/);
+		//console.log(parts[0], parts[0].indexOf("%5B"),  parts[0].indexOf("["));
+		if (parts[0].indexOf("%5B") > -1 || parts[0].indexOf("[") > -1){
+			//Array serializado
+			index = (parts[0].indexOf("%5B") > -1) ? parts[0].replace("%5B","").replace("%5D","") : parts[0].replace("[","").replace("]","");
+			//console.log("array detectado:", index);
+			//console.log(arrays[index] === undefined);
+			if (arrays[index] === undefined){
+				arrays[index] = [];
 			}
-			
-		};
-		
-		ret = (ret != "{") ? ret.substr(0,ret.length-2) + "}" : ret + "}";
-		//console.log(ret, arrays);
-		var ret2 = JSON.parse(ret);
-		//proceso los arrays
-		for (arr in arrays){
-			ret2[arr] = arrays[arr];
+			arrays[index].push( decodeURIComponent(parts[1].replace(/\+/g," ")));
+			//console.log("arrays:", arrays);
+		} else {
+			//console.log("common item (not array)");
+			if (parts.length > 1){
+				ret += "\""+parts[0] + "\": \"" + decodeURIComponent(parts[1].replace(/\+/g," ")).replace(/\n/g,"\\n").replace(/\r/g,"\\r") + "\", ";
+			}
 		}
-		return ret2;
+		
+	};
+	
+	ret = (ret != "{") ? ret.substr(0,ret.length-2) + "}" : ret + "}";
+	//console.log(ret, arrays);
+	var ret2 = JSON.parse(ret);
+	//proceso los arrays
+	for (arr in arrays){
+		ret2[arr] = arrays[arr];
+	}
+	return ret2;
 }
-jQuery.fn.unserialize = function(str){
-		var items = str.split('&');
-		for (var i = 0; i < items.length; i++) {
-			var parts = items[i].split(/=/);
-			obj = this.find('[name='+ parts[0] +']');
-			if (obj.length == 0){
-				try{
-					obj = this.parent().find('[name='+ parts[0] +']');
-				} catch(e){}
-			}
-			if (typeof obj.attr("type") == "string" && ( obj.attr("type").toLowerCase() == "radio" || obj.attr("type").toLowerCase() == "checkbox")){
-				 obj.each(function(index, coso) {
-					coso = $(coso);
-					if (coso.attr("value") == decodeURIComponent(parts[1].replace(/\+/g," "))){
-						 coso.prop("checked",true);
-					} else {
-						 coso.prop("checked",false);
+
+jQuery.fn.unserialize = function(parm){
+	//If not string, JSON is assumed.
+	var items = (typeof parm == "string") ? parm.split('&') : parm;
+	if (typeof items !== "object"){
+		throw new Error("unserialize: string or JSON object expected.");
+	}
+	//Check for the need of building an array from some item.
+	//May return a false positive, but it's still better than looping twice.
+	//TODO: confirm if it's ok to simplify this method by always calling
+	//$.unserialize(parm) without any extra checking. 
+	var need_to_build = ((typeof parm == "string") && decodeURIComponent(parm).indexOf("[]=") > -1);
+	items = (need_to_build) ? $.unserialize(parm) : items;
+	
+	
+	for (var i in items){
+		var parts = (items instanceof Array) ? items[i].split(/=/) : [i, (items[i] instanceof Array) ? items[i] : "" + items[i]];
+		parts[0] = decodeURIComponent(parts[0]);
+		if (parts[0].indexOf("[]") == -1 && parts[1] instanceof Array){
+			parts[0] += "[]";
+		}
+		obj = this.find('[name=\''+ parts[0] +'\']');
+		if (obj.length == 0){
+			try{
+				obj = this.parent().find('[name=\''+ parts[0] +'\']');
+			} catch(e){}
+		}
+		if (typeof obj.attr("type") == "string" && ( obj.attr("type").toLowerCase() == "radio" || obj.attr("type").toLowerCase() == "checkbox")){
+			 obj.each(function(index, coso) {
+				coso = $(coso);
+				//if the value is an array, i gotta search the item with that value.
+				if (parts[1] instanceof Array){
+					for (var i2 in parts[1]){
+						var val = ""+parts[1][i2];
+						if (coso.attr("value") == decodeURIComponent(val.replace(/\+/g," "))){
+							coso.prop("checked",true);
+						} else {
+							if (!$.inArray(coso.val(),parts[1])){
+								coso.prop("checked",false);
+							}
+						}
 					}
-				 });
-			} else {
-				 obj.val(decodeURIComponent(parts[1].replace(/\+/g," ")));
-			}
-		};
-		return this;
+				} else {
+					val = "" + parts[1];
+					if (coso.attr("value") == decodeURIComponent(val.replace(/\+/g," "))){
+						coso.prop("checked",true);
+					} else {
+						coso.prop("checked",false);
+					}
+				}
+			 });
+		} else if (obj.length > 0 && obj[0].tagName == "SELECT" && parts[1] instanceof Array && obj.prop("multiple")){
+			//Here, i have an array for a multi-select.
+			obj.val(parts[1]);
+		} else {
+			//When the value is an array, we join without delimiter
+			var val = (parts[1] instanceof Array) ? parts[1].join("") : parts[1];
+			//when the value is an object, we set the value to ""
+			val = (typeof val == "object") ? "" : val;
+			
+			obj.val(decodeURIComponent(val.replace(/\+/g," ")));
+		}
+	};
+	return this;
 }
 
 jQuery.fn.emit = jQuery.fn.trigger;
+
+String.prototype.decodeHTML = function(){
+    var txt = document.createElement("textarea");
+    txt.innerHTML = this;
+    return txt.value;
+}

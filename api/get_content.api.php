@@ -42,7 +42,7 @@ class get_content extends API{
 		
 		$content = "";
 		foreach ($items as $item){
-			$content .= $item["chunk"];
+			$content .= $item["CHUNK"];
 		}
 		
 		$this->data["response"]->data["content"] = $content;

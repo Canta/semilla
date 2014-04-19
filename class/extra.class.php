@@ -25,7 +25,7 @@ class Condicion {
 	const ENTRE_CAMPO_Y_CAMPO 		= 2;
 	const ENTRE_CAMPO_Y_DEFAULT 	= 3;
 	
-	private $datos;
+	public $datos;
 	
 	//Constructor.
 	//Por defecto, asume una condición entre un campo y un valor.
@@ -53,11 +53,19 @@ class Condicion {
 		$this->datos["entre"] = $val;
 	}
 	
+	public function get_datos(){
+		return $this->datos;
+	}
+	
 	public function toString(){
 		$ret  = " ";
 		//comparando
 		$ret .= ($this->datos["entre"] == self::ENTRE_VALORES) ? "'".$this->datos["comparando"]."'" : $this->datos["comparando"] ;
 		//operador
+		
+		$prefijo_valor = "";
+		$sufijo_valor = "";
+		
 		switch ($this->datos["tipo"]){
 			case self::TIPO_IGUAL:
 				$ret .= " = ";
@@ -70,6 +78,8 @@ class Condicion {
 				break;
 			case self::TIPO_LIKE:
 				$ret .= " like ";
+				$prefijo_valor = "%";
+				$sufijo_valor = "%";
 				break;
 			case self::TIPO_IN:
 				$ret .= " in ";
@@ -88,13 +98,44 @@ class Condicion {
 		
 		switch ($this->datos["entre"]){
 			case self::ENTRE_CAMPO_Y_CAMPO:
-				$ret .= $this->datos["comparador"] ;
+				$ret .= mysql_escape_string($this->datos["comparador"]);
 				break;
 			case self::ENTRE_CAMPO_Y_DEFAULT:
-				$ret .= 'default('.$this->datos["comparando"].')';
+				$ret .= 'default('.mysql_escape_string($this->datos["comparando"]).')';
 				break;
 			default:
-				$ret .= "'".$this->datos["comparador"]."'" ;
+				$ret .= "'".$prefijo_valor.mysql_escape_string($this->datos["comparador"]).$sufijo_valor."'" ;
+		}
+		
+		return $ret;
+	}
+	
+	/**
+	 * Método parse.
+	 * 
+	 * Dado un input de datos, devuelve un objeto Condicion con los datos
+	 * ya establecidos.
+	 * Al ser el método estático, siempre genera una nueva instancia.
+	 * 
+	 * @param $val 
+	 * Puede ser un Array o un string en formato json.
+	*/
+	public static function parse($val = null){
+		$ret = new Condicion();
+		
+		$tmp = $val;
+		if (!is_null($tmp)){
+			if (is_string($val)){
+				$tmp = json_decode($val);
+			}
+			if (!is_array($tmp)){
+				throw new Exception("Clase Condicion, método parse: se esperaba un array, o en su defecto un string JSON válido de un array.");
+			}
+			
+			$ret->set_comparador($tmp["comparador"]);
+			$ret->set_comparando($tmp["comparando"]);
+			$ret->set_tipo($tmp["tipo"]);
+			$ret->set_entre($tmp["entre"]);
 		}
 		
 		return $ret;
@@ -166,8 +207,17 @@ class Lista {
 		
 		$this->datos["query"] = (isset($data["query"])) ? $data["query"] : null;
 		$this->datos["caller"] = (isset($data["caller"])) ? $data["caller"] : "";
+		$this->datos["checked"] = Array();
 	}
 	
+    public function set_id($id){
+        $this->datos["tabla_id"] = strtoupper($id);
+    }
+    
+    public function get_id(){
+        return isset($this->datos["tabla_id"]) ? $this->datos["tabla_id"] : null;
+    }
+    
 	public function set_campos($arr){
 		if (!is_array($arr)){
 			throw new Exception("Clase Lista, método set_campos: se esperaba un array; se utilizó \"".gettype($arr)."\".<br/>\n");
@@ -197,9 +247,35 @@ class Lista {
 		return $this->datos["tabla"];
 	}
 	
-	public function render(){
+	public function checked($arr = null){
+		if (is_null($arr)){
+			return $this->datos["checked"];
+		}
 		
-		$ret = "<table class=\"Lista";
+		if (!is_array($arr)){
+			throw new Exception("Clase Lista, método checked: se esperaba un Array.");
+		}
+		
+		$this->datos["checked"] = $arr;
+	}
+	
+	public function opciones($arr = null){
+		if (is_null($arr)){
+			return $this->datos["opciones"];
+		}
+		
+		if (!is_array($arr)){
+			throw new Exception("Clase Lista, método opciones: se esperaba un Array.");
+		}
+		
+		$this->datos["opciones"] = $arr;
+	}
+	
+	
+	public function render(){
+        $id = $this->get_id();
+        
+		$ret = "<table " . (isset($id) ? "id = $id " : "") . "class=\"Lista";
 		foreach($this->datos["opciones"] as $opcion){
 			$ret .= " ".$opcion;
 		}
@@ -235,7 +311,7 @@ class Lista {
 			}
 			$ret .= $this->render_opciones_headers();
 			//Agrego un td para el campo ID
-			$ret .= "<td class=\"lista_item_id\"></td>";
+			$ret .= "<td class=\"lista_item_id\"> <input type=\"checkbox\" /> </td>";
 		}
 		$ret .= "</tr>\n</thead>\n<tbody>\n";
 		
@@ -246,49 +322,66 @@ class Lista {
 		foreach($this->datos["items"] as $row){
 			if (count($row) > 0){
 				$tmp = ($i % 2 === 0) ? "par" : "impar";
-				$ret .= "<tr class=\"".$tmp."\">\n";
+				$tmp_checked = "";
+				$tmp_campo_id = isset($row[$this->datos["campo_id"]]) ? $this->datos["campo_id"] : null;
+				$tmp_campo_id = is_null($tmp_campo_id) && isset($row[strtoupper($this->datos["campo_id"])]) ? strtoupper($this->datos["campo_id"]) : null;
 				
-				foreach ($row as $nombre=>$valor){
+				foreach($this->datos["checked"] as $ch){
+					if ($row[$tmp_campo_id] == $ch){
+						$tmp_checked = " checked ";
+						break;
+					}
+				}
+				$ret .= "<tr class=\"".$tmp."\" ".(($tmp_checked == "") ? "" : "selected=\"selected\"").">\n";
+				
+				foreach ($row as $index=>$valor){
+					if (is_numeric($index)){
+						$nombre = (isset($campos[intval($index)]) && $campos[intval($index)] instanceof Field) ? $campos[intval($index)]->get_id() : $index;
+					} else {
+						$nombre = $index;
+					}
 					if (
-						trim(strtolower($this->datos["campo_id"])) != trim(strtolower($nombre))
-						&& isset($campos[$nombre])
+						trim(strtolower($this->datos["campo_id"])) != trim(strtolower($index))
+						&& isset($campos[$index]) 
 						&& (
-							is_numeric($nombre)
-							&& (int)$nombre != $this->datos["indice_campo_id"]
+							is_numeric($index)
+							&& (int)$index != $this->datos["indice_campo_id"]
 						)
 						&& (
 							(
-								is_string($campos[$nombre])
-								&& trim(strtolower($this->datos["campo_id"])) != trim(strtolower($campos[$nombre]))
+								is_string($campos[$index])
+								&& trim(strtolower($this->datos["campo_id"])) != trim(strtolower($campos[$index]))
 							) 
 							|| 
 							(
-								!is_string($campos[$nombre])
+								!is_string($campos[$index])
 							)
 						)
 						&& array_search($nombre, $this->datos["exclude"]) === false 
 					){
 						//echo(get_class($campos[$nombre]));
-						if ($campos[$nombre] instanceOf SelectField){
-							$ret .= "<td>".$campos[$nombre]->get_descripcion_valor($valor)."</td>\n";
-						} else if ($campos[$nombre] instanceOf BitField){
-							$ret .= "<td>".hexdec(bin2hex($valor))."</td>\n";
+						if ($campos[$index] instanceOf SelectField){
+							$ret .= "<td campo='$nombre'>".$campos[$index]->get_descripcion_valor($valor)."</td>\n";
+						} else if ($campos[$index] instanceOf BitField){
+							$ret .= "<td campo='$nombre'>".hexdec(bin2hex($valor))."</td>\n";
 						} else {
-							$ret .= "<td>".$valor."</td>\n";
+							$ret .= "<td campo='$nombre'>".htmlentities($valor,ENT_QUOTES,'UTF-8')."</td>\n";
 						}
 					}
 				}
 				$ret .= $this->render_opciones($row);
 				//Agrego un td para el campo ID
-				$tmp_campo_id = isset($row[$this->datos["campo_id"]]) ? $this->datos["campo_id"] : null;
 				if (is_null($tmp_campo_id)){
-					$tmp_campo_id = isset($row[strtolower($this->datos["campo_id"])]) ? strtolower($this->datos["campo_id"]) : strtoupper($this->datos["campo_id"]);
+					//$tmp_campo_id = isset($row[strtolower($this->datos["campo_id"])]) ? strtolower($this->datos["campo_id"]) : strtoupper($this->datos["campo_id"]);
+					$tmp_campo_id = strtoupper($this->datos["campo_id"]);
 				}
-				$ret .= "<td class=\"lista_item_id\"><input type=\"checkbox\" id=\"campo_id_".$row[$tmp_campo_id]."\" name=\"".$tmp_campo_id."[]\" value=\"".$row[$tmp_campo_id]."\" /></td>";
+				
+				
+				$ret .= "<td class=\"lista_item_id\"><input type=\"checkbox\" id=\"campo_id_".$row[$tmp_campo_id]."\" name=\"".$tmp_campo_id."[]\" value=\"".$row[$tmp_campo_id]."\" ".$tmp_checked." /></td>";
 				
 				$ret .= "</tr>\n";
 				$i++;
-			} 
+			}
 		}
 		
 		if (count($this->datos["items"]) <= 0){

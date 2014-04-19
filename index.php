@@ -18,15 +18,7 @@
 		$_SESSION["app_path"] = Config::get_field("app_path");
 	}
 	
-	$template = null;
-	
-	if (isset($_REQUEST["template"])){
-		$id_template = (int)$_REQUEST["template"];
-		$template = new Template($id_template);
-	} else {
-		$template = new Template(1);
-	}
-	
+	$template = (isset($_REQUEST["template"])) ? $_REQUEST["template"] : "default";
 	$_SESSION["template"] = $template;
 	
 ?>
@@ -43,7 +35,7 @@
 </head>
 <?php
 	//die(var_dump($template));
-	include "./templates/".$template->get("folder")."/default.php";
+	include "./templates/".$template."/default.php";
 ?>
 </html>
 

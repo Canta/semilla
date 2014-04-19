@@ -29,7 +29,7 @@ class API {
 		$this->data["response"] = new APIResponse();
 		// sets the default error handler for all api calls
 		//set_error_handler(create_function("\$errno, \$errstr, \$errfile, \$errline", "die(json_encode(APIResponse::fail(\"Error #\".\$errno.\": \".\$errstr)));"));
-		set_error_handler("API::errorHandler");
+		//set_error_handler("API::errorHandler");
 	}
 	
 	/** 

@@ -15,7 +15,7 @@ class Config{
 		
 		if ((trim($fieldName) != "") && ($fieldName !== NULL)){
 			$c = Conexion::get_instance();
-			$return = $c->execute("select * from config where field_name = '$fieldName';");
+			$return = $c->execute("select * from config where field_name = '$fieldName';", false);
 		}
 		
 		return $return[0];
@@ -26,10 +26,10 @@ class Config{
 		if ((trim($fieldName) != "") && ($fieldName !== NULL)){
 			$c = Conexion::get_instance();
 			$tmp = array(); //temporal empty array.
-			if (get_field($fieldName) == $tmp) {
-				$r = $c->execute("insert into config (field_name, field_value) values ('$fieldName', '$value') ");
+			if (Config::get_field($fieldName) == $tmp) {
+				$r = $c->execute("insert into config (field_name, field_value) values ('$fieldName', '$value') ", false);
 			} else {
-				$r = $c->execute("update config set field_value = '$value' where field_name = '$fieldName' ");
+				$r = $c->execute("update config set field_value = '$value' where field_name = '$fieldName' ", false);
 			}
 		}
 	}
